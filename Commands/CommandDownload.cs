@@ -16,7 +16,7 @@ namespace Alpacka.Meta
     public class CommandDownload : CommandLineApplication
     {
         private AddOnServiceClient client;
-        private static readonly string OUTPUT = Path.Combine(Constants.CachePath, "output");
+        private static string OUTPUT;
         private static HashSet<AddOn> failedAddons;
         public CommandDownload()
         {
@@ -26,12 +26,16 @@ namespace Alpacka.Meta
             var argMode = Argument("[mode]",
                 "complete | hourly");
                 
+            var optOut = Option("-o | --out",
+                "Output Directory", CommandOptionType.SingleValue);
             var optTest = Option("-t | --Test",
                 "Test flag", CommandOptionType.NoValue);
             HelpOption("-? | -h | --help");
             
              OnExecute(async () => {
                 client = await Authenticate();
+                
+                OUTPUT = optOut.HasValue() ? optOut.Value() : Path.Combine(Constants.CachePath, "output");
                 
                 if(!Directory.Exists(OUTPUT))
                     Directory.CreateDirectory(OUTPUT);
