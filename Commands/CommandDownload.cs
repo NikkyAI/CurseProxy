@@ -18,6 +18,7 @@ namespace Alpacka.Meta
         private AddOnServiceClient client;
         private static string OUTPUT;
         private static HashSet<AddOn> failedAddons;
+        private static bool verbose;
         public CommandDownload()
         {
             Name = "download";
@@ -28,8 +29,13 @@ namespace Alpacka.Meta
                 
             var optOut = Option("-o | --out",
                 "Output Directory", CommandOptionType.SingleValue);
-            var optTest = Option("-t | --Test",
+                
+            var optVerbose = Option("-v | --verbose",
+                "save stacktraces and more info", CommandOptionType.NoValue);
+                
+            var optTest = Option("-t | --test",
                 "Test flag", CommandOptionType.NoValue);
+                
             HelpOption("-? | -h | --help");
             
              OnExecute(async () => {
@@ -43,7 +49,8 @@ namespace Alpacka.Meta
                 Console.WriteLine($"output: {OUTPUT}");
                 
                 var test = optTest.HasValue();
-               
+                verbose = optVerbose.HasValue();
+                
                 Mode mode;
                 if(!Enum.TryParse(argMode.Value, true, out mode)) {
                     Console.WriteLine($"{argMode.Value} is not one of \n{Enum.GetValues(typeof(Mode)).ToPrettyYaml()}");
@@ -208,11 +215,13 @@ namespace Alpacka.Meta
                 var changelog = await client.GetChangeLogAsync(addon.Id, file.Id);
                 File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.changelog.html"), changelog);
             } catch (Exception e) {
-                Console.WriteLine($"error: addon: {addon.Id} file: {file.Id} {file.FileName}");
                 failedAddons.Add(addon);
-                var errorPath = Path.Combine(OUTPUT, "error", $"{addon.Id}");
-                Directory.CreateDirectory(errorPath);
-                File.WriteAllText(Path.Combine(errorPath, $"{ file.Id }.changelog.html"), $"{e.Message}\nStaclTrace:\n{e.StackTrace}\nSource: {e.Source}");
+                Console.WriteLine($"error: addon: {addon.Id} file: {file.Id} {file.FileName}");
+                if(verbose) {
+                    var errorPath = Path.Combine(OUTPUT, ".error", $"{addon.Id}");
+                    Directory.CreateDirectory(errorPath);
+                    File.WriteAllText(Path.Combine(errorPath, $"{ file.Id }.changelog.html"), $"{e.Message}\nStaclTrace:\n{e.StackTrace}\nSource: {e.Source}");
+                }
                 //throw new Exception ($"addon: {addon.Id} file: {file.Id} {file.FileName}", e);
             }
             File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.json"), file_json);
