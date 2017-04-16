@@ -136,8 +136,12 @@ namespace Alpacka.Meta
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
                 
-                Console.WriteLine($"retrying addons: \n{failedAddons.Select(a => a.Name).ToPrettyYaml()}");
-                await Task.WhenAll(failedAddons.Select(a => process_addon(a)));
+                while(failedAddons.Count() > 0) {
+                    var tmp_set = new HashSet<AddOn>(failedAddons);
+                    failedAddons = new HashSet<AddOn>();
+                    Console.WriteLine($"retrying addons: \n{tmp_set.Select(a => a.Name).ToPrettyYaml()}");
+                    await Task.WhenAll(tmp_set.Select(a => process_addon(a)));
+                }
                 
                 timer.Stop();
                 Console.WriteLine($"all projects were processed in '{ timer.Elapsed }'");
@@ -216,11 +220,11 @@ namespace Alpacka.Meta
                 File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.changelog.html"), changelog);
             } catch (Exception e) {
                 failedAddons.Add(addon);
-                Console.WriteLine($"error: addon: {addon.Id} file: {file.Id} {file.FileName}");
+                Console.WriteLine($": addon: {addon.Id} file: {file.Id} {file.FileName}");
                 if(verbose) {
-                    var errorPath = Path.Combine(OUTPUT, ".error", $"{addon.Id}");
-                    Directory.CreateDirectory(errorPath);
-                    File.WriteAllText(Path.Combine(errorPath, $"{ file.Id }.changelog.html"), $"{e.Message}\nStaclTrace:\n{e.StackTrace}\nSource: {e.Source}");
+                    var errorpath = Path.Combine(OUTPUT, ".", $"{addon.Id}");
+                    Directory.CreateDirectory(errorpath);
+                    File.WriteAllText(Path.Combine(errorpath, $"{ file.Id }.changelog.error.txt"), $"{e.Message}\nStaclTrace:\n{e.StackTrace}\nSource: {e.Source}");
                 }
                 //throw new Exception ($"addon: {addon.Id} file: {file.Id} {file.FileName}", e);
             }
