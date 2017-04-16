@@ -1,0 +1,4 @@
+src/
+pkg/
+/alpacka-meta-git/alpacka-meta
+*.pkg.tar.xz
