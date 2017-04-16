@@ -58,28 +58,34 @@ namespace Alpacka.Meta
                 }
                 
                 ProjectList feed;
+                ProjectList complete;
                 
                 switch(mode) {
                     case Mode.Complete:
                         feed = await ProjectFeed.GetComplete();
                         var hourly = await ProjectFeed.GetHourly();
                         //merge
-                        feed.Data = merge(feed.Data, hourly.Data);
+                        feed = feed.merge(hourly);
+                        complete = feed;
                         
                         break;
                     case Mode.Hourly:
                         feed = await ProjectFeed.GetHourly();
+                        
+                        complete = await ProjectFeed.GetLocalComplete(OUTPUT);
+                        //merge hourly into complete
+                        complete = complete.merge(feed);
+                        
                         
                         break;
                     default:
                         throw new NotImplementedException("Mode: {mode}");
                 }
                 
-                Console.WriteLine($"Filtering addons, please wait... old count: {feed.Data.Count()}");
-                feed.Data = feed.Data.Where(a => a.PackageType == PackageTypes.Mod).ToList();
-                Console.WriteLine($"filtered addons, new count: {feed.Data.Count()}");
+                // save complete.json.bz2
+                Console.WriteLine($"recompressing complete.json");
+                ProjectFeed.SaveLocalComplete(complete, OUTPUT);
                 
-                File.WriteAllText(Path.Combine(OUTPUT, "mods.yaml"), feed.Data.Select(a => a.Id).ToPrettyYaml());
                 Console.WriteLine($"Getting all addon data at once from the API.. please wait...");
                 var addons = await client.v2GetAddOnsAsync(feed.Data.Select(a => a.Id).ToArray());
                 if(addons.Count() != feed.Data.Count) {
@@ -150,12 +156,7 @@ namespace Alpacka.Meta
              });
         }
         
-        public static List<AddOn> merge(List<AddOn> list, List<AddOn> patch)
-        {
-            var newlist = list.Where(s => !patch.Any(p => p.Id == s.Id)).ToList();
-            newlist.AddRange(patch);
-            return newlist.OrderBy(o => o.Id).ToList();
-        }
+        
         
         public async Task<AddOnServiceClient> Authenticate()
         {
