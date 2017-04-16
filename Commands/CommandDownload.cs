@@ -72,7 +72,7 @@ namespace Alpacka.Meta
                 feed.Data = feed.Data.Where(a => a.PackageType == PackageTypes.Mod).ToList();
                 Console.WriteLine($"filtered addons, new count: {feed.Data.Count()}");
                 
-                File.WriteAllText(Path.Combine(OUTPUT, "mods.txt"), feed.Data.Select(a => a.Id).ToPrettyYaml());
+                File.WriteAllText(Path.Combine(OUTPUT, "mods.yaml"), feed.Data.Select(a => a.Id).ToPrettyYaml());
                 Console.WriteLine($"Getting all addon data at once from the API.. please wait...");
                 var addons = await client.v2GetAddOnsAsync(feed.Data.Select(a => a.Id).ToArray());
                 if(addons.Count() != feed.Data.Count) {
@@ -185,7 +185,7 @@ namespace Alpacka.Meta
             File.WriteAllText(Path.Combine(directory, $"{ addon.Id }.json"), addon_json);
 
             var description = await client.v2GetAddOnDescriptionAsync(addon.Id);
-            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }/description.txt"), description);
+            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }/description.html"), description);
 
             var files = await client.GetAllFilesForAddOnAsync(addon.Id);
             File.WriteAllText(Path.Combine(directory, $"{ addon.Id }/files.json"), files.ToPrettyJson());
@@ -206,13 +206,13 @@ namespace Alpacka.Meta
             // }
             try {
                 var changelog = await client.GetChangeLogAsync(addon.Id, file.Id);
-                File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.changelog.txt"), changelog);
+                File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.changelog.html"), changelog);
             } catch (Exception e) {
                 Console.WriteLine($"error: addon: {addon.Id} file: {file.Id} {file.FileName}");
                 failedAddons.Add(addon);
                 var errorPath = Path.Combine(OUTPUT, "error", $"{addon.Id}");
                 Directory.CreateDirectory(errorPath);
-                File.WriteAllText(Path.Combine(errorPath, $"{ file.Id }.changelog.txt"), $"{e.Message}\nStaclTrace:\n{e.StackTrace}\nSource: {e.Source}");
+                File.WriteAllText(Path.Combine(errorPath, $"{ file.Id }.changelog.html"), $"{e.Message}\nStaclTrace:\n{e.StackTrace}\nSource: {e.Source}");
                 //throw new Exception ($"addon: {addon.Id} file: {file.Id} {file.FileName}", e);
             }
             File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.json"), file_json);
