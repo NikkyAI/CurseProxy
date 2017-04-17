@@ -162,7 +162,7 @@ namespace Alpacka.Meta
         {
             var loginClient = new ClientLoginServiceClient(ClientLoginServiceClient.EndpointConfiguration.BinaryHttpsClientLoginServiceEndpoint);
              
-             var deserializer = new DeserializerBuilder()
+            var deserializer = new DeserializerBuilder()
                 .IgnoreUnmatchedProperties()
                 .WithNamingConvention(new CamelCaseNamingConvention())
                 .Build();
