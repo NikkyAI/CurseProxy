@@ -3,22 +3,12 @@ using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using Microsoft.Extensions.CommandLineUtils;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
-using Alpacka.Meta.AddOnService;
-using Alpacka.Meta.LoginService;
-
 
 namespace Alpacka.Meta
 {
     public class CommandDownload : CommandLineApplication
     {
-        private AddOnServiceClient client;
-        private static string OUTPUT;
-        private static HashSet<AddOn> failedAddons;
-        private static bool verbose;
         public CommandDownload()
         {
             Name = "download";
@@ -39,17 +29,12 @@ namespace Alpacka.Meta
             HelpOption("-? | -h | --help");
             
              OnExecute(async () => {
-                client = await Authenticate();
+                var client = await DownloadUtil.LazyAddonClient.Value;
                 
-                OUTPUT = optOut.HasValue() ? optOut.Value() : Path.Combine(Constants.CachePath, "output");
-                
-                if(!Directory.Exists(OUTPUT))
-                    Directory.CreateDirectory(OUTPUT);
-                
-                Console.WriteLine($"output: {OUTPUT}");
+                var downloadUtil = new DownloadUtil(optOut.Value());
                 
                 var test = optTest.HasValue();
-                verbose = optVerbose.HasValue();
+                downloadUtil.verbose = optVerbose.HasValue();
                 
                 Mode mode;
                 if(!Enum.TryParse(argMode.Value, true, out mode)) {
@@ -72,7 +57,7 @@ namespace Alpacka.Meta
                     case Mode.Hourly:
                         feed = await ProjectFeed.GetHourly();
                         
-                        complete = await ProjectFeed.GetLocalComplete(OUTPUT);
+                        complete = await ProjectFeed.GetLocalComplete(downloadUtil.OUTPUT);
                         //merge hourly into complete
                         complete = complete.merge(feed);
                         
@@ -84,7 +69,7 @@ namespace Alpacka.Meta
                 
                 // save complete.json.bz2
                 Console.WriteLine($"recompressing complete.json");
-                ProjectFeed.SaveLocalComplete(complete, OUTPUT);
+                ProjectFeed.SaveLocalComplete(complete, downloadUtil.OUTPUT);
                 
                 Console.WriteLine($"Getting all addon data at once from the API.. please wait...");
                 var addons = await client.v2GetAddOnsAsync(feed.Data.Select(a => a.Id).ToArray());
@@ -97,7 +82,7 @@ namespace Alpacka.Meta
                     // addons = await client.v2GetAddOnsAsync(new int[] { 62242, 221641, 225861, 237275, 238856 });
                     
                     var test_addons = feed.Data.ToArray();
-                    var diff_dir = Path.Combine(OUTPUT, "diff");
+                    var diff_dir = Path.Combine(downloadUtil.OUTPUT, "diff");
                     Directory.CreateDirectory(diff_dir);
                     for(int i = 0; i < addons.Count(); i++) {
                         var a = test_addons[i];
@@ -130,23 +115,22 @@ namespace Alpacka.Meta
                     .Select((addon, index) => new { addon, index })
                     .GroupBy(e => (e.index / batchSize), e => e.addon);
                 
-                failedAddons = new HashSet<AddOn>();
+                downloadUtil.reset_failed();
                 var timer = new Stopwatch();
                 timer.Start();
                 int k = 0;
                 int k_all = all.Count();
                 foreach (var batch in all) {
-                    var tasks = Task.WhenAll(batch.Select(process_addon));
+                    var tasks = Task.WhenAll(batch.Select(downloadUtil.process_addon));
                     Console.WriteLine($"batch [{++k} / {k_all}]");
                     await tasks;
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
                 
-                while(failedAddons.Count() > 0) {
-                    var tmp_set = new HashSet<AddOn>(failedAddons);
-                    failedAddons = new HashSet<AddOn>();
+                while(downloadUtil.failedAddons.Count() > 0) {
+                    var tmp_set = downloadUtil.reset_failed();
                     Console.WriteLine($"retrying addons: \n{tmp_set.Select(a => a.Name).ToPrettyYaml()}");
-                    await Task.WhenAll(tmp_set.Select(a => process_addon(a)));
+                    await Task.WhenAll(tmp_set.Select(downloadUtil.process_addon));
                 }
                 
                 timer.Stop();
@@ -158,80 +142,9 @@ namespace Alpacka.Meta
         
         
         
-        public async Task<AddOnServiceClient> Authenticate()
-        {
-            var loginClient = new ClientLoginServiceClient(ClientLoginServiceClient.EndpointConfiguration.BinaryHttpsClientLoginServiceEndpoint);
-             
-            var deserializer = new DeserializerBuilder()
-                .IgnoreUnmatchedProperties()
-                .WithNamingConvention(new CamelCaseNamingConvention())
-                .Build();
-            
-            string path = Path.Combine(Constants.ConfigPath, "curse.yaml");
-           
-            LoginResponse loginResponse;
-            
-            using (var reader = new StreamReader(File.OpenRead(path)))
-            {
-                var request = deserializer.Deserialize<LoginRequest>(reader);
-                loginResponse = await loginClient.LoginAsync(request);
-                Console.WriteLine($"Login: {loginResponse.Status}");
-            }
-            
-            client = new AddOnServiceClient(AddOnServiceClient.EndpointConfiguration.BinaryHttpsAddOnServiceEndpoint);
-            client.Endpoint.EndpointBehaviors.Add(new TokenEndpointBehavior(loginResponse));
-            
-            return client;
-        }
         
-        public async Task process_addon(AddOn addon)
-        {
-            var directory = Path.Combine(OUTPUT, "addon");
-            var addonFilesDirectory = Path.Combine(directory, $"{ addon.Id }");
-            Directory.CreateDirectory(addonFilesDirectory);
-
-            // var addon = await client.GetAddOnAsync(addon_id);
-
-            Console.WriteLine($"[{addon.Name}] ({addon.Id}) {addon.Stage} {addon.Status}");
-            var addon_json = addon.ToPrettyJson();
-            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }.json"), addon_json);
-
-            var description = await client.v2GetAddOnDescriptionAsync(addon.Id);
-            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }/description.html"), description);
-
-            var files = await client.GetAllFilesForAddOnAsync(addon.Id);
-            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }/files.json"), files.ToPrettyJson());
-            await Task.WhenAll(files.Select( f => process_file(addon, f, addonFilesDirectory) ));
-            // Console.WriteLine($"[{addon.Name}] finished");
-        }
-
-        public async Task process_file(AddOn addon, AddOnFile file, string addonDirectory)
-        {
-            //var file = await client.GetAddOnFileAsync(addon, file.Id);
-           
-            //Console.WriteLine($"{file.Id} {file.FileName} {file.FileStatus} { file.ReleaseType } {file.FileDate}");
-            var file_json = file.ToPrettyJson();
-            // if (file_json != expected_json)
-            // {
-            //     Console.WriteLine($"addon {addon} file: {file.Id}");
-            //     throw new Exception($"addon {addon} file: {file.Id}");
-            // }
-            try {
-                var changelog = await client.GetChangeLogAsync(addon.Id, file.Id);
-                File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.changelog.html"), changelog);
-            } catch (Exception e) {
-                failedAddons.Add(addon);
-                Console.WriteLine($": addon: {addon.Id} file: {file.Id} {file.FileName}");
-                if(verbose) {
-                    var errorpath = Path.Combine(OUTPUT, ".", $"{addon.Id}");
-                    Directory.CreateDirectory(errorpath);
-                    File.WriteAllText(Path.Combine(errorpath, $"{ file.Id }.changelog.error.txt"), $"{e.Message}\nStaclTrace:\n{e.StackTrace}\nSource: {e.Source}");
-                }
-                //throw new Exception ($"addon: {addon.Id} file: {file.Id} {file.FileName}", e);
-            }
-            File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.json"), file_json);
-            
-        }
+        
+        
         
         enum Mode {
             Complete,
