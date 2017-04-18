@@ -16,13 +16,15 @@ namespace Alpacka.Meta
         public string OUTPUT { get; private set; }
         public HashSet<AddOn> failedAddons { get; private set; } = new HashSet<AddOn>();
         public bool verbose { get; set; }
+        private static string CONFIG { get; set; }
         
-        public DownloadUtil(string output) {
-                OUTPUT = output ?? Path.Combine(Constants.CachePath, "output");
-                if(!Directory.Exists(OUTPUT))
-                    Directory.CreateDirectory(OUTPUT);
-                    
-                Console.WriteLine($"output: { OUTPUT }");
+        public DownloadUtil(string output, string config = null) {
+            CONFIG = config ?? Constants.ConfigPath;
+            OUTPUT = output ?? Path.Combine(Constants.CachePath, "output");
+            if(!Directory.Exists(OUTPUT))
+                Directory.CreateDirectory(OUTPUT);
+                
+            Console.WriteLine($"output: { OUTPUT }");
         }
         
         public HashSet<AddOn> reset_failed() {
@@ -129,7 +131,7 @@ namespace Alpacka.Meta
                 .WithNamingConvention(new CamelCaseNamingConvention())
                 .Build();
             
-            string path = Path.Combine(Constants.ConfigPath, "curse.yaml");
+            string path = Path.Combine(CONFIG, "curse.yaml");
            
             LoginResponse loginResponse;
             

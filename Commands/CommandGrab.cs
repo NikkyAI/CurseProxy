@@ -29,13 +29,16 @@ namespace Alpacka.Meta
             var optOut = Option("-o | --out",
                 "Output Directory", CommandOptionType.SingleValue);
                 
+            var optConfig = Option("-c | --config",
+                "Config Directory", CommandOptionType.SingleValue);
+                
             var optVerbose = Option("-v | --verbose",
                 "save stacktraces and more info", CommandOptionType.NoValue);
                 
             HelpOption("-? | -h | --help");
             
              OnExecute(async () => {
-                var downloadUtil = new DownloadUtil(optOut.Value());
+                var downloadUtil = new DownloadUtil(optOut.Value(), optConfig.Value());
                 downloadUtil.verbose = optVerbose.HasValue();
                 
                 int addonId, fileId;
