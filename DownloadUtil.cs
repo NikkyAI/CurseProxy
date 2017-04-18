@@ -16,10 +16,15 @@ namespace Alpacka.Meta
         public string OUTPUT { get; private set; }
         public HashSet<AddOn> failedAddons { get; private set; } = new HashSet<AddOn>();
         public bool verbose { get; set; }
-        private static string CONFIG { get; set; }
         
-        public DownloadUtil(string output, string config = null) {
-            CONFIG = config ?? Constants.ConfigPath;
+        private static string configFiled;
+        public static string CONFIG {
+            get { return configFiled ?? Constants.ConfigPath; }
+            set { configFiled = value;
+            }
+        }
+        
+        public DownloadUtil(string output) {
             OUTPUT = output ?? Path.Combine(Constants.CachePath, "output");
             if(!Directory.Exists(OUTPUT))
                 Directory.CreateDirectory(OUTPUT);

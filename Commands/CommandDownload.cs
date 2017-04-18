@@ -22,19 +22,24 @@ namespace Alpacka.Meta
                 
             var optVerbose = Option("-v | --verbose",
                 "save stacktraces and more info", CommandOptionType.NoValue);
-                
+            
+            var optConfig = Option("-c | --config",
+                "Config Directory", CommandOptionType.SingleValue);
+            
             var optTest = Option("-t | --test",
                 "Test flag", CommandOptionType.NoValue);
                 
             HelpOption("-? | -h | --help");
             
-             OnExecute(async () => {
+            OnExecute(async () => {
                 var client = await DownloadUtil.LazyAddonClient.Value;
                 
                 var downloadUtil = new DownloadUtil(optOut.Value());
                 
                 var test = optTest.HasValue();
                 downloadUtil.verbose = optVerbose.HasValue();
+                
+                DownloadUtil.CONFIG = optConfig.Value();
                 
                 Mode mode;
                 if(!Enum.TryParse(argMode.Value, true, out mode)) {
