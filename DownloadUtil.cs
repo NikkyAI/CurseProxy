@@ -57,7 +57,7 @@ namespace Alpacka.Meta
             // Console.WriteLine($"[{addon.Name}] finished");
         }
         
-        public async Task process_addon(int addonId, int fileId)
+        public async Task<int> process_addon(int addonId, int fileId)
         {
             var client = await DownloadUtil.LazyAddonClient.Value;
             
@@ -72,11 +72,12 @@ namespace Alpacka.Meta
             var file = await client.GetAddOnFileAsync(addon.Id, fileId);
             if(file == null) {
                 Console.WriteLine($"cannot find file {fileId} for [{addon.Name}]");
-                return;
+                return 1;
             }
             Console.WriteLine($"processing file: {file.FileName}");
             await process_file(addon, file, addonFilesDirectory);
             
+            return 0;
             // var addon_json = addon.ToPrettyJson();
             // File.WriteAllText(Path.Combine(directory, $"{ addon.Id }.json"), addon_json);
 

@@ -47,13 +47,13 @@ namespace Alpacka.Meta
                     return -1;
                 }
                 downloadUtil.reset_failed();
-                await downloadUtil.process_addon(addonId, fileId);
+                var ret = await downloadUtil.process_addon(addonId, fileId);
                 
                 if(downloadUtil.failedAddons.Count() > 0) {
                     var tmp_set = downloadUtil.reset_failed();
                     Console.WriteLine($"failed addons: \n{tmp_set.Select(a => a.Name).ToPrettyYaml()}");
                 }
-                return 0;
+                return ret;
              });
         }
     }
