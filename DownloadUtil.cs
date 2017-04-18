@@ -99,8 +99,6 @@ namespace Alpacka.Meta
         {
             var client = await DownloadUtil.LazyAddonClient.Value;
             
-            Console.WriteLine($"directory: {addonDirectory}");
-            
             //var file = await client.GetAddOnFileAsync(addon, file.Id);
            
             //Console.WriteLine($"{file.Id} {file.FileName} {file.FileStatus} { file.ReleaseType } {file.FileDate}");
