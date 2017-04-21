@@ -101,10 +101,11 @@ namespace Alpacka.Meta
             [JsonIgnore]
             public int GamePopularityRank { get; set; }
             public GameVersionLatestFile[] GameVersionLatestFiles { get; set; }
-            [JsonIgnore]
             public int IconId { get; set; }
             public int Id { get; set; }
+            [JsonIgnore]
             public int InstallCount { get; set; }
+            [JsonIgnore]
             public int IsFeatured { get; set; }
             public AddOnFile_default[] LatestFiles { get; set; }
             [JsonIgnore]
