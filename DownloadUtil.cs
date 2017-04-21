@@ -16,7 +16,7 @@ namespace Alpacka.Meta
         public string OUTPUT { get; private set; }
         public HashSet<AddOn> failedAddons { get; private set; } = new HashSet<AddOn>();
         public bool verbose { get; set; }
-        
+        public Filter filter { get; set; } = Filter.Default;
         private static string configFiled;
         public static string CONFIG {
             get { return configFiled ?? Constants.ConfigPath; }
@@ -48,18 +48,17 @@ namespace Alpacka.Meta
 
             // var addon = await client.GetAddOnAsync(addon_id);
 
-            Console.WriteLine($"[{addon.Name}] ({addon.Id}) {addon.Stage} {addon.Status}");
-            var addon_json = addon.ToPrettyJson();
-            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }.json"), addon_json);
-
+            Console.WriteLine($"[{addon.Name}] Id: {addon.Id} Stage: {addon.Stage} Status: {addon.Status}");
+            // var addon_json = addon.ToPrettyJson();
+            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }.json"), addon.ToFilteredJson(filter));
+            
             var description = await client.v2GetAddOnDescriptionAsync(addon.Id);
             File.WriteAllText(Path.Combine(directory, $"{ addon.Id }/description.html"), description);
 
             var files = await client.GetAllFilesForAddOnAsync(addon.Id);
-            //TODO go though unknown files in the directory and merge them in the files list
-            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }/files.json"), files.ToPrettyJson());
+            //TODO: go though unknown files in the directory and merge them in the files list ?
+            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }/files.json"), files.ToFilteredJson(filter));
             await Task.WhenAll(files.Select( f => process_file(addon, f, addonFilesDirectory) ));
-            // Console.WriteLine($"[{addon.Name}] finished");
         }
         
         public async Task<int> process_addon(int addonId, int fileId)
@@ -83,31 +82,15 @@ namespace Alpacka.Meta
             await process_file(addon, file, addonFilesDirectory);
             
             return 0;
-            // var addon_json = addon.ToPrettyJson();
-            // File.WriteAllText(Path.Combine(directory, $"{ addon.Id }.json"), addon_json);
-
-            // var description = await client.v2GetAddOnDescriptionAsync(addon.Id);
-            // File.WriteAllText(Path.Combine(directory, $"{ addon.Id }/description.html"), description);
-
-            // var files = await client.GetAllFilesForAddOnAsync(addon.Id);
-            // File.WriteAllText(Path.Combine(directory, $"{ addon.Id }/files.json"), files.ToPrettyJson());
-            // await Task.WhenAll(files.Select( f => process_file(addon, f, addonFilesDirectory) ));
-            // Console.WriteLine($"[{addon.Name}] finished");
         }
 
         public async Task process_file(AddOn addon, AddOnFile file, string addonDirectory)
         {
             var client = await DownloadUtil.LazyAddonClient.Value;
             
-            //var file = await client.GetAddOnFileAsync(addon, file.Id);
-           
-            //Console.WriteLine($"{file.Id} {file.FileName} {file.FileStatus} { file.ReleaseType } {file.FileDate}");
-            var file_json = file.ToPrettyJson();
-            // if (file_json != expected_json)
-            // {
-            //     Console.WriteLine($"addon {addon} file: {file.Id}");
-            //     throw new Exception($"addon {addon} file: {file.Id}");
-            // }
+            // var file_json = file.ToPrettyJson();
+            var file_json = file.ToFilteredJson(filter);
+            
             try {
                 var changelog = await client.GetChangeLogAsync(addon.Id, file.Id);
                 File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.changelog.html"), changelog);
@@ -115,7 +98,7 @@ namespace Alpacka.Meta
                 failedAddons.Add(addon);
                 Console.WriteLine($": addon: {addon.Id} file: {file.Id} {file.FileName}");
                 if(verbose) {
-                    var errorpath = Path.Combine(OUTPUT, ".", $"{addon.Id}");
+                    var errorpath = Path.Combine(OUTPUT, ".errors", $"{addon.Id}");
                     Directory.CreateDirectory(errorpath);
                     File.WriteAllText(Path.Combine(errorpath, $"{ file.Id }.changelog.error.txt"), $"{e.Message}\nStaclTrace:\n{e.StackTrace}\nSource: {e.Source}");
                 }

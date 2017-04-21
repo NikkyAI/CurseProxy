@@ -24,6 +24,9 @@ namespace Alpacka.Meta
             var optConfig = Option("-c | --config",
                 "Config Directory", CommandOptionType.SingleValue);
             
+            var optFilter = Option("--filter",
+                "None or Default filter", CommandOptionType.SingleValue);
+                
             var optVerbose = Option("-v | --verbose",
                 "save stacktraces and more info", CommandOptionType.NoValue);
                 
@@ -33,6 +36,10 @@ namespace Alpacka.Meta
                 var downloadUtil = new DownloadUtil(optOut.Value());
                 downloadUtil.verbose = optVerbose.HasValue();
                 DownloadUtil.CONFIG = optConfig.Value();
+                
+                Filter filter = FilterExtensions.parse(optFilter.Value());
+                downloadUtil.filter = filter;
+                Console.WriteLine($"using filter: {filter}");
                 
                 int addonId, fileId;
                 if(!int.TryParse(argAddon.Value, out addonId) || !int.TryParse(argFile.Value, out fileId)) {

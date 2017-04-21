@@ -134,9 +134,9 @@ namespace Alpacka.Meta
             return uncompressedString;
         }
         
-        public static void SaveLocalComplete(ProjectList allProjects, string directory, bool compressed = true, bool uncompressed = true)
+        public static void SaveLocalComplete(ProjectList allProjects, string directory, Filter filter, bool compressed = true, bool uncompressed = true)
         {
-            var json_string = JsonConvert.SerializeObject(allProjects, settings);
+            var json_string = allProjects.ToFilteredJson(filter); //JsonConvert.SerializeObject(allProjects, settings);
             
             var currentFile = Path.Combine(cache, "current.json");
             var completeFile = Path.Combine(directory, "complete.json");
@@ -177,6 +177,10 @@ namespace Alpacka.Meta
                 Data = newlist.OrderBy(o => o.Id).ToList()
             };
             return newProjectList;
+        }
+        
+        public ProjectList clone() {
+            return (ProjectList) this.MemberwiseClone();
         }
     }
 }

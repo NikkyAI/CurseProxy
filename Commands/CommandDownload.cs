@@ -4,11 +4,29 @@ using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
+using System.Collections.Generic;
+using Alpacka.Meta.AddOnService;
 
 namespace Alpacka.Meta
 {
     public class CommandDownload : CommandLineApplication
     {
+        static readonly Dictionary<Filter, Action<AddOn>> FilterFunctions = 
+            new Dictionary<Filter, Action<AddOn>> {
+            { Filter.None, filterNone },
+            { Filter.Default, filterDefault }
+        };
+        public static void filterNone(AddOn a) {
+            
+        }
+        
+        public static void filterDefault(AddOn a) {
+            //TODO: actually remove from json
+            a.PopularityScore = -1;
+            a.DownloadCount = -1;
+            a.PrimaryCategoryAvatarUrl = null;
+            a.PrimaryCategoryName = null;
+        }
         public CommandDownload()
         {
             Name = "download";
@@ -25,6 +43,9 @@ namespace Alpacka.Meta
             
             var optConfig = Option("-c | --config",
                 "Config Directory", CommandOptionType.SingleValue);
+                
+            var optFilter = Option("--filter",
+                "None or Default filter", CommandOptionType.SingleValue);
             
             var optTest = Option("-t | --test",
                 "Test flag", CommandOptionType.NoValue);
@@ -42,10 +63,14 @@ namespace Alpacka.Meta
                 DownloadUtil.CONFIG = optConfig.Value();
                 
                 Mode mode;
-                if(!Enum.TryParse(argMode.Value, true, out mode)) {
+                if (!Enum.TryParse(argMode.Value, true, out mode)) {
                     Console.WriteLine($"{argMode.Value} is not one of \n{Enum.GetValues(typeof(Mode)).ToPrettyYaml()}");
                     return -1;
                 }
+                
+                Filter filter = FilterExtensions.parse(optFilter.Value());
+                downloadUtil.filter = filter;
+                Console.WriteLine($"using filter: {filter}");
                 
                 ProjectList feed;
                 ProjectList complete;
@@ -56,7 +81,7 @@ namespace Alpacka.Meta
                         var hourly = await ProjectFeed.GetHourly();
                         //merge
                         feed = feed.merge(hourly);
-                        complete = feed;
+                        complete = feed.clone();
                         
                         break;
                     case Mode.Hourly:
@@ -72,9 +97,13 @@ namespace Alpacka.Meta
                         throw new NotImplementedException("Mode: {mode}");
                 }
                 
+                Console.WriteLine($"sorting complete.json");
+                complete.Data = complete.Data
+                    .OrderBy(a => a.Id).ToList();
+                
                 // save complete.json.bz2
                 Console.WriteLine($"recompressing complete.json");
-                ProjectFeed.SaveLocalComplete(complete, downloadUtil.OUTPUT);
+                ProjectFeed.SaveLocalComplete(complete, downloadUtil.OUTPUT, filter);
                 
                 Console.WriteLine($"Getting all addon data at once from the API.. please wait...");
                 var addons = await client.v2GetAddOnsAsync(feed.Data.Select(a => a.Id).ToArray());
@@ -120,7 +149,7 @@ namespace Alpacka.Meta
                     .Select((addon, index) => new { addon, index })
                     .GroupBy(e => (e.index / batchSize), e => e.addon);
                 
-                downloadUtil.reset_failed();
+                // DownloadUtil.reset_failed();
                 var timer = new Stopwatch();
                 timer.Start();
                 int k = 0;
@@ -143,17 +172,13 @@ namespace Alpacka.Meta
                  
                 return 0;
              });
+             
         }
         
-        
-        
-        
-        
-        
-        
-        enum Mode {
+        public enum Mode {
             Complete,
             Hourly
         }
+        
     }
 }
