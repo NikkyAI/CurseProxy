@@ -111,6 +111,7 @@ namespace Alpacka.Meta
             public int Likes { get; set; }
             public string Name { get; set; }
             public PackageTypes PackageType { get; set; }
+            [JsonIgnore]
             public double PopularityScore { get; set; }
             public string PrimaryAuthorName { get; set; }
             [JsonIgnore]
