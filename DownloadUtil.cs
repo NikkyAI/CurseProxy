@@ -96,7 +96,7 @@ namespace Alpacka.Meta
                 File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.changelog.html"), changelog);
             } catch (Exception e) {
                 failedAddons.Add(addon);
-                Console.WriteLine($": addon: {addon.Id} file: {file.Id} {file.FileName}");
+                Console.WriteLine($"failed: addon: {addon.Id} file: {file.Id} {file.FileName}");
                 if(verbose) {
                     var errorpath = Path.Combine(OUTPUT, ".errors", $"{addon.Id}");
                     Directory.CreateDirectory(errorpath);
