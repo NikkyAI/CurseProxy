@@ -32,6 +32,9 @@ namespace Alpacka.Meta
             var optFilter = Option("--filter",
                 "None or Default filter", CommandOptionType.SingleValue);
             
+            var optWithChangelogs = Option("--withchangelogs",
+                "Include changelog files", CommandOptionType.NoValue);
+                
             var optDisableMods = Option("--nomods",
                 "Do not download mods", CommandOptionType.NoValue);
                 
@@ -51,6 +54,7 @@ namespace Alpacka.Meta
                 
                 
                 downloadUtil.verbose = optVerbose.HasValue();
+                downloadUtil.changelogs = optWithChangelogs.HasValue();
                 
                 DownloadUtil.CONFIG = optConfig.Value();
                 

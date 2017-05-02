@@ -23,6 +23,7 @@ namespace Alpacka.Meta
             private set {}
         }
         public bool verbose { get; set; }
+        public bool changelogs { get; set; }
         public Filter filter { get; set; } = Filter.Default;
         private static string configFile;
         public static string CONFIG {
@@ -194,19 +195,22 @@ namespace Alpacka.Meta
             // var file_json = file.ToPrettyJson();
             var file_json = file.ToFilteredJson(filter);
             
-            try {
-                var changelog = await client.GetChangeLogAsync(addon.Id, file.Id);
-                File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.changelog.html"), changelog);
-            } catch (Exception e) {
-                failedFiles.Add(new AddOnFileBundle(addon,file));
-                Console.WriteLine($"failed: addon: {addon.Id} file: {file.Id} {file.FileName}");
-                if(verbose) {
-                    var errorpath = Path.Combine(OUTPUT, ".errors", $"{addon.Id}");
-                    Directory.CreateDirectory(errorpath);
-                    File.WriteAllText(Path.Combine(errorpath, $"{ file.Id }.changelog.error.txt"), $"{e.Message}\nStaclTrace:\n{e.StackTrace}\nSource: {e.Source}");
+            if(changelogs) {
+                try {
+                    var changelog = await client.GetChangeLogAsync(addon.Id, file.Id);
+                    File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.changelog.html"), changelog);
+                } catch (Exception e) {
+                    failedFiles.Add(new AddOnFileBundle(addon,file));
+                    Console.WriteLine($"failed: addon: {addon.Id} file: {file.Id} {file.FileName}");
+                    if(verbose) {
+                        var errorpath = Path.Combine(OUTPUT, ".errors", $"{addon.Id}");
+                        Directory.CreateDirectory(errorpath);
+                        File.WriteAllText(Path.Combine(errorpath, $"{ file.Id }.changelog.error.txt"), $"{e.Message}\nStaclTrace:\n{e.StackTrace}\nSource: {e.Source}");
+                    }
+                    //throw new Exception ($"addon: {addon.Id} file: {file.Id} {file.FileName}", e);
                 }
-                //throw new Exception ($"addon: {addon.Id} file: {file.Id} {file.FileName}", e);
             }
+            
             File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.json"), file_json);
             
         }

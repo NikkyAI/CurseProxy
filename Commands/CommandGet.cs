@@ -17,10 +17,10 @@ namespace Alpacka.Meta
             
             var optProject = Option("-p | --project",
                 "Project IDs, can be specified multiple times", CommandOptionType.MultipleValue);
-                
+            
             var optFiles = Option("--file",
                 "project and file id in the format 'project:file', can be specified multiple times", CommandOptionType.MultipleValue);
-                
+            
             var optOut = Option("-o | --out",
                 "Output Directory", CommandOptionType.SingleValue);
             
@@ -29,9 +29,12 @@ namespace Alpacka.Meta
             
             var optFilter = Option("--filter",
                 "None or Default filter", CommandOptionType.SingleValue);
-                
+            
             var optVerbose = Option("-v | --verbose",
                 "save stacktraces and more info", CommandOptionType.NoValue);
+            
+            var optWithChangelogs = Option("--withchangelogs",
+                "Include changelog files", CommandOptionType.NoValue);
                 
             HelpOption("-? | -h | --help");
             
@@ -39,6 +42,7 @@ namespace Alpacka.Meta
                 var client = await DownloadUtil.LazyAddonClient.Value;
                 var downloadUtil = new DownloadUtil(optOut.Value());
                 downloadUtil.verbose = optVerbose.HasValue();
+                downloadUtil.changelogs = optWithChangelogs.HasValue();
                 DownloadUtil.CONFIG = optConfig.Value();
                 
                 Filter filter = FilterExtensions.parse(optFilter.Value());
