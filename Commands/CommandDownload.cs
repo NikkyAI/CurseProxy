@@ -26,6 +26,9 @@ namespace Alpacka.Meta
             var optVerbose = Option("-v | --verbose",
                 "save stacktraces and more info", CommandOptionType.NoValue);
             
+            var optPretty = Option("-v | --pretty",
+                "save json files with indentation", CommandOptionType.NoValue);
+            
             var optConfig = Option("-c | --config",
                 "Config Directory", CommandOptionType.SingleValue);
             
@@ -34,10 +37,13 @@ namespace Alpacka.Meta
             
             var optWithChangelogs = Option("--withchangelogs",
                 "Include changelog files", CommandOptionType.NoValue);
-                
+            
+            var optWithDescriptions = Option("--withdescriptions",
+                "Include description files", CommandOptionType.NoValue);
+            
             var optDisableMods = Option("--nomods",
                 "Do not download mods", CommandOptionType.NoValue);
-                
+            
             var optDisableModPacks = Option("--nomodpacks",
                 "Do not download modpacks", CommandOptionType.NoValue);
             
@@ -52,9 +58,10 @@ namespace Alpacka.Meta
                 
                 var downloadUtil = new DownloadUtil(optOut.Value());
                 
-                
                 downloadUtil.verbose = optVerbose.HasValue();
+                downloadUtil.pretty = optPretty.HasValue();
                 downloadUtil.changelogs = optWithChangelogs.HasValue();
+                downloadUtil.descriptions = optWithDescriptions.HasValue();
                 
                 DownloadUtil.CONFIG = optConfig.Value();
                 

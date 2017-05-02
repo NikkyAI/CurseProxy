@@ -22,16 +22,24 @@ namespace Alpacka.Meta
                 }
             }
         }
-
+        
         private static readonly JsonSerializerSettings settings =
+            new JsonSerializerSettings
+            {
+                Formatting = Formatting.None,
+                NullValueHandling = NullValueHandling.Ignore,
+                Converters = { new StringEnumConverter { CamelCaseText = true } }
+            };
+        
+        private static readonly JsonSerializerSettings settingsPretty =
             new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
                 NullValueHandling = NullValueHandling.Ignore,
                 Converters = { new StringEnumConverter { CamelCaseText = true } }
             };
-
-        public static string ToPrettyJson(this object obj) => JsonConvert.SerializeObject(obj, settings);
+        
+        public static string ToPrettyJson(this object obj, bool pretty = false) => JsonConvert.SerializeObject(obj, pretty ? settingsPretty : settings);
         
         private static readonly Serializer serializer = 
             new SerializerBuilder()

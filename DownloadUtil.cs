@@ -24,6 +24,12 @@ namespace Alpacka.Meta
         }
         public bool verbose { get; set; }
         public bool changelogs { get; set; }
+        public bool descriptions { get; set; }
+        //TODO: FIX ugly hack with better structure
+        public bool pretty { 
+            get { return serializerSettings.Formatting == Formatting.Indented; } 
+            set { serializerSettings.Formatting = value ? Formatting.Indented : Formatting.None; } 
+        }
         public Filter filter { get; set; } = Filter.Default;
         private static string configFile;
         public static string CONFIG {
@@ -41,7 +47,7 @@ namespace Alpacka.Meta
         }
         
         public static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings {
-            Formatting = Formatting.Indented,
+            Formatting = Formatting.None,
             MissingMemberHandling = MissingMemberHandling.Error,
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
             NullValueHandling = NullValueHandling.Ignore            
@@ -51,7 +57,7 @@ namespace Alpacka.Meta
             var rnd = new Random();
             var randomData = addons.OrderBy(x => rnd.Next()).ToList();
             
-            var batchSize = 100;
+            var batchSize = 200;
             var all = randomData//.Take(1000)
                 .Select((addon, index) => new { addon, index })
                 .GroupBy(e => (e.index / batchSize), e => e.addon);
@@ -69,7 +75,7 @@ namespace Alpacka.Meta
                 ));
                 Console.WriteLine($"batch [{++k} / {k_all}]");
                 await tasks;
-                await Task.Delay(TimeSpan.FromSeconds(1));
+                //await Task.Delay(TimeSpan.FromSeconds(0.1)); //testing if this causes problems or not
             }
             
             //TODO: add retrying
@@ -89,24 +95,33 @@ namespace Alpacka.Meta
             var indexFile = "index.json";
             
             //Console.WriteLine($"[{addon.Name}] Id: {addon.Id} Stage: {addon.Stage} Status: {addon.Status}");
-            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }", indexFile), addon.ToFilteredJson(filter));
+            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }", indexFile), addon.ToFilteredJson(filter, pretty));
             
-            var description = await client.v2GetAddOnDescriptionAsync(addon.Id);
-            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }", "description.html"), description);
-            
-            var files = await client.GetAllFilesForAddOnAsync(addon.Id);
+            if (descriptions) {
+                var description = await client.v2GetAddOnDescriptionAsync(addon.Id);
+                File.WriteAllText(Path.Combine(directory, $"{ addon.Id }", "description.html"), description);
+            }
+            AddOnFile[] files = null;
+            while (files == null) {
+                try {
+                    files = await client.GetAllFilesForAddOnAsync(addon.Id);
+                    break;
+                } catch(Exception e) {
+                    Console.WriteLine($"{addon.Id} {e.Message}");
+                }
+            }
             //TODO: go though unknown files in the directory and merge them in the files list ?
             var failedFiles = new List<AddOnFileBundle>();
             await Task.WhenAll(files.Select( f => processFile(addon, f, addonFilesDirectory, failedFiles) ));
             
-            while(failedFiles.Count != 0) {
+            while (failedFiles.Count != 0) {
                 var tmp = failedFiles.ToArray();
                 failedFiles = new List<AddOnFileBundle>();
                 Console.WriteLine($"retrying files {tmp.Select(f => f.file.FileName).Aggregate((a,b) => a +" , "+ b)}");
                 await Task.WhenAll(tmp.Select( f => processFile(addon, f.file, addonFilesDirectory, failedFiles) ));
             }
             
-            // File.WriteAllText(Path.Combine(directory, $"{ addon.Id }", "files", "index.json"), files.ToFilteredJson(filter));
+            // File.WriteAllText(Path.Combine(directory, $"{ addon.Id }", "files", "index.json"), files.ToFilteredJson(filter, pretty));
             
             // create file index based on all files in the folder
             var filesIndexFile = "index.json";
@@ -114,12 +129,12 @@ namespace Alpacka.Meta
             var allFiles = new List<AddOnFile>();
             var directoryInfo = new DirectoryInfo(addonFilesDirectory);
             foreach (var fileinfo in directoryInfo.EnumerateFiles().OrderBy(f => f.Name)) {
-                if(fileinfo.Name != filesIndexFile && fileinfo.Name.EndsWith(".json")) {
+                if (fileinfo.Name != filesIndexFile && fileinfo.Name.EndsWith(".json")) {
                     var file = JsonConvert.DeserializeObject<AddOnFile>(File.ReadAllText(fileinfo.FullName), serializerSettings);
                     allFiles.Add(file);
                 }
             }
-            File.WriteAllText(Path.Combine(addonFilesDirectory, filesIndexFile), allFiles.ToFilteredJson(filter));
+            File.WriteAllText(Path.Combine(addonFilesDirectory, filesIndexFile), allFiles.ToFilteredJson(filter, pretty));
             
             // var directoryInfo = new DirectoryInfo(addonFilesDirectory);
             // var allFilesArray = directoryInfo.EnumerateFiles()
@@ -183,7 +198,7 @@ namespace Alpacka.Meta
                         allFiles.Add(file);
                     }
                 }
-                File.WriteAllText(Path.Combine(addonFilesDirectory, filesIndexFile), allFiles.ToFilteredJson(filter));
+                File.WriteAllText(Path.Combine(addonFilesDirectory, filesIndexFile), allFiles.ToFilteredJson(filter, pretty));
             }
             return finishedFiles.ToArray();
         }
@@ -193,7 +208,7 @@ namespace Alpacka.Meta
             var client = await DownloadUtil.LazyAddonClient.Value;
             
             // var file_json = file.ToPrettyJson();
-            var file_json = file.ToFilteredJson(filter);
+            var file_json = file.ToFilteredJson(filter, pretty);
             
             if(changelogs) {
                 try {

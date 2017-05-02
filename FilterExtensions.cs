@@ -26,72 +26,72 @@ namespace Alpacka.Meta
         }
         
         private static readonly JsonSerializerSettings settings = new JsonSerializerSettings {
-            Formatting = Formatting.Indented,
+            Formatting = Formatting.None,
             MissingMemberHandling = MissingMemberHandling.Error,
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
-            NullValueHandling = NullValueHandling.Ignore            
+            NullValueHandling = NullValueHandling.Ignore
         };
         
-        public static string ToFilteredJson(this AddOn addon, Filter filter = Filter.Default) {
+        public static string ToFilteredJson(this AddOn addon, Filter filter = Filter.Default, bool pretty = false) {
             switch(filter) {
                 case Filter.None:
-                    return addon.ToPrettyJson();
+                    return addon.ToPrettyJson(pretty);
                 case Filter.Default:
                     var tmp = addon.ToPrettyJson();
                     var sane = JsonConvert.DeserializeObject<AddOn_default>(tmp, settings);
-                    return sane.ToPrettyJson();
+                    return sane.ToPrettyJson(pretty);
                 default:
                     throw new ArgumentException(filter.ToString());
             }
         }
         
-        public static string ToFilteredJson(this AddOnFile file, Filter filter = Filter.Default) {
+        public static string ToFilteredJson(this AddOnFile file, Filter filter = Filter.Default, bool pretty = false) {
             switch(filter) {
                 case Filter.None:
-                    return file.ToPrettyJson();
+                    return file.ToPrettyJson(pretty);
                 case Filter.Default:
                     var tmp = file.ToPrettyJson();
                     var sane = JsonConvert.DeserializeObject<AddOnFile_default>(tmp, settings);
-                    return sane.ToPrettyJson();
+                    return sane.ToPrettyJson(pretty);
                 default:
                     throw new ArgumentException(filter.ToString());
             }
         }
         
-        public static string ToFilteredJson(this AddOnFile[] fileList, Filter filter = Filter.Default) {
+        public static string ToFilteredJson(this AddOnFile[] fileList, Filter filter = Filter.Default, bool pretty = false) {
             switch(filter) {
                 case Filter.None:
-                    return fileList.ToPrettyJson();
+                    return fileList.ToPrettyJson(pretty);
                 case Filter.Default:
                     var tmp = fileList.ToPrettyJson();
                     var sane = JsonConvert.DeserializeObject<AddOnFile[]>(tmp, settings);
-                    return sane.ToPrettyJson();
+                    return sane.ToPrettyJson(pretty);
                 default:
                     throw new ArgumentException(filter.ToString());
             }
         }
         
-        public static string ToFilteredJson(this List<AddOnFile> fileList, Filter filter = Filter.Default) {
+        public static string ToFilteredJson(this List<AddOnFile> fileList, Filter filter = Filter.Default, bool pretty = false) {
             switch(filter) {
                 case Filter.None:
-                    return fileList.ToPrettyJson();
+                    return fileList.ToPrettyJson(pretty);
                 case Filter.Default:
                     var tmp = fileList.ToPrettyJson();
                     var sane = JsonConvert.DeserializeObject<AddOnFile[]>(tmp, settings);
-                    return sane.ToPrettyJson();
+                    return sane.ToPrettyJson(pretty);
                 default:
                     throw new ArgumentException(filter.ToString());
             }
         }
         
-        public static string ToFilteredJson(this ProjectList list, Filter filter = Filter.Default) {
+        public static string ToFilteredJson(this ProjectList list, Filter filter = Filter.Default, bool pretty = false) {
             switch(filter) {
                 case Filter.None:
-                    return list.ToPrettyJson();
+                    return list.ToPrettyJson(pretty);
                 case Filter.Default:
                     var tmp = list.ToPrettyJson();
                     var sane = JsonConvert.DeserializeObject<ProjectList_default>(tmp, settings);
-                    return sane.ToPrettyJson();
+                    return sane.ToPrettyJson(pretty);
                 default:
                     throw new ArgumentException(filter.ToString());
             }
