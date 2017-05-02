@@ -73,6 +73,9 @@ https://www.curseforge.com/projects/257572/
   * [modpacks.json](https://cursemeta.nikky.moe/modpacks.json)
   * [modpacks.json.bz2](https://cursemeta.nikky.moe/modpacks.json.bz2)
 
+the html files are opt in options and increase the runtime significantly.. so they may not exist by default
+//TODO: add cgi hook and command to get .html files
+
 ### tree
 ```
 cursemeta.nikky.moe/
