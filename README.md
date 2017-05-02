@@ -4,15 +4,21 @@
 
 Alpacka Meta is a tool to connect to the `SOAP API` of curse and make the data available in easy to read json files
 
-to use the meta files you do NOT need:
+### Features
+- get info and urls of **deleted** files (as long as you have the project and file id)
+- get all addons from the curse hourly and complete feed
+- filter to get mods or modpacks only
+
+to use the meta files you do **NOT** need:
 - a curse login
 - Visual Studio plugins to generate a SOAP client based on `.wsdl` files and fix horrible generated code and incorrect endpoint URLs
 
-you just need to understand the [file structure](#file-structure) and json file content
-
+You just need to understand the [file structure](#file-structure) and json file content
 
 Files are hosted on https://cursemeta.nikky.moe/ and updated approximately every hour (assuming nothing goes horribly wrong)  
 Files are also mirrored to https://github.com/NikkyAI/alpacka-meta-file every 12 hours
+
+This tool does not interact with the curse website at all so any changes in html cannot break it
 
 [tips for selfhosting](#selfhosting)
 
@@ -33,6 +39,10 @@ add `alias alpacka-meta='dotnet /path/to/src/alpacka-meta/bin/release/netcoreapp
 to your `.bashrc` / `.zshrc`
 
 note: cron seems to be unable to read the aliases so for scripts you may need to use the full `dotnet [ddl]` command
+
+### Register
+
+with the command `register` you can create a old style (non twitch) account that can be used with the API
 
 ## Run
 
