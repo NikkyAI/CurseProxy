@@ -4,6 +4,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using Alpacka.Meta.AddOnService;
 
@@ -11,60 +12,51 @@ namespace Alpacka.Meta
 {
     public class CommandDownload : CommandLineApplication
     {
-        static readonly Dictionary<Filter, Action<AddOn>> FilterFunctions = 
-            new Dictionary<Filter, Action<AddOn>> {
-            { Filter.None, filterNone },
-            { Filter.Default, filterDefault }
-        };
-        public static void filterNone(AddOn a) {
-            
-        }
-        
-        public static void filterDefault(AddOn a) {
-            //TODO: actually remove from json
-            a.PopularityScore = -1;
-            a.DownloadCount = -1;
-            a.PrimaryCategoryAvatarUrl = null;
-            a.PrimaryCategoryName = null;
-        }
         public CommandDownload()
         {
             Name = "download";
             Description = "Downloads curse meta information";
             
             var argMode = Argument("[mode]",
-                "complete | hourly");
-                
+                $"'{ String.Join(" | ", Enum.GetNames(typeof(Mode))) }'");
+            
             var optOut = Option("-o | --out",
                 "Output Directory", CommandOptionType.SingleValue);
-                
+            
             var optVerbose = Option("-v | --verbose",
                 "save stacktraces and more info", CommandOptionType.NoValue);
             
             var optConfig = Option("-c | --config",
                 "Config Directory", CommandOptionType.SingleValue);
-                
+            
             var optFilter = Option("--filter",
                 "None or Default filter", CommandOptionType.SingleValue);
             
-            var optTest = Option("-t | --test",
-                "Test flag", CommandOptionType.NoValue);
+            var optDisableMods = Option("--nomods",
+                "Do not download mods", CommandOptionType.NoValue);
                 
+            var optDisableModPacks = Option("--nomodpacks",
+                "Do not download modpacks", CommandOptionType.NoValue);
+            
             HelpOption("-? | -h | --help");
             
             OnExecute(async () => {
+                if(optDisableMods.HasValue() && optDisableModPacks.HasValue()) {
+                    Console.WriteLine("all download options are disabled, not executing download");
+                    return -1;
+                }
                 var client = await DownloadUtil.LazyAddonClient.Value;
                 
                 var downloadUtil = new DownloadUtil(optOut.Value());
                 
-                var test = optTest.HasValue();
+                
                 downloadUtil.verbose = optVerbose.HasValue();
                 
                 DownloadUtil.CONFIG = optConfig.Value();
                 
                 Mode mode;
                 if (!Enum.TryParse(argMode.Value, true, out mode)) {
-                    Console.WriteLine($"{argMode.Value} is not one of \n{Enum.GetValues(typeof(Mode)).ToPrettyYaml()}");
+                    Console.WriteLine($"{argMode.Value} is not one of \n{Enum.GetNames(typeof(Mode)).ToPrettyYaml()}");
                     return -1;
                 }
                 
@@ -87,11 +79,39 @@ namespace Alpacka.Meta
                     case Mode.Hourly:
                         feed = await ProjectFeed.GetHourly();
                         
-                        complete = await ProjectFeed.GetLocalComplete(downloadUtil.OUTPUT);
+                        complete = await ProjectFeed.GetCompleteLocal(downloadUtil.OUTPUT);
                         //merge hourly into complete
                         complete = complete.merge(feed);
                         
+                        break;
+                    case Mode.Locally:
+                        //construct complete modlist from files
                         
+                        var timer = new Stopwatch();
+                        
+                        timer.Start();
+                        
+                        var allAddons = new List<AddOn>();
+                        var outputDirectory = new DirectoryInfo(downloadUtil.ADDONPATH);
+                        foreach (var directoryinfo in outputDirectory.EnumerateDirectories().OrderBy(f => f.Name)) {
+                            Console.WriteLine($"{directoryinfo.Name}");
+                            var indexFile = Path.Combine(directoryinfo.FullName, "index.json");
+                            if (File.Exists(indexFile)) {
+                                var addon = JsonConvert.DeserializeObject<AddOn>(File.ReadAllText(indexFile), DownloadUtil.serializerSettings);
+                                allAddons.Add(addon);
+                            } else {
+                                Console.WriteLine($"file {indexFile} does nto exist");
+                            }
+                        }
+                        
+                        timer.Stop();
+                        Console.WriteLine($"local addons processed in '{ timer.Elapsed }'");
+                        
+                        feed = new ProjectList {
+                            Data = allAddons,
+                            Timestamp = 0
+                        };
+                        complete = feed.clone();
                         break;
                     default:
                         throw new NotImplementedException("Mode: {mode}");
@@ -103,81 +123,63 @@ namespace Alpacka.Meta
                 
                 // save complete.json.bz2
                 Console.WriteLine($"recompressing complete.json");
-                ProjectFeed.SaveLocalComplete(complete, downloadUtil.OUTPUT, filter);
+                ProjectFeed.SaveLocal(complete, filter, downloadUtil.OUTPUT, "complete");
                 
                 Console.WriteLine($"Getting all addon data at once from the API.. please wait...");
                 var addons = await client.v2GetAddOnsAsync(feed.Data.Select(a => a.Id).ToArray());
-                if(addons.Count() != feed.Data.Count) {
-                    Console.WriteLine($"addons count: { addons.Count() } != feed.data count: { feed.Data.Count }");
+                if(addons.Length != feed.Data.Count()) {
+                    Console.WriteLine($"addons count: { addons.Length } != feed.data count: { feed.Data.Count() }");
                     return -1;
                 }
                 
-                if (test) {
-                    // addons = await client.v2GetAddOnsAsync(new int[] { 62242, 221641, 225861, 237275, 238856 });
+                if(!optDisableMods.HasValue()) {
+                    //process mods
+                    Console.WriteLine($"Filtering mods, please wait... old count: {addons.Length}");
+                    var allMods = addons.Where(a => a.PackageType == PackageTypes.Mod).ToArray();
+                    Console.WriteLine($"Finished filtering mods, new count: {allMods.Length}");
                     
-                    var test_addons = feed.Data.ToArray();
-                    var diff_dir = Path.Combine(downloadUtil.OUTPUT, "diff");
-                    Directory.CreateDirectory(diff_dir);
-                    for(int i = 0; i < addons.Count(); i++) {
-                        var a = test_addons[i];
-                        var b = addons[i];
-                        a.PrimaryCategoryAvatarUrl = null;
-                        a.PrimaryCategoryName = null;
-                        var json_a = a.ToPrettyJson();
-                        var json_b = b.ToPrettyJson();
-                        //Console.WriteLine($"comparing [{a.Id} - {a.Name}]");
-                        if(json_a != json_b) {
-                            var file_a = Path.Combine(diff_dir, $"{a.Id}_from_list.json");
-                            File.WriteAllText(file_a, json_a);
-                            var file_b = Path.Combine(diff_dir, $"{b.Id}_original.json");
-                            File.WriteAllText(file_b, json_b);
-                            Console.WriteLine($"[{a.Id} - {a.Name}] differs:");
-                            var ret = await ThreadUtil.RunProcessAsync("git", $"diff --histogram {file_a} {file_b}");
-                            //return -1;
-                        }
+                    //in case of hourly this may be empty, there was no change then
+                    if(allMods.Length > 0) {
+                        Console.WriteLine($"Filtering complete mods, please wait... old count: {complete.Data.Count()}");
+                        var completeMods = new ProjectList { 
+                            Data = complete.Data.Where(a => a.PackageType == PackageTypes.Mod).ToList(),
+                            Timestamp = complete.Timestamp
+                        };
+                        Console.WriteLine($"Finished filtering complete mods, new count: {completeMods.Data.Count()}");
+                        ProjectFeed.SaveLocal(completeMods, filter, downloadUtil.OUTPUT, "mods");
                     }
                     
-                    return 0;
-                }
-                // await Task.WhenAll(addons.Select(a => process_addon(a)));
-                
-                var rnd = new Random();
-                var randomData = addons.OrderBy(x => rnd.Next()).ToList();
-                
-                var batchSize = 100;
-                var all = randomData//.Take(1000)
-                    .Select((addon, index) => new { addon, index })
-                    .GroupBy(e => (e.index / batchSize), e => e.addon);
-                
-                // DownloadUtil.reset_failed();
-                var timer = new Stopwatch();
-                timer.Start();
-                int k = 0;
-                int k_all = all.Count();
-                foreach (var batch in all) {
-                    var tasks = Task.WhenAll(batch.Select(downloadUtil.process_addon));
-                    Console.WriteLine($"batch [{++k} / {k_all}]");
-                    await tasks;
-                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    await DownloadUtil.processAll(allMods, downloadUtil.processAddon, "mods");
                 }
                 
-                while(downloadUtil.failedAddons.Count() > 0) {
-                    var tmp_set = downloadUtil.reset_failed();
-                    Console.WriteLine($"retrying addons: \n{tmp_set.Select(a => a.Name).ToPrettyYaml()}");
-                    await Task.WhenAll(tmp_set.Select(downloadUtil.process_addon));
+                if(!optDisableModPacks.HasValue()) {
+                    //process modpacks
+                    Console.WriteLine($"Filtering modpacks, please wait... old count: {addons.Length}");
+                    var allModpacks = addons.Where(a => a.PackageType == PackageTypes.ModPack).ToArray();
+                    Console.WriteLine($"Finished filtering modpacks, new count: {allModpacks.Length}");
+                    
+                    //in case of hourly this may be empty, there was no change then
+                    if(allModpacks.Length > 0) {
+                        Console.WriteLine($"Filtering complete modpacks, please wait... old count: {complete.Data.Count()}");
+                        var completeModpacks = new ProjectList { 
+                            Data = complete.Data.Where(a => a.PackageType == PackageTypes.ModPack).ToList(),
+                            Timestamp = complete.Timestamp
+                        };
+                        Console.WriteLine($"Finished filtering complete modpacks, new count: {completeModpacks.Data.Count()}");
+                        ProjectFeed.SaveLocal(completeModpacks, filter, downloadUtil.OUTPUT, "modpacks");
+                    }
+                    
+                    await DownloadUtil.processAll(allModpacks, downloadUtil.processAddon, "modpacks");
                 }
                 
-                timer.Stop();
-                Console.WriteLine($"all projects were processed in '{ timer.Elapsed }'");
-                 
                 return 0;
              });
-             
         }
         
         public enum Mode {
             Complete,
-            Hourly
+            Hourly,
+            Locally
         }
         
     }

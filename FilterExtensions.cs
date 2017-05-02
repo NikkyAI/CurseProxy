@@ -71,6 +71,19 @@ namespace Alpacka.Meta
             }
         }
         
+        public static string ToFilteredJson(this List<AddOnFile> fileList, Filter filter = Filter.Default) {
+            switch(filter) {
+                case Filter.None:
+                    return fileList.ToPrettyJson();
+                case Filter.Default:
+                    var tmp = fileList.ToPrettyJson();
+                    var sane = JsonConvert.DeserializeObject<AddOnFile[]>(tmp, settings);
+                    return sane.ToPrettyJson();
+                default:
+                    throw new ArgumentException(filter.ToString());
+            }
+        }
+        
         public static string ToFilteredJson(this ProjectList list, Filter filter = Filter.Default) {
             switch(filter) {
                 case Filter.None:

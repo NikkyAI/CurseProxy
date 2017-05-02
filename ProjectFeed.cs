@@ -27,7 +27,7 @@ namespace Alpacka.Meta
         private static readonly string cache = Path.Combine(Constants.CachePath, "curse");
         private static HttpClient client = new HttpClient();
         
-        public static async Task<ProjectList> GetComplete(bool filter = true)
+        public static async Task<ProjectList> GetComplete()
         {
             var completeFile = Path.Combine(cache, "complete.json");
             var completeFileTimestamp = Path.Combine(cache, "complete.txt");
@@ -47,12 +47,6 @@ namespace Alpacka.Meta
             
             var allProjects = JsonConvert.DeserializeObject<ProjectList>(uncompressedString, settings);
             
-            if(filter) {
-                Console.WriteLine($"Filtering projects, please wait... old count: {allProjects.Data.Count()}");
-                allProjects.Data = allProjects.Data.Where(a => a.PackageType == PackageTypes.Mod).ToList();
-                Console.WriteLine($"Finished filtering projects, new count: {allProjects.Data.Count()}");
-            }
-            
             Directory.CreateDirectory(Path.GetDirectoryName(completeFileTimestamp));
             File.WriteAllText(completeFileTimestamp, allProjects.Timestamp.ToString());
             
@@ -60,7 +54,7 @@ namespace Alpacka.Meta
         }
         
         
-        public static async Task<ProjectList> GetHourly(bool filter = true)
+        public static async Task<ProjectList> GetHourly()
         {
             var hourlyFile = Path.Combine(cache, "hourly.json");
             var hourlyFileTimestamp = Path.Combine(cache, "hourly.txt");
@@ -80,19 +74,13 @@ namespace Alpacka.Meta
             
             var allProjects = JsonConvert.DeserializeObject<ProjectList>(uncompressedString, settings);
             
-            if(filter) {
-                Console.WriteLine($"Filtering projects, please wait... old count: {allProjects.Data.Count()}");
-                allProjects.Data = allProjects.Data.Where(a => a.PackageType == PackageTypes.Mod).ToList();
-                Console.WriteLine($"Finished filtering projects, new count: {allProjects.Data.Count()}");
-            }
-            
             Directory.CreateDirectory(Path.GetDirectoryName(hourlyFileTimestamp));
             File.WriteAllText(hourlyFileTimestamp, allProjects.Timestamp.ToString());
             
             return allProjects;
         }
         
-        public static async Task<ProjectList> GetLocalComplete(string directory, bool filter = true)
+        public static async Task<ProjectList> GetCompleteLocal(string directory)
         {
             var compressedFile = Path.Combine(directory, "complete.json.bz2");
             String uncompressedString = null;
@@ -109,12 +97,6 @@ namespace Alpacka.Meta
             }
             
             var allProjects = JsonConvert.DeserializeObject<ProjectList>(uncompressedString, settings);
-            
-            if(filter) {
-                Console.WriteLine($"Filtering projects, please wait... old count: {allProjects.Data.Count()}");
-                allProjects.Data = allProjects.Data.Where(a => a.PackageType == PackageTypes.Mod).ToList();
-                Console.WriteLine($"Finished filtering projects, new count: {allProjects.Data.Count()}");
-            }
             
             return allProjects;
         }
@@ -147,6 +129,30 @@ namespace Alpacka.Meta
                 File.WriteAllText(completeFile, json_string);
             }
             File.WriteAllText(currentFile, json_string);
+            
+            //compressed
+            if(compressed) {
+                using(var fileOutStream = File.OpenWrite(compressedFile)) 
+                {
+                    byte[] byteArray = Encoding.ASCII.GetBytes( json_string );
+                    MemoryStream stream = new MemoryStream( byteArray );
+                    BZip2.Compress(stream, fileOutStream, true, 4096);
+                }
+            }
+        }
+        
+        public static void SaveLocal(ProjectList allProjects, Filter filter, string output, string basename, bool compressed = true, bool uncompressed = true)
+        {
+            var json_string = allProjects.ToFilteredJson(filter);
+            // var currentFile = Path.Combine(cache, "current.json");
+            var completeFile = Path.Combine(output, $"{basename}.json");
+            var compressedFile = Path.Combine(output, $"{basename}.json.bz2");
+            
+            //uncompressed
+            if(uncompressed) {
+                File.WriteAllText(completeFile, json_string);
+            }
+            // File.WriteAllText(currentFile, json_string);
             
             //compressed
             if(compressed) {

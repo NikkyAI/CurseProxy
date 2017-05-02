@@ -837,7 +837,7 @@ namespace Alpacka.Meta.AddOnService
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("dotnet-svcutil", "0.5.0.0")]
     [System.Runtime.Serialization.DataContractAttribute(Name="AddOnFile", Namespace="Curse.AddOns")]
-    public partial class AddOnFile : object
+    public partial class AddOnFile
     {
         
         private int AlternateFileIdField;

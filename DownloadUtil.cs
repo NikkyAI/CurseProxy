@@ -7,6 +7,10 @@ using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using Alpacka.Meta.AddOnService;
 using Alpacka.Meta.LoginService;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System.Text;
+using System.Diagnostics;
 
 namespace Alpacka.Meta 
 {
@@ -14,77 +18,176 @@ namespace Alpacka.Meta
     {
         public static readonly Lazy<Task<AddOnServiceClient>> LazyAddonClient = new Lazy<Task<AddOnServiceClient>>( () => Authenticate() );
         public string OUTPUT { get; private set; }
-        public HashSet<AddOn> failedAddons { get; private set; } = new HashSet<AddOn>();
+        public string ADDONPATH {
+            get { return Path.Combine(OUTPUT, "addon"); }
+            private set {}
+        }
         public bool verbose { get; set; }
         public Filter filter { get; set; } = Filter.Default;
-        private static string configFiled;
+        private static string configFile;
         public static string CONFIG {
-            get { return configFiled ?? Constants.ConfigPath; }
-            set { configFiled = value;
+            get { return configFile ?? Constants.ConfigPath; }
+            set { configFile = value;
             }
         }
         
         public DownloadUtil(string output) {
-            OUTPUT = output ?? Path.Combine(Constants.CachePath, "output");
+            OUTPUT = output ?? Path.Combine(Directory.GetCurrentDirectory(), "out");
             if(!Directory.Exists(OUTPUT))
                 Directory.CreateDirectory(OUTPUT);
                 
             Console.WriteLine($"output: { OUTPUT }");
         }
         
-        public HashSet<AddOn> reset_failed() {
-            var tmp_set = new HashSet<AddOn>(failedAddons);
-            failedAddons = new HashSet<AddOn>();
-            return tmp_set;
+        public static readonly JsonSerializerSettings serializerSettings = new JsonSerializerSettings {
+            Formatting = Formatting.Indented,
+            MissingMemberHandling = MissingMemberHandling.Error,
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            NullValueHandling = NullValueHandling.Ignore            
+        };
+        
+        public static async Task processAll(AddOn[] addons, Func<AddOn, Task> asyncAction, string display = "projects") {
+            var rnd = new Random();
+            var randomData = addons.OrderBy(x => rnd.Next()).ToList();
+            
+            var batchSize = 100;
+            var all = randomData//.Take(1000)
+                .Select((addon, index) => new { addon, index })
+                .GroupBy(e => (e.index / batchSize), e => e.addon);
+            
+            // DownloadUtil.reset_failed();
+            var timer = new Stopwatch();
+            timer.Start();
+            int k = 0;
+            int k_all = all.Count();
+            foreach (var batch in all) {
+                var tasks = Task.WhenAll(batch.Select(
+                    (a) => {
+                        return asyncAction(a);
+                    }
+                ));
+                Console.WriteLine($"batch [{++k} / {k_all}]");
+                await tasks;
+                await Task.Delay(TimeSpan.FromSeconds(1));
+            }
+            
+            //TODO: add retrying
+            
+            timer.Stop();
+            Console.WriteLine($"all { display } were processed in '{ timer.Elapsed }'");
         }
         
-        public async Task process_addon(AddOn addon)
+        public async Task processAddon(AddOn addon)
         {
             var client = await DownloadUtil.LazyAddonClient.Value;
             
-            var directory = Path.Combine(OUTPUT, "addon");
-            var addonFilesDirectory = Path.Combine(directory, $"{ addon.Id }");
+            var directory = ADDONPATH;
+            var addonFilesDirectory = Path.Combine(directory, $"{ addon.Id }", "files");
             Directory.CreateDirectory(addonFilesDirectory);
-
-            // var addon = await client.GetAddOnAsync(addon_id);
-
-            Console.WriteLine($"[{addon.Name}] Id: {addon.Id} Stage: {addon.Stage} Status: {addon.Status}");
-            // var addon_json = addon.ToPrettyJson();
-            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }.json"), addon.ToFilteredJson(filter));
+            
+            var indexFile = "index.json";
+            
+            //Console.WriteLine($"[{addon.Name}] Id: {addon.Id} Stage: {addon.Stage} Status: {addon.Status}");
+            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }", indexFile), addon.ToFilteredJson(filter));
             
             var description = await client.v2GetAddOnDescriptionAsync(addon.Id);
-            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }/description.html"), description);
-
+            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }", "description.html"), description);
+            
             var files = await client.GetAllFilesForAddOnAsync(addon.Id);
             //TODO: go though unknown files in the directory and merge them in the files list ?
-            File.WriteAllText(Path.Combine(directory, $"{ addon.Id }/files.json"), files.ToFilteredJson(filter));
-            await Task.WhenAll(files.Select( f => process_file(addon, f, addonFilesDirectory) ));
+            var failedFiles = new List<AddOnFileBundle>();
+            await Task.WhenAll(files.Select( f => processFile(addon, f, addonFilesDirectory, failedFiles) ));
+            
+            while(failedFiles.Count != 0) {
+                var tmp = failedFiles.ToArray();
+                failedFiles = new List<AddOnFileBundle>();
+                Console.WriteLine($"retrying files {tmp.Select(f => f.file.FileName).Aggregate((a,b) => a +" , "+ b)}");
+                await Task.WhenAll(tmp.Select( f => processFile(addon, f.file, addonFilesDirectory, failedFiles) ));
+            }
+            
+            // File.WriteAllText(Path.Combine(directory, $"{ addon.Id }", "files", "index.json"), files.ToFilteredJson(filter));
+            
+            // create file index based on all files in the folder
+            var filesIndexFile = "index.json";
+            
+            var allFiles = new List<AddOnFile>();
+            var directoryInfo = new DirectoryInfo(addonFilesDirectory);
+            foreach (var fileinfo in directoryInfo.EnumerateFiles().OrderBy(f => f.Name)) {
+                if(fileinfo.Name != filesIndexFile && fileinfo.Name.EndsWith(".json")) {
+                    var file = JsonConvert.DeserializeObject<AddOnFile>(File.ReadAllText(fileinfo.FullName), serializerSettings);
+                    allFiles.Add(file);
+                }
+            }
+            File.WriteAllText(Path.Combine(addonFilesDirectory, filesIndexFile), allFiles.ToFilteredJson(filter));
+            
+            // var directoryInfo = new DirectoryInfo(addonFilesDirectory);
+            // var allFilesArray = directoryInfo.EnumerateFiles()
+            //     .OrderBy(f => f.Name)
+            //     .Where(f => f.Name != filesIndexFile && f.Name.EndsWith(".json"))
+            //     .Select(f => File.ReadAllText(f.FullName))
+            //     .ToArray();
+            // var allFilesText = String.Join("\n", allFilesArray);
+            // File.WriteAllText(Path.Combine(addonFilesDirectory, filesIndexFile), allFilesText);
+            
+            // var allFilesBuilder = new StringBuilder();
+            // var directoryInfo = new DirectoryInfo(addonFilesDirectory);
+            // foreach (var fileinfo in directoryInfo.EnumerateFiles().OrderBy(f => f.Name)) {
+            //     if(fileinfo.Name != filesIndexFile && fileinfo.Name.EndsWith(".json")) {
+            //         allFilesBuilder.Append(File.ReadAllText(fileinfo.FullName));
+            //         allFilesBuilder.Append("\n");
+            //     }
+            // }
+            // File.WriteAllText(Path.Combine(addonFilesDirectory, filesIndexFile), allFilesBuilder.ToString());
         }
         
-        public async Task<int> process_addon(int addonId, int fileId)
+        public async Task<AddOnFileBundle[]> getFiles(AddOnFileKey[] keys)
         {
             var client = await DownloadUtil.LazyAddonClient.Value;
-            
-            var directory = Path.Combine(OUTPUT, "addon");
-            var addonFilesDirectory = Path.Combine(directory, $"{ addonId }");
-            Directory.CreateDirectory(addonFilesDirectory);
-
-            var addon = await client.GetAddOnAsync(addonId);
-            
-            Console.WriteLine($"[{addon.Name}] ({addon.Id}) {addon.Stage} {addon.Status}");
-            
-            var file = await client.GetAddOnFileAsync(addon.Id, fileId);
-            if(file == null) {
-                Console.WriteLine($"cannot find file {fileId} for [{addon.Name}]");
-                return 1;
+            var failedFiles = new List<AddOnFileBundle>();
+            var finishedFiles = new List<AddOnFileBundle>();
+            foreach (var key in keys) {
+                var addon = await client.GetAddOnAsync(key.AddOnID);
+                
+                Console.WriteLine($"[{addon.Name}] ({addon.Id}) {addon.PackageType} {addon.Stage} {addon.Status}");
+                
+                var file = await client.GetAddOnFileAsync(addon.Id, key.FileID);
+                if(file == null) {
+                    Console.WriteLine($"cannot find file { key.FileID} for [{addon.Name}]");
+                    return finishedFiles.ToArray();
+                }
+                finishedFiles.Add(new AddOnFileBundle(addon, file));
+                var addonFilesDirectory = Path.Combine(ADDONPATH, $"{ addon.Id }");
+                Directory.CreateDirectory(addonFilesDirectory);
+                Console.WriteLine($"processing file: {file.FileName}");
+                await processFile(addon, file, addonFilesDirectory, failedFiles);
             }
-            Console.WriteLine($"processing file: {file.FileName}");
-            await process_file(addon, file, addonFilesDirectory);
             
-            return 0;
+            while(failedFiles.Count != 0) {
+                var tmp = failedFiles.ToArray();
+                failedFiles = new List<AddOnFileBundle>();
+                Console.WriteLine($"retrying files {tmp.Select(f => f.file.FileName).Aggregate((a,b) => a +" , "+ b)}");
+                await Task.WhenAll(tmp.Select( f => processFile(f.addon, f.file, Path.Combine(ADDONPATH, $"{ f.addon.Id }"), failedFiles) ));
+            }
+            
+            // create file index based on all files in the folder
+            foreach (var addonId in keys.Select(k => k.AddOnID).Distinct()) {
+                var filesIndexFile = "index.json";
+                var addonFilesDirectory = Path.Combine(ADDONPATH, $"{ addonId }");
+                
+                var allFiles = new List<AddOnFile>();
+                var directoryInfo = new DirectoryInfo(addonFilesDirectory);
+                foreach (var fileinfo in directoryInfo.EnumerateFiles().OrderBy(f => f.Name)) {
+                    if(fileinfo.Name != filesIndexFile && fileinfo.Name.EndsWith(".json")) {
+                        var file = JsonConvert.DeserializeObject<AddOnFile>(File.ReadAllText(fileinfo.FullName), serializerSettings);
+                        allFiles.Add(file);
+                    }
+                }
+                File.WriteAllText(Path.Combine(addonFilesDirectory, filesIndexFile), allFiles.ToFilteredJson(filter));
+            }
+            return finishedFiles.ToArray();
         }
 
-        public async Task process_file(AddOn addon, AddOnFile file, string addonDirectory)
+        public async Task processFile(AddOn addon, AddOnFile file, string addonDirectory, List<AddOnFileBundle> failedFiles)
         {
             var client = await DownloadUtil.LazyAddonClient.Value;
             
@@ -95,7 +198,7 @@ namespace Alpacka.Meta
                 var changelog = await client.GetChangeLogAsync(addon.Id, file.Id);
                 File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.changelog.html"), changelog);
             } catch (Exception e) {
-                failedAddons.Add(addon);
+                failedFiles.Add(new AddOnFileBundle(addon,file));
                 Console.WriteLine($"failed: addon: {addon.Id} file: {file.Id} {file.FileName}");
                 if(verbose) {
                     var errorpath = Path.Combine(OUTPUT, ".errors", $"{addon.Id}");
@@ -133,6 +236,16 @@ namespace Alpacka.Meta
             client.Endpoint.EndpointBehaviors.Add(new TokenEndpointBehavior(loginResponse));
             
             return client;
+        }
+    }
+    
+    public class AddOnFileBundle
+    {
+        public AddOn addon { get; set; }
+        public AddOnFile file { get; set; }
+        public AddOnFileBundle(AddOn addon, AddOnFile file) {
+            this.addon = addon;
+            this.file = file;
         }
     }
 }

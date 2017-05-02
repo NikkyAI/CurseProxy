@@ -18,7 +18,7 @@ namespace Alpacka.Meta
             Description = "Generates cursed JSONs";
             
             Commands.Add(new CommandDownload());
-            Commands.Add(new CommandGrab());
+            Commands.Add(new CommandGet());
             Commands.Add(new CommandRegister());
             
             VersionOption("-v | --version", Version);
@@ -33,14 +33,10 @@ namespace Alpacka.Meta
         public int Run(string[] args)
         {
             try { return Execute(args); }
-            catch (Exception ex)
+            catch (CommandParsingException ex)
             {
                 Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                Console.WriteLine(ex.Source);
-                Console.WriteLine(ex.InnerException.Message);
-                Console.WriteLine(ex.InnerException.StackTrace);
-                Console.WriteLine(ex.InnerException.Source);
+                ShowHelp();
                 return 0;
             }
         }
