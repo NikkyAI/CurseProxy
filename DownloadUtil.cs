@@ -107,12 +107,19 @@ namespace Alpacka.Meta
                     files = await client.GetAllFilesForAddOnAsync(addon.Id);
                     break;
                 } catch(Exception e) {
-                    Console.WriteLine($"{addon.Id} {e.Message}");
+                    Console.WriteLine($"failed: {addon.Id} {e.Message}");
                 }
             }
             //TODO: go though unknown files in the directory and merge them in the files list ?
             var failedFiles = new List<AddOnFileBundle>();
-            await Task.WhenAll(files.Select( f => processFile(addon, f, addonFilesDirectory, failedFiles) ));
+            Console.WriteLine($"files length: { files.Length }");
+            await Task.WhenAll(files.Select( f => 
+            { 
+                var test = processFile(addon, f, addonFilesDirectory, failedFiles);
+                if(test == null) throw new NullReferenceException();
+                return test;
+            }
+            ));
             
             while (failedFiles.Count != 0) {
                 var tmp = failedFiles.ToArray();
