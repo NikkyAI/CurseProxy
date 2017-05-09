@@ -179,7 +179,7 @@ namespace Alpacka.Meta
                     return finishedFiles.ToArray();
                 }
                 finishedFiles.Add(new AddOnFileBundle(addon, file));
-                var addonFilesDirectory = Path.Combine(ADDONPATH, $"{ addon.Id }");
+                var addonFilesDirectory = Path.Combine(ADDONPATH, $"{ addon.Id }", "files");
                 Directory.CreateDirectory(addonFilesDirectory);
                 Console.WriteLine($"processing file: {file.FileName}");
                 await processFile(addon, file, addonFilesDirectory, failedFiles);
