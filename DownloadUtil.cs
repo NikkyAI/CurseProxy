@@ -31,15 +31,11 @@ namespace Alpacka.Meta
             set { serializerSettings.Formatting = value ? Formatting.Indented : Formatting.None; } 
         }
         public Filter filter { get; set; } = Filter.Default;
-        private static string configFile;
-        public static string CONFIG {
-            get { return configFile ?? Constants.ConfigPath; }
-            set { configFile = value;
-            }
-        }
+        public static string CONFIG { get; private set; }
         
-        public DownloadUtil(string output) {
+        public DownloadUtil(string output, string config) {
             OUTPUT = output ?? Directory.GetCurrentDirectory();
+            CONFIG = config ?? Constants.ConfigPath;
             if(!Directory.Exists(OUTPUT))
                 Directory.CreateDirectory(OUTPUT);
                 
@@ -112,7 +108,6 @@ namespace Alpacka.Meta
             }
             //TODO: go though unknown files in the directory and merge them in the files list ?
             var failedFiles = new List<AddOnFileBundle>();
-            Console.WriteLine($"files length: { files.Length }");
             await Task.WhenAll(files.Select( f => 
             { 
                 var test = processFile(addon, f, addonFilesDirectory, failedFiles);

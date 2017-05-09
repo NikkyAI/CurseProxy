@@ -33,7 +33,7 @@ namespace Alpacka.Meta
             var optVerbose = Option("-v | --verbose",
                 "save stacktraces and more info", CommandOptionType.NoValue);
             
-            var optPretty = Option("-v | --pretty",
+            var optPretty = Option("-p | --pretty",
                 "save json files with indentation", CommandOptionType.NoValue);
             
             var optWithChangelogs = Option("--withchangelogs",
@@ -45,13 +45,12 @@ namespace Alpacka.Meta
             HelpOption("-? | -h | --help");
             
              OnExecute(async () => {
+                var downloadUtil = new DownloadUtil(optOut.Value(), optConfig.Value());
                 var client = await DownloadUtil.LazyAddonClient.Value;
-                var downloadUtil = new DownloadUtil(optOut.Value());
                 downloadUtil.verbose = optVerbose.HasValue();
                 downloadUtil.pretty = optPretty.HasValue();
                 downloadUtil.changelogs = optWithChangelogs.HasValue();
                 downloadUtil.descriptions = optWithDescriptions.HasValue();
-                DownloadUtil.CONFIG = optConfig.Value();
                 
                 Filter filter = FilterExtensions.parse(optFilter.Value());
                 downloadUtil.filter = filter;
@@ -84,7 +83,7 @@ namespace Alpacka.Meta
                     var tasks = new List<Task>();
                     var keys = new List<AddOnFileKey>();
                     foreach (var value in optFiles.Values) {
-                        var ids = value.Split(":".ToCharArray(), count: 2);
+                        var ids = value.Split("-".ToCharArray(), count: 2);
                         int project;
                         if(!int.TryParse(ids[0], out project)) {
                             Console.WriteLine($"cannot parse project in {value}");

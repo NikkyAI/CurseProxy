@@ -54,16 +54,15 @@ namespace Alpacka.Meta
                     Console.WriteLine("all download options are disabled, not executing download");
                     return -1;
                 }
+                var downloadUtil = new DownloadUtil(optOut.Value(), optConfig.Value());
+                
                 var client = await DownloadUtil.LazyAddonClient.Value;
                 
-                var downloadUtil = new DownloadUtil(optOut.Value());
                 
                 downloadUtil.verbose = optVerbose.HasValue();
                 downloadUtil.pretty = optPretty.HasValue();
                 downloadUtil.changelogs = optWithChangelogs.HasValue();
                 downloadUtil.descriptions = optWithDescriptions.HasValue();
-                
-                DownloadUtil.CONFIG = optConfig.Value();
                 
                 Mode mode;
                 if (!Enum.TryParse(argMode.Value, true, out mode)) {
