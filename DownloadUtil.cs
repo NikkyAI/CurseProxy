@@ -39,7 +39,7 @@ namespace Alpacka.Meta
         }
         
         public DownloadUtil(string output) {
-            OUTPUT = output ?? Path.Combine(Directory.GetCurrentDirectory(), "out");
+            OUTPUT = output ?? Directory.GetCurrentDirectory();
             if(!Directory.Exists(OUTPUT))
                 Directory.CreateDirectory(OUTPUT);
                 
