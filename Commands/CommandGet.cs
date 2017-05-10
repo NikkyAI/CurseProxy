@@ -67,7 +67,7 @@ namespace Alpacka.Meta
                     int[] projectIDs = new int[optProject.Values.Count()];
                     for (int i = 0; i < optProject.Values.Count(); i++) {
                         if(!int.TryParse(optProject.Values[i], out projectIDs[i])) {
-                            Console.WriteLine("cannot parse arguments");
+                            Console.WriteLine($"cannot parse argument: { optProject.Values[i] }");
                             return -1;
                         }
                     }
