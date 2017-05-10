@@ -190,7 +190,7 @@ namespace Alpacka.Meta
             // create file index based on all files in the folder
             foreach (var addonId in keys.Select(k => k.AddOnID).Distinct()) {
                 var filesIndexFile = "index.json";
-                var addonFilesDirectory = Path.Combine(ADDONPATH, $"{ addonId }");
+                var addonFilesDirectory = Path.Combine(ADDONPATH, $"{ addonId }", "files");
                 
                 var allFiles = new List<AddOnFile>();
                 var directoryInfo = new DirectoryInfo(addonFilesDirectory);
@@ -205,7 +205,7 @@ namespace Alpacka.Meta
             return finishedFiles.ToArray();
         }
 
-        public async Task processFile(AddOn addon, AddOnFile file, string addonDirectory, List<AddOnFileBundle> failedFiles)
+        public async Task processFile(AddOn addon, AddOnFile file, string addonFilesDirectory, List<AddOnFileBundle> failedFiles)
         {
             var client = await DownloadUtil.LazyAddonClient.Value;
             
@@ -215,7 +215,7 @@ namespace Alpacka.Meta
             if(changelogs) {
                 try {
                     var changelog = await client.GetChangeLogAsync(addon.Id, file.Id);
-                    File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.changelog.html"), changelog);
+                    File.WriteAllText(Path.Combine(addonFilesDirectory, $"{ file.Id }.changelog.html"), changelog);
                 } catch (Exception e) {
                     failedFiles.Add(new AddOnFileBundle(addon,file));
                     Console.WriteLine($"failed: addon: {addon.Id} file: {file.Id} {file.FileName}");
@@ -228,7 +228,7 @@ namespace Alpacka.Meta
                 }
             }
             
-            File.WriteAllText(Path.Combine(addonDirectory, $"{ file.Id }.json"), file_json);
+            File.WriteAllText(Path.Combine(addonFilesDirectory, $"{ file.Id }.json"), file_json);
             
         }
         
