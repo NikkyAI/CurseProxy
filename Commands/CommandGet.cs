@@ -15,7 +15,7 @@ namespace Alpacka.Meta
             Name = "get";
             Description = "grabs a specific file";
             
-            var optProject = Option("-p | --project",
+            var optProject = Option("--project",
                 "Project IDs, can be specified multiple times", CommandOptionType.MultipleValue);
             
             var optFiles = Option("--file",
@@ -33,7 +33,7 @@ namespace Alpacka.Meta
             var optVerbose = Option("-v | --verbose",
                 "save stacktraces and more info", CommandOptionType.NoValue);
             
-            var optPretty = Option("-p | --pretty",
+            var optPretty = Option("--pretty",
                 "save json files with indentation", CommandOptionType.NoValue);
             
             var optWithChangelogs = Option("--withchangelogs",
