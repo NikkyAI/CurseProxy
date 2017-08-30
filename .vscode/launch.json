@@ -1,13 +1,14 @@
 {
     "version": "0.2.0",
     "configurations": [
+        
         {
             "name": ".NET Core Launch (console)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceRoot}/bin/Debug/netcoreapp1.1/alpacka-meta.dll",
-            "args": [],
+            "args": ["download", "Complete", "-c", "..", "-o", "../out/"],
             "cwd": "${workspaceRoot}",
             "console": "internalConsole",
             "stopAtEntry": false,

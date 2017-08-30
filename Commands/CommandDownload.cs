@@ -136,12 +136,30 @@ namespace Alpacka.Meta
                 ProjectFeed.SaveLocal(complete, filter, downloadUtil.OUTPUT, "complete");
                 
                 Console.WriteLine($"Getting all addon data at once from the API.. please wait...");
-                var addons = await client.v2GetAddOnsAsync(feed.Data.Select(a => a.Id).ToArray());
+                
+                var idArray = feed.Data.Select(a => a.Id).ToArray();
+                var maxSize = 16384;
+                var addonsParts = new List<AddOn>();
+                
+                for (var i = 0; i < (float)idArray.Length / maxSize; i++)
+                {
+                    var splitIdArray = idArray.Skip(i * maxSize).Take(maxSize).ToArray();
+                    
+                    Console.WriteLine($"downloading id #{ i * maxSize } -> #{ (i * maxSize) + splitIdArray.Length } (of {idArray.Length})");
+                    
+                    var addonsBatch = await client.v2GetAddOnsAsync(splitIdArray);
+                    if(addonsBatch.Length != splitIdArray.Length) {
+                        Console.WriteLine($"batch addons count: { addonsBatch.Length } != splitIdArray count: { splitIdArray.Length }");
+                        return -1;
+                    }
+                    addonsParts.AddRange(addonsBatch);
+                }
+                var addons = addonsParts.ToArray();
                 if(addons.Length != feed.Data.Count()) {
-                    Console.WriteLine($"addons count: { addons.Length } != feed.data count: { feed.Data.Count() }");
+                    Console.WriteLine($"total addons count: { addons.Length } != feed.Data count: { feed.Data.Count() }");
                     return -1;
                 }
-                
+                    
                 if(!optDisableMods.HasValue()) {
                     //process mods
                     Console.WriteLine($"Filtering mods, please wait... old count: {addons.Length}");
