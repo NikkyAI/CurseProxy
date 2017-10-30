@@ -46,6 +46,9 @@ namespace cursemeta.Utility
             }
             
             var allProjects = JsonConvert.DeserializeObject<ProjectList>(uncompressedString, settings);
+            //TODO: cache IDs
+            IdCache idCache = IdCache.LazyIdCache.Value;
+            idCache.Add(allProjects.Data);
             
             Directory.CreateDirectory(Path.GetDirectoryName(completeFileTimestamp));
             File.WriteAllText(completeFileTimestamp, allProjects.Timestamp.ToString());
@@ -73,6 +76,9 @@ namespace cursemeta.Utility
             }
             
             var allProjects = JsonConvert.DeserializeObject<ProjectList>(uncompressedString, settings);
+            //TODO: cache IDs
+            IdCache idCache = IdCache.LazyIdCache.Value;
+            idCache.Add(allProjects.Data);
             
             Directory.CreateDirectory(Path.GetDirectoryName(hourlyFileTimestamp));
             File.WriteAllText(hourlyFileTimestamp, allProjects.Timestamp.ToString());

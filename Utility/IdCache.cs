@@ -13,6 +13,8 @@ namespace cursemeta.Utility {
         public static readonly Lazy<IdCache> LazyIdCache = new Lazy<IdCache> (() => new IdCache ());
         private Dictionary<int, HashSet<int>> data = new Dictionary<int, HashSet<int>>();
         private string idFile = Path.Combine(Constants.CachePath, "ids.json");
+        public bool verbose { get; set; }
+        
         public IdCache() {
             if(File.Exists(idFile)) {
                 string text = File.ReadAllText(idFile);
@@ -26,45 +28,46 @@ namespace cursemeta.Utility {
                 Formatting = Formatting.Indented
             };
             
-        private bool save() {
-            File.WriteAllText(idFile, data.ToPrettyJson());
+        private bool Save(bool doSave) {
+            if(doSave)
+                File.WriteAllText(idFile, data.ToPrettyJson());
             return true;
         }
         
-        public void forceSave() {
-            File.WriteAllText(idFile, data.ToPrettyJson());
+        public bool Save() {
+            return Save(true);
         }
         
-        public bool Add (int addonID) {
+        public bool Add (int addonID, bool save = true) {
             if(data.TryAdd(addonID, new HashSet<int>())) {
-                return save();
+                return Save(save);
             }
             return false;
         }
         
-        public bool Add (IEnumerable<int> addonIDs) {
+        public bool Add (IEnumerable<int> addonIDs, bool save = true) {
             bool changed = false;
             foreach(var addonID in addonIDs) {
                 changed |= data.TryAdd(addonID, new HashSet<int>());
             }
             if(changed) {
-                return save();
+                return Save(save);
             }
             return false;
         }
         
-        public bool Add (IEnumerable<AddOn> addons) {
+        public bool Add (IEnumerable<AddOn> addons, bool save = true) {
             return Add(addons.Select(f => f.Id));
         }
 
-        public bool Add (int addonID, int fileID) {
+        public bool Add (int addonID, int fileID, bool save = true) {
             data.TryAdd(addonID, new HashSet<int>());
             // now the key exists
             
             HashSet<int> set;
             if(data.TryGetValue(addonID, out set)) {
                 if(set.Add(fileID)) {
-                   return save();
+                   return Save(save);
                 }
                 return false;
             } else {
@@ -72,11 +75,11 @@ namespace cursemeta.Utility {
             }
         }
         
-        public bool Add (int addonID, IEnumerable<AddOnFile> addonFile) {
+        public bool Add (int addonID, IEnumerable<AddOnFile> addonFile, bool save = true) {
             return Add(addonID, addonFile.Select(f => f.Id));
         }
 
-        public bool Add (int addonID, IEnumerable<int> fileIDs) {
+        public bool Add (int addonID, IEnumerable<int> fileIDs, bool save = true) {
             data.TryAdd(addonID, new HashSet<int>());
             // now the key exists
             
@@ -87,7 +90,7 @@ namespace cursemeta.Utility {
                     changed |= set.Add(fileID);
                 }
                 if(changed) {
-                   return save();
+                   return Save(save);
                 }
                 return false;
             } else {

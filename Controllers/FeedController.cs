@@ -15,7 +15,7 @@ namespace cursemeta.Controllers
     {
         // GET api/feed
         [HttpGet]
-        async public Task<JsonResult> Get()
+        async public Task<IActionResult> Get()
         {
             try {
                 return await GetHourly();
@@ -26,10 +26,10 @@ namespace cursemeta.Controllers
         
         // GET api/feed/hourly
         [HttpGet("hourly")]
-        async public Task<JsonResult> GetHourly()
+        async public Task<IActionResult> GetHourly()
         {
             try {
-                var client = await DownloadUtil.LazyAddonClient.Value;
+                // var client = CacheClient.LazyClient.Value;
                 var hourly = await ProjectFeed.GetHourly();
                 return Json(hourly);//addon.ToFilteredJson(Filter.Default, true);
             } catch(Exception e) {
@@ -39,10 +39,10 @@ namespace cursemeta.Controllers
         
         // GET api/feed/complete
         [HttpGet("complete")]
-        async public Task<JsonResult> GetComplete()
+        async public Task<IActionResult> GetComplete()
         {
             try {
-                var client = await DownloadUtil.LazyAddonClient.Value;
+                // var client = CacheClient.LazyClient.Value;
                 var complete = await ProjectFeed.GetComplete();
                 return Json(complete); //addon.ToFilteredJson(Filter.Default, true);
             } catch(Exception e) {
