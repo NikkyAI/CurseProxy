@@ -7,7 +7,7 @@
         {
             "taskName": "build",
             "args": [
-                "${workspaceRoot}/alpacka.meta.csproj"
+                "${workspaceRoot}/cursemeta.csproj"
             ],
             "isBuildCommand": true,
             "problemMatcher": "$msCompile"

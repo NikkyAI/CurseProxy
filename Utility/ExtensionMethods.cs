@@ -1,9 +1,9 @@
-﻿using System.IO;
+using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using YamlDotNet.Serialization;
 
-namespace Alpacka.Meta
+namespace cursemeta.Utility
 {
     public static class ExtensionMethods
     {
@@ -39,7 +39,7 @@ namespace Alpacka.Meta
                 Converters = { new StringEnumConverter { CamelCaseText = true } }
             };
         
-        public static string ToPrettyJson(this object obj, bool pretty = false) => JsonConvert.SerializeObject(obj, pretty ? settingsPretty : settings);
+        public static string ToPrettyJson(this object obj, bool pretty = true) => JsonConvert.SerializeObject(obj, pretty ? settingsPretty : settings);
         
         private static readonly Serializer serializer = 
             new SerializerBuilder()

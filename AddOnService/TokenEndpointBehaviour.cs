@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Dispatcher;
 using System.ServiceModel.Description;
 using System.Runtime.Serialization;
-using Alpacka.Meta.LoginService;
+using cursemeta.LoginService;
 
-namespace Alpacka.Meta.AddOnService
+namespace cursemeta.AddOnService
 {
     public class TokenEndpointBehavior : IEndpointBehavior, IClientMessageInspector
     {

@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Alpacka.Meta.LoginService
+namespace cursemeta.LoginService
 {
     using System.Runtime.Serialization;
     

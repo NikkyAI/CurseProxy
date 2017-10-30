@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Alpacka.Meta
+namespace cursemeta.Utility
 {
     public static class Constants
     {
@@ -9,12 +9,12 @@ namespace Alpacka.Meta
             Environment.GetEnvironmentVariable("LocalAppData")
                 ?? Environment.GetEnvironmentVariable("XDG_CACHE_HOME")
                 ?? Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".cache")
-            , "alpacka.meta");
+            , "cursemeta");
         
         public static string ConfigPath { get; } = Path.Combine(
             Environment.GetEnvironmentVariable("AppData")
                 ?? Environment.GetEnvironmentVariable("XDG_CONFIG_HOME")
                 ?? Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".config")
-            , "alpacka.meta");
+            , "cursemeta");
     }
 }

@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Alpacka.Meta.AddOnService
+namespace cursemeta.AddOnService
 {
     using System.Runtime.Serialization;
     

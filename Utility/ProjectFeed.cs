@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using ICSharpCode.SharpZipLib.BZip2;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using Alpacka.Meta.AddOnService;
+using cursemeta.AddOnService;
 
-namespace Alpacka.Meta
+namespace cursemeta.Utility
 {
     public class ProjectFeed
     {
@@ -116,9 +116,10 @@ namespace Alpacka.Meta
             return uncompressedString;
         }
         
-        public static void SaveLocalComplete(ProjectList allProjects, string directory, Filter filter, bool compressed = true, bool uncompressed = true)
+        public static void SaveLocalComplete(ProjectList allProjects, string directory, /* Filter filter, */ bool compressed = true, bool uncompressed = true)
         {
-            var json_string = allProjects.ToFilteredJson(filter); //JsonConvert.SerializeObject(allProjects, settings);
+            // var json_string = allProjects.ToFilteredJson(filter); 
+            var json_string = allProjects.ToPrettyJson();
             
             var currentFile = Path.Combine(cache, "current.json");
             var completeFile = Path.Combine(directory, "complete.json");
@@ -141,9 +142,10 @@ namespace Alpacka.Meta
             }
         }
         
-        public static void SaveLocal(ProjectList allProjects, Filter filter, string output, string basename, bool compressed = true, bool uncompressed = true)
+        public static void SaveLocal(ProjectList allProjects, /* Filter filter, */ string output, string basename, bool compressed = true, bool uncompressed = true)
         {
-            var json_string = allProjects.ToFilteredJson(filter);
+            // var json_string = allProjects.ToFilteredJson(filter);
+            var json_string = allProjects.ToPrettyJson();
             // var currentFile = Path.Combine(cache, "current.json");
             var completeFile = Path.Combine(output, $"{basename}.json");
             var compressedFile = Path.Combine(output, $"{basename}.json.bz2");
