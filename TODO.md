@@ -4,7 +4,7 @@ cache addon and file IDs
 
 filter for mods / modpacks / texturepacks etc in feed
 
-?mods=1&&texturepacks=0&worlds=true&modpacks=false
+?mods=1&modpacks=true&texturepacks=0&worlds=false
   {
     "gameID": 432,
     "id": 6,
@@ -45,6 +45,9 @@ depends on: in memeory data cache
   AddOn cache.get(id)
   bool cache.exists()
 
+parse existing data on startup into cache 
+OR execute update on ids
+
 cacheClient: default: cache=true
   allow disabling cache lookup
 
@@ -59,3 +62,59 @@ POST register
   * 30m-1h pull hourly and process
   * 1d-2d pull complete and process
   * concat file/*.json to file/index.json
+
+
+
+
+TODO: reimplement generating these files ?
+  * [complete.json](https://cursemeta.nikky.moe/complete.json)
+  * [complete.json.bz2](https://cursemeta.nikky.moe/complete.json.bz2)
+  * [mods.json](https://cursemeta.nikky.moe/mods.json)
+  * [mods.json.bz2](https://cursemeta.nikky.moe/mods.json.bz2)
+  * [modpacks.json](https://cursemeta.nikky.moe/modpacks.json)
+  * [modpacks.json.bz2](https://cursemeta.nikky.moe/modpacks.json.bz2)
+
+TODO: readd file tree when adding output and downloading
+
+
+### tree
+```
+cursemeta.nikky.moe/
+├── addon/
+│   ├── $addon_id$/
+│   │   ├── description.html
+│   │   ├── files/
+│   │   │   ├── $file_id$.changelog.html
+│   │   │   ├── $file_id$.json
+│   │   │   │   ...
+│   │   │   ├── $file_id$.changelog.html
+│   │   │   ├── $file_id$.json
+│   │   │   └── index.json
+│   │   └── index.json
+│   └── $addon_id$/
+│       ├── description.html
+│       ├── files/
+│       │   ├── $file_id$.changelog.html
+│       │   ├── $file_id$.json
+│       │   │   ...
+│       │   └── index.json
+│       └── index.json
+├── complete.json
+├── complete.json.bz2
+├── mods.json
+├── mods.json.bz2
+├── modpacks.json
+└── modpacks.json.bz2
+```
+
+
+`/api/update/sync`
+
+
+parameters:
+
+- `bool` addons
+- `bool` descriptions
+- `bool` files
+- `bool` changelogs (enabling WILL cripple performance)
+- `bool` gc (testing effects on memory and performance) 

@@ -61,60 +61,19 @@ namespace Cursemeta {
                 var batches = ids.Keys.ToList ().split (batchSize);
                 var timer = new Stopwatch ();
                 timer.Start ();
-                int k = 0; //TODO: group with index as key ?
-                int k_all = batches.Count ();
-                Console.WriteLine ($"parsing {idPath} im {k_all} batches of {batchSize}");
-                foreach (var batch in batches) {
-                    var tasks = Task.WhenAll (batch.Select (
-                        (id) => {
-                            return Task.Run (() => loadAddon (id, ids[id]));
-                        }
-                    ));
-                    Console.WriteLine ($"loading [{++k} / {k_all}]");
-                    tasks.Wait ();
-                    //await Task.Delay(TimeSpan.FromSeconds(0.1)); //testing if this causes problems or not
+                
+                foreach(int addonID in ids.Keys) {
+                    var fileIDs = ids[addonID];
+                    idCache[addonID] = new ConcurrentDictionary<int, byte>();
+                    foreach(var fileID in fileIDs) {
+                        idCache[addonID][fileID] = 1; 
+                    }
                 }
-
-                //TODO: add retrying
 
                 timer.Stop ();
-                Console.WriteLine ($"all targets were processed in '{ timer.Elapsed }'");
+                Console.WriteLine ($"all IDs were processed in '{ timer.Elapsed }'");
             } else {
                 Console.Error.WriteLine($"cannot find file {idPath}");
-            }
-        }
-
-        private void loadAddon (int addonID, IEnumerable<int> files) {
-            // Console.WriteLine ($"parsing {addonID}");
-            var addonPath = GetAddonPath(addonID);
-            var addonIndex = Path.Combine (addonPath, "index.json");
-            var addon = addonIndex.FromJsonFile<AddOn> ();
-            if (addon != null) {
-                // addonsCache[addon.Id] = addon;
-            }
-            idCache[addonID] = new ConcurrentDictionary<int, byte> ();
-            // var addonDescription = Path.Combine (addonPath, "description.html");
-            // var description = addonDescription.FromTextFile ();
-            // if (description != null) {
-            //     addonDescriptionsCache[addonID] = description;
-            // }
-            var fileBasePath = Path.Combine (addonPath, "files");
-            if (Directory.Exists (fileBasePath)) {
-                //addonFilesCache[addonID] = new ConcurrentDictionary<int, AddOnFile> ();
-                //addonFileChangelogsCache[addonID] = new ConcurrentDictionary<int, string> ();
-                foreach (int fileID in files) {
-                    var filePath = Path.Combine (fileBasePath, $"{fileID}.json");
-                    var file = filePath.FromJsonFile<AddOnFile> ();
-                    if (file != null) {
-                        // addonFilesCache[addonID][fileID] = file;
-                        idCache[addonID][fileID] = 1;
-                    }
-                    // var changelogPath = Path.Combine (fileBasePath, $"{fileID}.changelog.html");
-                    // var changelog = changelogPath.FromTextFile ();
-                    // if (changelog != null) {
-                    //     addonFileChangelogsCache[addon.Id][fileID] = changelog;
-                    // }
-                }
             }
         }
 
@@ -337,8 +296,8 @@ namespace Cursemeta {
         }
 
         // get all ids
-        public Dictionary<int, IEnumerable<int>> GetIDs () {
-            var ret = idCache.ToDictionary (a => a.Key, a => a.Value.Select (f => f.Key));
+        public Dictionary<int, ICollection<int>> GetIDs () {
+            var ret = idCache.ToDictionary (a => a.Key, a => a.Value.Keys);
             return ret;
         }
 

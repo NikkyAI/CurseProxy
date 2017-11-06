@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Cursemeta.Configs;
+using Cursemeta.Tasks;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -49,6 +50,7 @@ namespace Cursemeta {
             // serialize config
             var serializer = new SerializerBuilder ()
                 .WithNamingConvention (new CamelCaseNamingConvention ())
+                .EmitDefaults()
                 .Build ();
             Directory.CreateDirectory (Config.CONFIG);
             var text = serializer.Serialize (this);

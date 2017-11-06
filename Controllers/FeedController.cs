@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 
-namespace cursemeta.Controllers {
+namespace Cursemeta.Controllers {
 
     [Route ("api/[controller]")]
     public class FeedController : Controller {

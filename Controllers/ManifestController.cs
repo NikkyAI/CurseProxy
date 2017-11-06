@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
-namespace cursemeta.Controllers {
+namespace Cursemeta.Controllers {
 
     [Route ("api/[controller]")]
     public class ManifestController : Controller {
@@ -21,11 +21,11 @@ namespace cursemeta.Controllers {
             logger = _logger;
         }
 
-        // GET api/update
+        // POST api/manifest
         // http://localhost:5000/api/manifest?p=id&p=downloadurl&p=addon.id&p=addon.name&p=addon.categorysection.name&p=addon.categorysection.packagetype&p=addon.categorysection.path
 
         [HttpPost]
-        async public Task<IActionResult> Post ([FromBody] Manifest manifest) {
+        async public Task<IActionResult> PostManifest ([FromBody] Manifest manifest) {
             try {
                 var client = CacheClient.LazyClient.Value;
 

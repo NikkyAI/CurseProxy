@@ -66,6 +66,7 @@ namespace Cursemeta {
         private static readonly Serializer serializer =
             new SerializerBuilder ()
             .WithNamingConvention (new CamelCaseNamingConvention ())
+            .EmitDefaults()
             .Build ();
 
         private static readonly Deserializer deserializer =

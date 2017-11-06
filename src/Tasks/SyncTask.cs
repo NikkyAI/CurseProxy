@@ -6,21 +6,21 @@ using Cursemeta;
 using Cursemeta.Scheduling;
 
 namespace Cursemeta.Tasks {
-    public class HourlyTask : IScheduledTask {
-        HourlyConfig config = Config.instance.Value.task.hourly;
+    public class SyncTask : IScheduledTask {
+        SyncConfig config = Config.instance.Value.task.sync;
         public string Schedule => config.Schedule;
         private int RunCount = 0;
 
         public async Task ExecuteAsync (CancellationToken cancellationToken) {
             if (RunCount++ == 0 && config.SkipStartup) {
-                Console.WriteLine ($"Task:Hourly skipped on startup");
+                Console.WriteLine ($"Task:Sync skipped on startup");
                 return;
             }
-            Console.WriteLine ($"Task:Hourly {RunCount} started");
+            Console.WriteLine ($"Task:Sync {RunCount} started");
 
-            await ProjectFeed.GetHourly ();
+            await Update.Sync (config.BatchSize, config.Addons, config.Descriptions, config.Files, config.Changelogs);
 
-            Console.WriteLine ($"Task:Hourly {RunCount} finished");
+            Console.WriteLine ($"Task:Sync {RunCount} finished");
         }
     }
 }

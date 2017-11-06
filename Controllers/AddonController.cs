@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
-namespace cursemeta.Controllers {
+namespace Cursemeta.Controllers {
 
     [Route ("api/[controller]")]
     public class AddonController : Controller {
@@ -187,12 +187,34 @@ namespace cursemeta.Controllers {
                 };
             }
         }
+        
+        
+        
+        // GET api/addon/ids
+        // http://localhost:5000/api/addon/ids
 
-        // GET api/update
+        [HttpGet ("ids")]
+        public IActionResult GetIDs () {
+            try {
+                var cache = Cache.LazyCache.Value;
+                
+                var ids = cache.GetIDs();
+                
+                return Json (ids);
+            } catch (Exception e) {
+                return new ContentResult {
+                    ContentType = "text/json",
+                        StatusCode = (int) HttpStatusCode.InternalServerError,
+                        Content = e.ToPrettyJson ()
+                };
+            }
+        }
+        
+        // POST api/addon/files
         // http://localhost:5000/api/addon/files?p=id&p=downloadurl&p=addon.id&p=addon.name&p=addon.categorysection.name&p=addon.categorysection.packagetype&p=addon.categorysection.path
 
         [HttpPost ("files")]
-        async public Task<IActionResult> Post ([FromBody] AddOnFileKey[] keys) {
+        async public Task<IActionResult> PostFiles ([FromBody] AddOnFileKey[] keys) {
             try {
                 var client = CacheClient.LazyClient.Value;
 

@@ -43,6 +43,8 @@ namespace cursemeta {
             Config config = Config.instance.Value;
             if (config.task.test.Enabled)
                 services.AddSingleton<IScheduledTask, TestTask> ();
+            if (config.task.sync.Enabled)
+                services.AddSingleton<IScheduledTask, SyncTask> ();
             if (config.task.complete.Enabled)
                 services.AddSingleton<IScheduledTask, CompleteTask> ();
             if (config.task.hourly.Enabled)

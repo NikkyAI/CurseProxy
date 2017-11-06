@@ -1,25 +1,26 @@
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Cursemeta;
 using Cursemeta.Scheduling;
-using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Cursemeta.Tasks {
     public class CompleteTask : IScheduledTask {
-        Config config = Config.instance.Value;
-        public string Schedule => config.task.complete.Schedule;
+        CompleteConfig config = Config.instance.Value.task.complete;
+        public string Schedule => config.Schedule;
+        private int RunCount = 0;
 
         public async Task ExecuteAsync (CancellationToken cancellationToken) {
-            Console.WriteLine ($"Task:Complete started");
+            if (RunCount++ == 0 && config.SkipStartup) {
+                Console.WriteLine ($"Task:Complete skipped on startup");
+            }
+            Console.WriteLine ($"Task:Complete {RunCount} started");
 
             await ProjectFeed.GetComplete ();
 
-            Console.WriteLine ($"Task:Complete finished");
+            Console.WriteLine ($"Task:Complete {RunCount} finished");
         }
     }
 }
