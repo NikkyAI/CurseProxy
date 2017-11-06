@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace cursemeta.LoginService
+namespace Cursemeta.LoginService
 {
     using System.Runtime.Serialization;
     

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using ICSharpCode.SharpZipLib.BZip2;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using cursemeta.AddOnService;
+using Cursemeta.AddOnService;
 
 namespace Cursemeta
 {

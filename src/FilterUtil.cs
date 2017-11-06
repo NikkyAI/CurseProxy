@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-using cursemeta.AddOnService;
+using Cursemeta.AddOnService;
 
 namespace Cursemeta {
 

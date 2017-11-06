@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using cursemeta.AddOnService;
+using Cursemeta.AddOnService;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Cursemeta.Configs;

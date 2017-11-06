@@ -71,16 +71,15 @@ WARNING: uses reflection code, use at your own risk, has to be enabled in config
 
 [GET `/api/addon/{addonID}/files/{fileID}/changelog`](https://cursemeta.nikky.moe/api/addon/257572/files/2382299/changelog)
 
+[POST `/api/modpack`](https://cursemeta.nikky.moe/api/modpack)
 
-[GET `/api/update/sync`](https://cursemeta.nikky.moe/api/update/sync)
+```sh
+curl -X POST \
+  'https://cursemeta.nikky.moe/api/modpack?p=id&p=downloadurl&p=addon.id&p=addon.name&p=addon.categorysection.name&p=addon.categorysection.packagetype&p=addon.categorysection.path' \
+  -H 'content-type: application/json' \
+  -d @manifest.json
+```
 
-parameters:
-
-- `bool` addons
-- `bool` descriptions
-- `bool` files
-- `bool` changelogs (enabling WILL cripple performance)
-- `bool` gc (testing effects on memory and performance)
 
 
 ## Config

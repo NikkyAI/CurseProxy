@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace cursemeta.AddOnService
+namespace Cursemeta.AddOnService
 {
     using System.Runtime.Serialization;
     

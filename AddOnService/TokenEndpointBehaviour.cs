@@ -4,9 +4,9 @@ using System.ServiceModel.Channels;
 using System.ServiceModel.Dispatcher;
 using System.ServiceModel.Description;
 using System.Runtime.Serialization;
-using cursemeta.LoginService;
+using Cursemeta.LoginService;
 
-namespace cursemeta.AddOnService
+namespace Cursemeta.AddOnService
 {
     public class TokenEndpointBehavior : IEndpointBehavior, IClientMessageInspector
     {

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -122,6 +123,16 @@ namespace Cursemeta {
                 rest.RemoveAt (0);
             }
             return obj;
+        }
+
+        public static dynamic ToDynamic<T> (this T obj) {
+            IDictionary<string, object> expando = new ExpandoObject ();
+
+            foreach (var propertyInfo in typeof (T).GetProperties ()) {
+                var currentValue = propertyInfo.GetValue (obj);
+                expando.Add (propertyInfo.Name, currentValue);
+            }
+            return expando as ExpandoObject;
         }
 
         // return true if the value did not exist before, TODO: compare objects

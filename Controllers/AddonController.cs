@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-using cursemeta.AddOnService;
+using Cursemeta.AddOnService;
 using Cursemeta;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -17,11 +17,11 @@ namespace cursemeta.Controllers {
     public class AddonController : Controller {
         private Config config = Config.instance.Value;
         //private readonly ITodoRepository _todoRepository;
-        private readonly ILogger _logger;
+        private readonly ILogger logger;
 
-        public AddonController ( /* ITodoRepository todoRepository, */ ILogger<AddonController> logger) {
+        public AddonController ( /* ITodoRepository todoRepository, */ ILogger<AddonController> _logger) {
             //_todoRepository = todoRepository;
-            _logger = logger;
+            logger = _logger;
         }
 
         // GET api/Addon
