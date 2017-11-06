@@ -3,9 +3,13 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Cursemeta;
+using Cursemeta.Scheduling;
+using Cursemeta.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -34,10 +38,30 @@ namespace cursemeta {
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver ();
                 options.SerializerSettings.Converters.Add (new StringEnumConverter { CamelCaseText = true });
             });
+
+            // Add scheduled tasks & scheduler
+            Config config = Config.instance.Value;
+            if (config.task.test.Enabled)
+                services.AddSingleton<IScheduledTask, TestTask> ();
+            if (config.task.complete.Enabled)
+                services.AddSingleton<IScheduledTask, CompleteTask> ();
+            if (config.task.hourly.Enabled)
+                services.AddSingleton<IScheduledTask, HourlyTask> ();
+            services.AddScheduler ((sender, args) => {
+                Console.Error.Write (args.Exception.Message);
+                args.SetObserved ();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure (IApplicationBuilder app, IHostingEnvironment env) {
+        public void Configure (IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory) {
+            if (env.IsDevelopment ()) {
+                app.UseDeveloperExceptionPage ();
+            }
+
+            loggerFactory.AddConsole (Configuration.GetSection ("Logging"));
+            loggerFactory.AddDebug ();
+
             if (env.IsDevelopment ()) {
                 app.UseDeveloperExceptionPage ();
             }

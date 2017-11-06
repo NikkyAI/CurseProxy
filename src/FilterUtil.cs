@@ -6,9 +6,8 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using cursemeta.AddOnService;
-using cursemeta.Utility;
 
-namespace cursemeta.Utility {
+namespace Cursemeta {
 
     public static class FilterExtension {
         private static int mods_id = 6;

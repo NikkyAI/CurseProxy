@@ -5,13 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using cursemeta.AddOnService;
 using cursemeta.LoginService;
-using cursemeta.Utility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace cursemeta.Utility {
+namespace Cursemeta {
     public class CacheClient {
         private static readonly Lazy<Task<AddOnServiceClient>> LazyAddonClient = new Lazy<Task<AddOnServiceClient>> (() => Authenticate ());
         public static readonly Lazy<CacheClient> LazyClient = new Lazy<CacheClient> (() => new CacheClient ());

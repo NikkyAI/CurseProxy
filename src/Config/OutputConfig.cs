@@ -4,10 +4,10 @@ using System.Linq;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace cursemeta.Utility.Configs {
+namespace Cursemeta.Configs {
     public class OutputConfig {
-        public static readonly Lazy<OutputConfig> instance = new Lazy<OutputConfig>(() => new OutputConfig());
-        
+        public static readonly Lazy<OutputConfig> instance = new Lazy<OutputConfig> (() => new OutputConfig ());
+
         [YamlIgnore]
         private readonly Lazy<string> LazyJsonPath;
         [YamlIgnore]
@@ -24,7 +24,7 @@ namespace cursemeta.Utility.Configs {
                 return LazyFilesPath.Value;
             }
         }
-        
+
         public string OutputBase { get; set; } = null;
         [YamlIgnore]
         private readonly Lazy<string> LazyBasePath;
@@ -36,8 +36,7 @@ namespace cursemeta.Utility.Configs {
         }
         public string Files { get; private set; } = "files";
         public string Json { get; private set; } = "json";
-        
-        
+
         public OutputConfig () {
             LazyBasePath = new Lazy<string> (() => {
                 return OutputBase ?? Path.Combine (Constants.CachePath, "output");

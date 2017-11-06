@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using cursemeta.AddOnService;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using cursemeta.Utility.Configs;
+using Cursemeta.Configs;
 
-namespace cursemeta.Utility {
+namespace Cursemeta {
 
     public class Cache {
         public static readonly Lazy<Cache> LazyCache = new Lazy<Cache> (() => new Cache ());

@@ -4,7 +4,7 @@ using System.Linq;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace cursemeta.Utility.Configs {
+namespace Cursemeta.Configs {
     public class CacheConfig {
         public static readonly Lazy<CacheConfig> instance = new Lazy<CacheConfig> (() => new CacheConfig ());
 

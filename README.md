@@ -18,18 +18,22 @@ This tool does not interact with the curse website at all so any changes in html
 
 ## Setup
 
-for running the tool you need the [dotnet core](https://www.microsoft.com/net/core#linuxdebian) runtime (packagename: `dotnet-sdk-2.0`)
+for running the tool you need the [dotnet core](https://www.microsoft.com/net/core#linuxdebian) runtime (packagename: `dotnet-runtime-2.0`)
 
-and if you want to build and compile on the same server you will also require the dotnet sdk (packagename: `dotnet-sdk`)
+and if you want to build and compile on the same server you will also require the dotnet sdk (packagename: `dotnet-sdk-2.0`)
 
-```
-git clone git@github.com:NikkyAI/cursemeta.git
-cd cursemeta
+compile
+
+```sh
 dotnet restore
 dotnet build
-dotnet publish -c release
-dotnet run -c Release
+dotnet publish -c Release # copies dll into release folder
+
+dotnet bin/Release/netcoreapp2.0/cursemeta.dll # run
+
+dotnet run -c Release  # compile and run
 ```
+
 
 ## api enpoints
 
@@ -81,21 +85,10 @@ parameters:
 - `bool` changelogs (enabling WILL cripple performance)
 - `bool` gc (testing effects on memory and performance)
 
-## startup
-
-WIP
-
-at first start no ids are known to cursemeta, you need to load `/api/feed/complete` once and any other hidden addons and files you may want to expose
-
-## cron jobs
-
-WIP
-
-currently no jobs are run regulary, so executing `api/feed/hourly` regularly and preferably in less than 1h intervals is recommended
-also regularly getting all public ids from `/api/feed/complete`
-
 
 ## Config
+
+example config
 
 ```yaml
 cache:
@@ -107,16 +100,24 @@ cache:
     # hidden default =
     #   win: %LocalAppdata%\cursemeta
     #  !win: $XDG_CACHE_HOME or $HOME/.cache/cursemeta
-output:
-  files: files
-  
-  json: json
-  
-  base: /home/user/.cache/cursemeta/output
-  
+task:
+  hourly:
+    schedule: '*/30 * * * *' # see crontab
+    enabled: true
+  complete:
+    schedule: '* */12 * * *' # see crontab
+    enabled: true
+  test:
+    schedule: '*/1 * * * *' # see crontab
+    enabled: false
+
 reformat: true # default: true
-  # serializes the config again
-  # will remove invalid properties and add defaults for nonexisting properties
+  # re-serializes the config again
   # warning: also removes comments
 
 ```
+
+## crontab
+
+see [crontab guru](https://crontab.guru/#*/30_*_*_*_*) for reference
+schedule string is required to be exactly 5 fields

@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace cursemeta.Utility
+namespace Cursemeta
 {
     public static class Constants
     {

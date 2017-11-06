@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using cursemeta.Utility.Configs;
+using Cursemeta.Configs;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace cursemeta.Utility {
+namespace Cursemeta {
 
     public class Config {
         public static Lazy<Config> instance { get; private set; } = new Lazy<Config> (() => Load ());
@@ -15,12 +15,14 @@ namespace cursemeta.Utility {
 
         public CacheConfig cache { get; private set; }
         public OutputConfig output { get; private set; }
+        public TaskConfig task { get; private set; }
         public bool reformat { get; private set; } = true;
         public bool reflection { get; private set; } = false;
         
         public Config () {
             cache = CacheConfig.instance.Value;
             output = OutputConfig.instance.Value;
+            task = TaskConfig.instance.Value;
         }
 
         static private Config Load () {

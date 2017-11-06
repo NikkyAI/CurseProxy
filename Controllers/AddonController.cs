@@ -6,7 +6,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using cursemeta.AddOnService;
-using cursemeta.Utility;
+using Cursemeta;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -26,7 +26,8 @@ namespace cursemeta.Controllers {
 
         // GET api/Addon
         // http://localhost:5000/api/addon
-        // http://localhost:5000/api/addon?worlds=1&property=categorie.names&property=categories.name&property=CategorySection.id
+        // http://localhost:5000/api/addon?worlds=1&property=name&property=categories.name&property=CategorySection.id
+        // http://localhost:5000/api/addon?modpacks=1&property=name&propertiy=id&property=categories.name
         [HttpGet]
         async public Task<IActionResult> Get () {
             try {
@@ -77,7 +78,7 @@ namespace cursemeta.Controllers {
                         // reflection is disabled
                         var e = new {
                             error = $"unsuported request parameters",
-                            invalid_parameters = Request.Query["property"].Select(s => $"property={s}"),
+                            invalid_parameters = Request.Query["property"].Select (s => $"property={s}"),
                             solution = "enable reflection in the configuration"
                         };
                         return new ContentResult {
@@ -103,7 +104,7 @@ namespace cursemeta.Controllers {
         [HttpGet ("{addonID}")]
         async public Task<IActionResult> GetAddOn (int addonID) {
             try {
-                Console.WriteLine($"addon {addonID}");
+                Console.WriteLine ($"addon {addonID}");
                 var client = CacheClient.LazyClient.Value;
                 var addon = await client.GetAddOnAsync (addonID);
                 //if (addon == null) return NotFound ();

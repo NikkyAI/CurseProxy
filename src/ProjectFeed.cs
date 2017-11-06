@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using cursemeta.AddOnService;
 
-namespace cursemeta.Utility
+namespace Cursemeta
 {
     public class ProjectFeed
     {

@@ -12,7 +12,7 @@ using Newtonsoft.Json.Converters;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace cursemeta.Utility {
+namespace Cursemeta {
     public static class ExtensionMethods {
         public static void ClearReadOnly (this DirectoryInfo parentDirectory) {
             if (parentDirectory != null) {
