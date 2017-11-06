@@ -38,18 +38,15 @@ dotnet run -c Release  # compile and run
 ## api enpoints
 
 Example URLs using Wearable Backpacks for the project and file ids
-the example host is `http://localhost:5000`
+the example host is `https://cursemeta.nikky.moe`
 
-https://www.curseforge.com/projects/257572/
+[GET `/api/feed`](https://cursemeta.nikky.moe/api/feed)
 
-[GET `/api/feed`](http://localhost:5000/api/feed)
+[GET `/api/feed/hourly`](https://cursemeta.nikky.moe/api/feed/hourly)
 
-[GET `/api/feed/hourly`](http://localhost:5000/api/feed/hourly)
+[GET `/api/feed/complete`](https://cursemeta.nikky.moe/api/feed/complete)
 
-[GET `/api/feed/complete`](http://localhost:5000/api/feed/complete)
-
-
-[GET `/api/addon`](http://localhost:5000/api/addon?mods=1&modpacks=true&texturepacks=0&worlds=false) WIP
+[GET `/api/addon`](https://cursemeta.nikky.moe/api/addon?mods=1&modpacks=true&texturepacks=0&worlds=false) WIP
 
 omitting all filters will default them to `true`
 
@@ -64,18 +61,18 @@ WARNING: uses reflection code, use at your own risk, has to be enabled in config
 
 - `string` property
 
-[GET `/api/addon/{addonID}`](http://localhost:5000/api/addon/257572)
+[GET `/api/addon/{addonID}`](https://cursemeta.nikky.moe/api/addon/257572)
 
-[GET `/api/addon/{addonID}/description`](http://localhost:5000/api/addon/257572/desription)
+[GET `/api/addon/{addonID}/description`](https://cursemeta.nikky.moe/api/addon/257572/desription)
 
-[GET `/api/addon/{addonID}/files`](http://localhost:5000/api/addon/257572/files)
+[GET `/api/addon/{addonID}/files`](https://cursemeta.nikky.moe/api/addon/257572/files)
 
-[GET `/api/addon/{addonID}/files/{fileID}`](http://localhost:5000/api/addon/257572/files/2382299)
+[GET `/api/addon/{addonID}/files/{fileID}`](https://cursemeta.nikky.moe/api/addon/257572/files/2382299)
 
-[GET `/api/addon/{addonID}/files/{fileID}/changelog`](http://localhost:5000/api/addon/257572/files/2382299/changelog)
+[GET `/api/addon/{addonID}/files/{fileID}/changelog`](https://cursemeta.nikky.moe/api/addon/257572/files/2382299/changelog)
 
 
-[GET `/api/update/sync`](http://localhost:5000/api/update/sync)
+[GET `/api/update/sync`](https://cursemeta.nikky.moe/api/update/sync)
 
 parameters:
 
