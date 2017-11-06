@@ -25,6 +25,7 @@ namespace cursemeta.Controllers
         }
         
         // GET api/feed/hourly
+        // http://localhost:5000/api/feed/hourly
         [HttpGet("hourly")]
         async public Task<IActionResult> GetHourly()
         {

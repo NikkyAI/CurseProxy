@@ -44,7 +44,21 @@ https://www.curseforge.com/projects/257572/
 
 [GET `/api/feed/complete`](http://localhost:5000/api/feed/complete)
 
-[GET `/api/addon/`](http://localhost:5000/api/addon) WIP
+
+[GET `/api/addon`](http://localhost:5000/api/addon?mods=1&modpacks=true&texturepacks=0&worlds=false) WIP
+
+omitting all filters will default them to `true`
+
+- `bool` mods
+- `bool` texturepacks
+- `bool` worlds
+- `bool` modpacks
+
+property retriever may be in in the format `object.property.value`
+may be used more than once
+WARNING: uses reflection code, use at your own risk, has to be enabled in config
+
+- `string` property
 
 [GET `/api/addon/{addonID}`](http://localhost:5000/api/addon/257572)
 
@@ -56,40 +70,53 @@ https://www.curseforge.com/projects/257572/
 
 [GET `/api/addon/{addonID}/files/{fileID}/changelog`](http://localhost:5000/api/addon/257572/files/2382299/changelog)
 
-  * [complete.json](https://cursemeta.nikky.moe/complete.json)
-  * [complete.json.bz2](https://cursemeta.nikky.moe/complete.json.bz2)
-  * [mods.json](https://cursemeta.nikky.moe/mods.json)
-  * [mods.json.bz2](https://cursemeta.nikky.moe/mods.json.bz2)
-  * [modpacks.json](https://cursemeta.nikky.moe/modpacks.json)
-  * [modpacks.json.bz2](https://cursemeta.nikky.moe/modpacks.json.bz2)
+
+[GET `/api/update/sync`](http://localhost:5000/api/update/sync)
+
+parameters:
+
+- `bool` addons
+- `bool` descriptions
+- `bool` files
+- `bool` changelogs (enabling WILL cripple performance)
+- `bool` gc (testing effects on memory and performance)
+
+## startup
+
+WIP
+
+at first start no ids are known to cursemeta, you need to load `/api/feed/complete` once and any other hidden addons and files you may want to expose
+
+## cron jobs
+
+WIP
+
+currently no jobs are run regulary, so executing `api/feed/hourly` regularly and preferably in less than 1h intervals is recommended
+also regularly getting all public ids from `/api/feed/complete`
 
 
-### tree
-```
-cursemeta.nikky.moe/
-├── addon/
-│   ├── $addon_id$/
-│   │   ├── description.html
-│   │   ├── files/
-│   │   │   ├── $file_id$.changelog.html
-│   │   │   ├── $file_id$.json
-│   │   │   │   ...
-│   │   │   ├── $file_id$.changelog.html
-│   │   │   ├── $file_id$.json
-│   │   │   └── index.json
-│   │   └── index.json
-│   └── $addon_id$/
-│       ├── description.html
-│       ├── files/
-│       │   ├── $file_id$.changelog.html
-│       │   ├── $file_id$.json
-│       │   │   ...
-│       │   └── index.json
-│       └── index.json
-├── complete.json
-├── complete.json.bz2
-├── mods.json
-├── mods.json.bz2
-├── modpacks.json
-└── modpacks.json.bz2
+## Config
+
+```yaml
+cache:
+  addons: addons
+    # relative or absolute path
+    # default = addons
+  base: /home/user/.cache/cursemeta
+    # is only used when `addonsCache` is relative
+    # hidden default =
+    #   win: %LocalAppdata%\cursemeta
+    #  !win: $XDG_CACHE_HOME or $HOME/.cache/cursemeta
+output:
+  files: files
+  
+  json: json
+  
+  base: /home/user/.cache/cursemeta/output
+  
+reformat: true # default: true
+  # serializes the config again
+  # will remove invalid properties and add defaults for nonexisting properties
+  # warning: also removes comments
+
 ```

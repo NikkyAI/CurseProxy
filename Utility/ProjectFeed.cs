@@ -24,13 +24,13 @@ namespace cursemeta.Utility
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
             // NullValueHandling = NullValueHandling.Ignore,
         };
-        private static readonly string cache = Path.Combine(Constants.CachePath, "curse");
+        private static readonly string cachePath = Path.Combine(Constants.CachePath, "feed");
         private static HttpClient client = new HttpClient();
         
         public static async Task<ProjectList> GetComplete()
         {
-            var completeFile = Path.Combine(cache, "complete.json");
-            var completeFileTimestamp = Path.Combine(cache, "complete.txt");
+            var completeFile = Path.Combine(cachePath, "complete.json");
+            var completeFileTimestamp = Path.Combine(cachePath, "complete.txt");
             // read timestamp
             var timestamp = await client.GetStringAsync(COMPLETE_URL_TIMESTAMP);
             String uncompressedString = null;
@@ -47,7 +47,7 @@ namespace cursemeta.Utility
             
             var allProjects = JsonConvert.DeserializeObject<ProjectList>(uncompressedString, settings);
             //TODO: cache IDs
-            IdCache idCache = IdCache.LazyIdCache.Value;
+            Cache idCache = Cache.LazyCache.Value;
             idCache.Add(allProjects.Data);
             
             Directory.CreateDirectory(Path.GetDirectoryName(completeFileTimestamp));
@@ -59,8 +59,8 @@ namespace cursemeta.Utility
         
         public static async Task<ProjectList> GetHourly()
         {
-            var hourlyFile = Path.Combine(cache, "hourly.json");
-            var hourlyFileTimestamp = Path.Combine(cache, "hourly.txt");
+            var hourlyFile = Path.Combine(cachePath, "hourly.json");
+            var hourlyFileTimestamp = Path.Combine(cachePath, "hourly.txt");
             // read timestamp
             var timestamp = await client.GetStringAsync(HOURLY_URL_TIMESTAMP);
             String uncompressedString = null;
@@ -77,8 +77,8 @@ namespace cursemeta.Utility
             
             var allProjects = JsonConvert.DeserializeObject<ProjectList>(uncompressedString, settings);
             //TODO: cache IDs
-            IdCache idCache = IdCache.LazyIdCache.Value;
-            idCache.Add(allProjects.Data);
+            Cache cache = Cache.LazyCache.Value;
+            cache.Add(allProjects.Data);
             
             Directory.CreateDirectory(Path.GetDirectoryName(hourlyFileTimestamp));
             File.WriteAllText(hourlyFileTimestamp, allProjects.Timestamp.ToString());
@@ -127,7 +127,7 @@ namespace cursemeta.Utility
             // var json_string = allProjects.ToFilteredJson(filter); 
             var json_string = allProjects.ToPrettyJson();
             
-            var currentFile = Path.Combine(cache, "current.json");
+            var currentFile = Path.Combine(cachePath, "current.json");
             var completeFile = Path.Combine(directory, "complete.json");
             var compressedFile = Path.Combine(directory, "complete.json.bz2");
             

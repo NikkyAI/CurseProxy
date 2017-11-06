@@ -2,3 +2,5 @@ obj/
 bin/
 out/
 .vs/
+
+Controllers/UpdateController\.cs

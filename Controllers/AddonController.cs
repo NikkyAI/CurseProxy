@@ -3,16 +3,19 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
 using cursemeta.AddOnService;
 using cursemeta.Utility;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace cursemeta.Controllers {
 
     [Route ("api/[controller]")]
     public class AddonController : Controller {
+        private Config config = Config.instance.Value;
         //private readonly ITodoRepository _todoRepository;
         private readonly ILogger _logger;
 
@@ -23,43 +26,69 @@ namespace cursemeta.Controllers {
 
         // GET api/Addon
         // http://localhost:5000/api/addon
+        // http://localhost:5000/api/addon?worlds=1&property=categorie.names&property=categories.name&property=CategorySection.id
         [HttpGet]
-        async public Task<IActionResult> Get()
-        {
+        async public Task<IActionResult> Get () {
             try {
-                var idCache = IdCache.LazyIdCache.Value;
-                var ids = idCache.Get();
-                var keys = ids.Keys.ToArray();
-                var client = await DownloadUtil.LazyAddonClient.Value;
-                // var addons = await client.v2GetAddOnsAsync(keys);
-                
-                return Json(keys);
-            } catch (Exception e) {
-                return new ContentResult {
-                ContentType = "text/json",
-                    StatusCode = (int) HttpStatusCode.InternalServerError,
-                    Content = e.ToPrettyJson ()
-                };
-            }
-        }
-        
-        // Test
-        [HttpGet ("about")]
-        async public Task<IActionResult> GetAbout () {
-            try {
-                // Console.WriteLine(this.Request.Method);
-                // Console.WriteLine(this.Request.Protocol);
-                // Console.WriteLine(this.Request.IsHttps);
-                // Console.WriteLine(this.Request.PathBase);
-                string url = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.Path}";
-                // get all known addon ids
-                string html = "";
-                await Task.Run(() => Console.WriteLine("satisfy the async warning"));
-                return new ContentResult {
-                    ContentType = "text/html",
-                    StatusCode = (int) HttpStatusCode.OK,
-                    Content = html
-                };
+                var cache = Cache.LazyCache.Value;
+                var ids = cache.GetIDs ();
+                var keys = ids.Keys.ToArray ();
+                await Task.Run (() => { });
+                var client = CacheClient.LazyClient.Value;
+                IEnumerable<AddOn> addons = await client.v2GetAddOnsAsync (keys);
+
+                bool mods = Request.Query.GetBool ("mods").ElementAtOr (0, false);
+                bool texturePacks = Request.Query.GetBool ("texturepacks").ElementAtOr (0, false);
+                bool worlds = Request.Query.GetBool ("worlds").ElementAtOr (0, false);
+                bool modpacks = Request.Query.GetBool ("modpacks").ElementAtOr (0, false);
+                if (new string[] { "mods", "texturepacks", "worlds", "modpacks" }.Any (s => Request.Query.Keys.Contains (s)))
+                    addons = addons.filter (mods, texturePacks, worlds, modpacks);
+
+                var categoryIDs = new List<int> ();
+                var categoryNames = new List<string> ();
+                StringValues categoryValues;
+                if (Request.Query.TryGetValue ("category", out categoryValues)) {
+
+                    foreach (String category in categoryValues) {
+                        int categoryID;
+                        if (int.TryParse (category, out categoryID)) {
+                            categoryIDs.Add (categoryID);
+                        } else {
+                            categoryNames.Add (category);
+                        }
+                    }
+                    addons = addons.Where (a => categoryIDs.Contains (a.CategorySection.ID) || categoryNames.Contains (a.CategorySection.Name));
+                }
+
+                // WARNING: UNSAFE REFLECTION CODE
+                var properties = Request.Query.GetString ("property");
+                if (properties.Length > 0) {
+                    if (config.reflection) {
+                        var result = addons.Select (a => {
+                            var x = new Dictionary<string, Object> ();
+                            foreach (String property in properties) {
+                                object value = a.GetPropValue (property);
+                                x.Add (property, value);
+                            }
+                            return x;
+                        });
+                        return Json (result);
+                    } else {
+                        // reflection is disabled
+                        var e = new {
+                            error = $"unsuported request parameters",
+                            invalid_parameters = Request.Query["property"].Select(s => $"property={s}"),
+                            solution = "enable reflection in the configuration"
+                        };
+                        return new ContentResult {
+                            ContentType = "text/json",
+                                StatusCode = (int) HttpStatusCode.BadRequest,
+                                Content = e.ToPrettyJson ()
+                        };
+                    }
+                }
+
+                return Json (addons);
             } catch (Exception e) {
                 return new ContentResult {
                     ContentType = "text/json",
@@ -69,16 +98,15 @@ namespace cursemeta.Controllers {
             }
         }
 
-        
-
         // GET api/Addon/228756
         // http://localhost:5000/api/addon/228756
         [HttpGet ("{addonID}")]
         async public Task<IActionResult> GetAddOn (int addonID) {
             try {
+                Console.WriteLine($"addon {addonID}");
                 var client = CacheClient.LazyClient.Value;
                 var addon = await client.GetAddOnAsync (addonID);
-                if (addon == null) return NotFound ();
+                //if (addon == null) return NotFound ();
                 return Json (addon);
             } catch (Exception e) {
                 return new ContentResult {
