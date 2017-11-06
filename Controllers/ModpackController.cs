@@ -30,16 +30,12 @@ namespace cursemeta.Controllers {
             try {
                 var client = CacheClient.LazyClient.Value;
 
-                await Task.Run (() => { });
-
-                var addonIDs = manifest.Files.Select (file => file.ProjectID).Distinct ().ToArray ();
                 var keys = manifest.Files.Select (file => new AddOnFileKey () { AddOnID = file.ProjectID, FileID = file.FileID }).ToArray ();
-
-                var addonsDict = (await client.v2GetAddOnsAsync (addonIDs)).ToDictionary (a => a.Id, a => a);
                 var files = await client.GetAddOnFilesAsync (keys);
+                var addons = (await client.v2GetAddOnsAsync (files.Keys.ToArray())).ToDictionary (a => a.Id, a => a);
                 
-                var test = files.SelectMany (x => x.Value.Select (y => {
-                    var bundle = new AddonFileBundle(y, addonsDict[x.Key]);
+                var merged = files.SelectMany (x => x.Value.Select (y => {
+                    var bundle = new AddonFileBundle(y, addons[x.Key]);
                     return bundle;
                 }));
 
@@ -51,7 +47,7 @@ namespace cursemeta.Controllers {
                 p2.CopyTo(properties, p1.Length);
                 
                 if (properties.Length > 0) {
-                    var result = test.Select (a => {
+                    var result = merged.Select (a => {
                         var x = new Dictionary<string, Object> ();
                         foreach (String property in properties) {
                             object value = a.GetPropValue (property);
@@ -61,7 +57,7 @@ namespace cursemeta.Controllers {
                     });
                     return Json (result);
                 }
-                return Json (test);
+                return Json (merged);
             } catch (Exception e) {
                 return new ContentResult {
                     ContentType = "text/json",
