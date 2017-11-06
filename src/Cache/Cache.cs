@@ -80,7 +80,7 @@ namespace Cursemeta {
                 timer.Stop ();
                 Console.WriteLine ($"all targets were processed in '{ timer.Elapsed }'");
             } else {
-                Console.Error.WriteLine($"connto find file {idPath}");
+                Console.Error.WriteLine($"cannot find file {idPath}");
             }
         }
 
