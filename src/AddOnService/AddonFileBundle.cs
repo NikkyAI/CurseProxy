@@ -1,7 +1,6 @@
-using Cursemeta.AddOnService;
 using System.Reflection;
 
-namespace Cursemeta.Modpacks {
+namespace Cursemeta.AddOnService {
     public class AddonFileBundle : AddOnFile {
         public AddOn Addon { get; private set; }
         public AddonFileBundle(AddOnFile file, AddOn addon)  {

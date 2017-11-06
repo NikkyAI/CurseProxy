@@ -5,8 +5,8 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-using Cursemeta.AddOnService;
 using Cursemeta;
+using Cursemeta.AddOnService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -19,8 +19,7 @@ namespace cursemeta.Controllers {
         //private readonly ITodoRepository _todoRepository;
         private readonly ILogger logger;
 
-        public AddonController ( /* ITodoRepository todoRepository, */ ILogger<AddonController> _logger) {
-            //_todoRepository = todoRepository;
+        public AddonController (ILogger<AddonController> _logger) {
             logger = _logger;
         }
 
@@ -104,7 +103,7 @@ namespace cursemeta.Controllers {
         [HttpGet ("{addonID}")]
         async public Task<IActionResult> GetAddOn (int addonID) {
             try {
-                Console.WriteLine ($"addon {addonID}");
+                logger.LogInformation ($"GetAddon {addonID}");
                 var client = CacheClient.LazyClient.Value;
                 var addon = await client.GetAddOnAsync (addonID);
                 //if (addon == null) return NotFound ();
@@ -189,16 +188,48 @@ namespace cursemeta.Controllers {
             }
         }
 
-        // // GET api/Addon/5
-        // [HttpGet("{addonID}/{fileID}")]
-        // async public Task<JsonResult> GetAddOnFileShort(int addonID, int fileID)
-        // {
-        //     try {
-        //         return await GetAddOnFile(addonID, fileID);
-        //     } catch(Exception e) {
-        //         return Json(e);
-        //     }
-        // }
+        // GET api/update
+        // http://localhost:5000/api/addon/files?p=id&p=downloadurl&p=addon.id&p=addon.name&p=addon.categorysection.name&p=addon.categorysection.packagetype&p=addon.categorysection.path
+
+        [HttpPost ("files")]
+        async public Task<IActionResult> Post ([FromBody] AddOnFileKey[] keys) {
+            try {
+                var client = CacheClient.LazyClient.Value;
+
+                var files = await client.GetAddOnFilesAsync (keys);
+                var addons = (await client.v2GetAddOnsAsync (files.Keys.ToArray ())).ToDictionary (a => a.Id, a => a);
+
+                var merged = files.SelectMany (x => x.Value.Select (y => {
+                    var bundle = new AddonFileBundle (y, addons[x.Key]);
+                    return bundle;
+                }));
+
+                var p1 = Request.Query.GetString ("property");
+                var p2 = Request.Query.GetString ("p");
+                var properties = new String[p1.Length + p2.Length];
+                p1.CopyTo (properties, 0);
+                p2.CopyTo (properties, p1.Length);
+
+                if (properties.Length > 0) {
+                    var result = merged.Select (a => {
+                        var x = new Dictionary<string, Object> ();
+                        foreach (String property in properties) {
+                            object value = a.GetPropValue (property);
+                            x.Add (property, value);
+                        }
+                        return x;
+                    });
+                    return Json (result);
+                }
+                return Json (merged);
+            } catch (Exception e) {
+                return new ContentResult {
+                    ContentType = "text/json",
+                        StatusCode = (int) HttpStatusCode.InternalServerError,
+                        Content = e.ToPrettyJson ()
+                };
+            }
+        }
 
     }
 }

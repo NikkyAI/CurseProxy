@@ -1,4 +1,4 @@
-namespace Cursemeta.Modpacks {
+namespace Cursemeta.AddOnService {
     
     public class Manifest {
         

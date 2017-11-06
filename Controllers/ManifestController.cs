@@ -6,7 +6,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Cursemeta;
 using Cursemeta.AddOnService;
-using Cursemeta.Modpacks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -14,16 +13,16 @@ using Microsoft.Extensions.Primitives;
 namespace cursemeta.Controllers {
 
     [Route ("api/[controller]")]
-    public class ModpackController : Controller {
+    public class ManifestController : Controller {
         private Config config = Config.instance.Value;
         private readonly ILogger logger;
 
-        public ModpackController (ILogger<ModpackController> _logger) {
+        public ManifestController (ILogger<ManifestController> _logger) {
             logger = _logger;
         }
 
         // GET api/update
-        // http://localhost:5000/api/modpack
+        // http://localhost:5000/api/manifest?p=id&p=downloadurl&p=addon.id&p=addon.name&p=addon.categorysection.name&p=addon.categorysection.packagetype&p=addon.categorysection.path
 
         [HttpPost]
         async public Task<IActionResult> Post ([FromBody] Manifest manifest) {
@@ -39,7 +38,6 @@ namespace cursemeta.Controllers {
                     return bundle;
                 }));
 
-                // WARNING: UNSAFE REFLECTION CODE
                 var p1 = Request.Query.GetString ("property");
                 var p2 = Request.Query.GetString ("p");
                 var properties = new String[p1.Length+p2.Length];

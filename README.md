@@ -71,11 +71,33 @@ WARNING: uses reflection code, use at your own risk, has to be enabled in config
 
 [GET `/api/addon/{addonID}/files/{fileID}/changelog`](https://cursemeta.nikky.moe/api/addon/257572/files/2382299/changelog)
 
-[POST `/api/modpack`](https://cursemeta.nikky.moe/api/modpack)
+[POST `/api/modpack`](https://cursemeta.nikky.moe/api/addon/files)
 
 ```sh
 curl -X POST \
-  'https://cursemeta.nikky.moe/api/modpack?p=id&p=downloadurl&p=addon.id&p=addon.name&p=addon.categorysection.name&p=addon.categorysection.packagetype&p=addon.categorysection.path' \
+  'https://cursemeta.nikky.moe/api/addon/files?p=id&p=downloadurl&p=addon.id&p=addon.name&p=addon.categorysection.name&p=addon.categorysection.packagetype&p=addon.categorysection.path' \
+  -H 'content-type: application/json' \
+  -d @ids.json
+
+# ids.json
+[
+  {  
+    "addonID":229316,
+    "fileID":2233250
+  },
+  {  
+    "addonID":223794,
+    "fileID":2245762
+  }
+]
+```
+
+
+[POST `/api/modpack`](https://cursemeta.nikky.moe/api/manifest)
+
+```sh
+curl -X POST \
+  'https://cursemeta.nikky.moe/api/manifest?p=id&p=downloadurl&p=addon.id&p=addon.name&p=addon.categorysection.name&p=addon.categorysection.packagetype&p=addon.categorysection.path' \
   -H 'content-type: application/json' \
   -d @manifest.json
 ```
