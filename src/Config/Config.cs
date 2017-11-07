@@ -17,6 +17,7 @@ namespace Cursemeta {
         public CacheConfig cache { get; private set; }
         public OutputConfig output { get; private set; }
         public TaskConfig task { get; private set; }
+        public AuthConfig auth { get; private set; }
         public bool reformat { get; private set; } = true;
         public bool reflection { get; private set; } = false;
         
@@ -24,6 +25,8 @@ namespace Cursemeta {
             cache = CacheConfig.instance.Value;
             output = OutputConfig.instance.Value;
             task = TaskConfig.instance.Value;
+            auth = AuthConfig.instance.Value;
+            var r = new Random();
         }
 
         static private Config Load () {

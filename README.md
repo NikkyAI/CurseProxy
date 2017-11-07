@@ -92,6 +92,8 @@ curl -X POST \
 ]
 ```
 
+[GET `/api/modpack`](https://cursemeta.nikky.moe/api/addon/ids)
+
 
 [POST `/api/modpack`](https://cursemeta.nikky.moe/api/manifest)
 
@@ -102,7 +104,14 @@ curl -X POST \
   -d @manifest.json
 ```
 
+[GET `/api/modpack`](https://cursemeta.nikky.moe/api/update/sync)
 
+parameters:
+
+- `bool` addons
+- `bool` descriptions
+- `bool` files
+- `bool` changelogs (enabling WILL cripple performance)
 
 ## Config
 

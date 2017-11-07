@@ -67,7 +67,12 @@ namespace cursemeta {
             if (env.IsDevelopment ()) {
                 app.UseDeveloperExceptionPage ();
             }
-
+            
+            app.UseWhen(x => (x.Request.Path.StartsWithSegments("/api/update", StringComparison.OrdinalIgnoreCase)), 
+            builder =>
+            {
+                builder.UseMiddleware<BasicAuthenticationMiddleWare>();
+            });
             app.UseMvc ();
         }
     }

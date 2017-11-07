@@ -13,7 +13,7 @@ namespace Cursemeta.Tasks {
         private int RunCount = 0;
 
         public async Task ExecuteAsync (CancellationToken cancellationToken) {
-            if (RunCount++ == 0 && config.SkipStartup) {
+            if (RunCount++ == 0 && !config.OnStartup) {
                 Console.WriteLine ($"Task:Complete skipped on startup");
             }
             Console.WriteLine ($"Task:Complete {RunCount} started");

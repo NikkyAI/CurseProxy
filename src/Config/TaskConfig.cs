@@ -18,19 +18,19 @@ namespace Cursemeta.Tasks {
     public class HourlyConfig {
         public string Schedule { get; private set; } = "*/30 * * * *";
         public bool Enabled { get; private set; } = true;
-        public bool SkipStartup { get; private set; } = true;
+        public bool OnStartup { get; private set; } = false;
     }
     
     public class CompleteConfig {
         public string Schedule { get; private set; } = "* */12 * * *";
         public bool Enabled { get; private set; } = true;
-        public bool SkipStartup { get; private set; } = true;
+        public bool OnStartup { get; private set; } = false;
     }
     
     public class SyncConfig {
         public string Schedule { get; private set; } = "* */24 * * *";
         public bool Enabled { get; private set; } = true;
-        public bool SkipStartup { get; private set; } = true;
+        public bool OnStartup { get; private set; } = false;
         public int BatchSize { get; private set; } = 500;
         public bool Addons { get; private set; } = true;
         public bool Descriptions { get; private set; } = false;

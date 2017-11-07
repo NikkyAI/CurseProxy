@@ -12,14 +12,14 @@ namespace Cursemeta.Tasks {
         private int RunCount = 0;
 
         public async Task ExecuteAsync (CancellationToken cancellationToken) {
-            if (RunCount++ == 0 && config.SkipStartup) {
+            if (RunCount++ == 0 && !config.OnStartup) {
                 Console.WriteLine ($"Task:Sync skipped on startup");
                 return;
             }
             Console.WriteLine ($"Task:Sync {RunCount} started");
 
             await Update.Sync (config.BatchSize, config.Addons, config.Descriptions, config.Files, config.Changelogs);
-
+            
             Console.WriteLine ($"Task:Sync {RunCount} finished");
         }
     }

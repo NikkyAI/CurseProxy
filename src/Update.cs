@@ -12,8 +12,20 @@ using Microsoft.Extensions.Primitives;
 
 namespace Cursemeta {
     public class Update {
-        async public static Task Sync (int batchSize = 500, bool addons = true, bool descriptions = false, bool files = true, bool changelogs = false, bool gc = false) {
+        private static Task syncTask = null;
+        private static int RunCounter = 0;
+        
+        public static Task Sync (int batchSize = 500, bool addons = true, bool descriptions = false, bool files = true, bool changelogs = false, bool gc = false) {
+            if (syncTask == null || syncTask.IsCompleted.Equals(true)) {
+                syncTask = _Sync(batchSize, addons, descriptions = false, files, changelogs, gc);
+                return syncTask;
+            }
+            return syncTask;
+        }
+        
+        async private static Task _Sync (int batchSize = 500, bool addons = true, bool descriptions = false, bool files = true, bool changelogs = false, bool gc = false) {
             try {
+                Console.WriteLine ($"run {RunCounter++}");
                 Console.WriteLine (batchSize);
                 if (gc) {
                     GC.Collect ();
@@ -28,7 +40,7 @@ namespace Cursemeta {
                 totalTimer.Start ();
                 int b = 0;
                 int b_all = batches.Count ();
-                TimeSpan totalSum = TimeSpan.FromSeconds (0);
+                TimeSpan totalElapsed = TimeSpan.FromSeconds (0);
                 int processed = 0;
                 var all = ids.Count;
 
@@ -56,29 +68,26 @@ namespace Cursemeta {
                             }
                         }
                     ));
-                    //Console.WriteLine ($"{string.Join(", ", batch)}");
                     await tasks;
-                    timer.Stop ();
                     processed += batch.Count;
-                    Console.WriteLine ($"batch [{++b} / {b_all}] [{processed}/{all}]");
-                    timer.Stop ();
-                    var batchElapsed = timer.Elapsed;
-                    timer.Restart ();
+                    ++b;
+                    Console.WriteLine ($"batch [{b} / {b_all}] [{processed}/{all}]");
                     cache.Save ();
                     timer.Stop ();
-                    var saveElapsed = timer.Elapsed;
+                    var batchElapsed = timer.Elapsed;
+                    totalElapsed += batchElapsed;
                     timer.Restart ();
-                    totalSum += batchElapsed + saveElapsed;
-                    var average = totalSum / b;
-                    var predicted = average * (b_all - b);
-                    var currentPrediction = (batchElapsed + saveElapsed) * (b_all - b);
-                    Console.WriteLine ($"batch: {batchElapsed} save: {saveElapsed} total:{totalSum} average: {average}  predicted: average {predicted} currrent {currentPrediction}");
+                    var average = totalElapsed / b;
+                    var averagePrediction = average * (b_all - b);
+                    var currentPrediction = (batchElapsed) * (b_all - b);
+                    Console.WriteLine (new {elapsed = batchElapsed,
+                    average = average, total = totalElapsed, prediction = new {average = averagePrediction,current = currentPrediction}}.ToPrettyJson(false));
                     if (gc) {
                         GC.Collect ();
                         GC.WaitForPendingFinalizers ();
                     }
-                    var memory = GC.GetTotalMemory (true);
-                    Console.WriteLine ($"total memory: {memory / 1000.0} MB ");
+                    //var memory = GC.GetTotalMemory (true);
+                    // Console.WriteLine ($"total memory: {memory / 1000.0} MB ");
                     //await Task.Delay(TimeSpan.FromSeconds(0.1)); //testing if this causes problems or not
                 }
                 timer.Stop ();
