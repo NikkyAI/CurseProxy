@@ -27,6 +27,7 @@ namespace Cursemeta.Controllers {
         // http://localhost:5000/api/addon
         // http://localhost:5000/api/addon?worlds=1&property=name&property=categories.name&property=CategorySection.id
         // http://localhost:5000/api/addon?modpacks=1&property=name&propertiy=id&property=categories.name
+        // http://localhost:5000/api/addon?mods=1&order=downloadcount&reverse=1&limit=1000&property=id,name,gamePopularityRank,primaryauthorname,websiteurl&property=downloadcount
         [HttpGet]
         async public Task<IActionResult> Get () {
             try {
@@ -36,33 +37,61 @@ namespace Cursemeta.Controllers {
                 await Task.Run (() => { });
                 var client = CacheClient.LazyClient.Value;
                 IEnumerable<AddOn> addons = await client.v2GetAddOnsAsync (keys);
-
+                
+                // category filter
+                
                 bool mods = Request.Query.GetBool ("mods").ElementAtOr (0, false);
                 bool texturePacks = Request.Query.GetBool ("texturepacks").ElementAtOr (0, false);
                 bool worlds = Request.Query.GetBool ("worlds").ElementAtOr (0, false);
                 bool modpacks = Request.Query.GetBool ("modpacks").ElementAtOr (0, false);
                 if (new string[] { "mods", "texturepacks", "worlds", "modpacks" }.Any (s => Request.Query.Keys.Contains (s)))
                     addons = addons.filter (mods, texturePacks, worlds, modpacks);
-
-                var categoryIDs = new List<int> ();
-                var categoryNames = new List<string> ();
-                StringValues categoryValues;
-                if (Request.Query.TryGetValue ("category", out categoryValues)) {
-
-                    foreach (String category in categoryValues) {
-                        int categoryID;
-                        if (int.TryParse (category, out categoryID)) {
-                            categoryIDs.Add (categoryID);
-                        } else {
-                            categoryNames.Add (category);
-                        }
+                
+                // order by
+                
+                var orderBy = Request.Query.GetString ("order").ElementAtOr (0, null);
+                var orderReverse = Request.Query.GetBool ("reverse").ElementAtOr (0, false);
+                if(orderBy != null) {
+                    if(orderReverse) 
+                        addons = addons.OrderByDescending(a => a.GetPropValue(orderBy));
+                    else
+                        addons = addons.OrderBy(a => a.GetPropValue(orderBy));
+                }
+                
+                // limit results
+                
+                var limit = Request.Query.GetInt ("limit").ElementAtOr (0, -1);
+                if(limit > 0) {
+                    addons = addons.Take(limit);
+                }
+                
+                
+                // group results
+                
+                var groupBy = Request.Query.GetString ("group").ElementAtOr (0, null);
+                
+                // 
+                
+                var properties = Request.Query.GetString ("property").SelectMany(s => s.Split(","));
+                
+                if (groupBy != null) {
+                    if (properties.Count() > 0) {
+                        var groupedAddons = addons.GroupBy (a => a.GetPropValue (groupBy), a => {
+                            var x = new Dictionary<string, Object> ();
+                            foreach (String property in properties) {
+                                object value = a.GetPropValue (property);
+                                x.Add (property, value);
+                            }
+                            return x;
+                        }).ToDictionary (x => x.Key, y => y.ToArray ());
+                        return Json (groupedAddons);
+                    } else {
+                        var groupedAddons = addons.GroupBy (a => a.GetPropValue (groupBy), a => a).ToDictionary (x => x.Key, y => y.ToArray ());
+                        return Json (groupedAddons);
                     }
-                    addons = addons.Where (a => categoryIDs.Contains (a.CategorySection.ID) || categoryNames.Contains (a.CategorySection.Name));
                 }
 
-                // WARNING: UNSAFE REFLECTION CODE
-                var properties = Request.Query.GetString ("property");
-                if (properties.Length > 0) {
+                if (properties.Count() > 0) {
                     if (config.reflection) {
                         var result = addons.Select (a => {
                             var x = new Dictionary<string, Object> ();
@@ -95,6 +124,7 @@ namespace Cursemeta.Controllers {
                         StatusCode = (int) HttpStatusCode.InternalServerError,
                         Content = e.ToPrettyJson ()
                 };
+                // throw;
             }
         }
 
@@ -187,9 +217,7 @@ namespace Cursemeta.Controllers {
                 };
             }
         }
-        
-        
-        
+
         // GET api/addon/ids
         // http://localhost:5000/api/addon/ids
 
@@ -197,9 +225,9 @@ namespace Cursemeta.Controllers {
         public IActionResult GetIDs () {
             try {
                 var cache = Cache.LazyCache.Value;
-                
-                var ids = cache.GetIDs();
-                
+
+                var ids = cache.GetIDs ();
+
                 return Json (ids);
             } catch (Exception e) {
                 return new ContentResult {
@@ -209,7 +237,7 @@ namespace Cursemeta.Controllers {
                 };
             }
         }
-        
+
         // POST api/addon/files
         // http://localhost:5000/api/addon/files?p=id&p=downloadurl&p=addon.id&p=addon.name&p=addon.categorysection.name&p=addon.categorysection.packagetype&p=addon.categorysection.path
 

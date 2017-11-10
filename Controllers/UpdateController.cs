@@ -64,6 +64,6 @@ namespace Cursemeta.Controllers {
                         Content = e.ToPrettyJson ()
                 };
             }
-        }
+        } 
     }
 }

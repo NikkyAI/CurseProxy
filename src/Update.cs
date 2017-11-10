@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
-using Cursemeta.AddOnService;
 using Cursemeta;
+using Cursemeta.AddOnService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -13,19 +16,19 @@ using Microsoft.Extensions.Primitives;
 namespace Cursemeta {
     public class Update {
         private static Task syncTask = null;
-        private static int RunCounter = 0;
-        
+        private static int SyncRunCounter = 0;
+
         public static Task Sync (int batchSize = 500, bool addons = true, bool descriptions = false, bool files = true, bool changelogs = false, bool gc = false) {
-            if (syncTask == null || syncTask.IsCompleted.Equals(true)) {
-                syncTask = _Sync(batchSize, addons, descriptions = false, files, changelogs, gc);
+            if (syncTask == null || syncTask.IsCompleted.Equals (true)) {
+                syncTask = _Sync (batchSize, addons, descriptions = false, files, changelogs, gc);
                 return syncTask;
             }
             return syncTask;
         }
-        
+
         async private static Task _Sync (int batchSize = 500, bool addons = true, bool descriptions = false, bool files = true, bool changelogs = false, bool gc = false) {
             try {
-                Console.WriteLine ($"run {RunCounter++}");
+                Console.WriteLine ($"run {SyncRunCounter++}");
                 Console.WriteLine (batchSize);
                 if (gc) {
                     GC.Collect ();
@@ -35,7 +38,7 @@ namespace Cursemeta {
                 var cache = Cache.LazyCache.Value;
                 var ids = cache.GetIDs ();
                 Random r = new Random ();
-                var batches = ids.Keys.OrderBy (x => r.Next ()).ToList ().split (batchSize);
+                var batches = ids.Keys.OrderBy (x => r.Next ()).Split (batchSize);
                 var totalTimer = new Stopwatch ();
                 totalTimer.Start ();
                 int b = 0;
@@ -69,7 +72,7 @@ namespace Cursemeta {
                         }
                     ));
                     await tasks;
-                    processed += batch.Count;
+                    processed += batch.Count ();
                     ++b;
                     Console.WriteLine ($"batch [{b} / {b_all}] [{processed}/{all}]");
                     cache.Save ();
@@ -80,8 +83,10 @@ namespace Cursemeta {
                     var average = totalElapsed / b;
                     var averagePrediction = average * (b_all - b);
                     var currentPrediction = (batchElapsed) * (b_all - b);
-                    Console.WriteLine (new {elapsed = batchElapsed,
-                    average = average, total = totalElapsed, prediction = new {average = averagePrediction,current = currentPrediction}}.ToPrettyJson(false));
+                    Console.WriteLine (new {
+                        elapsed = batchElapsed,
+                            average = average, total = totalElapsed, prediction = new { average = averagePrediction, current = currentPrediction }
+                    }.ToPrettyJson (false));
                     if (gc) {
                         GC.Collect ();
                         GC.WaitForPendingFinalizers ();
@@ -92,8 +97,6 @@ namespace Cursemeta {
                 }
                 timer.Stop ();
 
-                //TODO: add retrying
-
                 totalTimer.Stop ();
                 if (gc) {
 
@@ -103,9 +106,8 @@ namespace Cursemeta {
 
                 Console.WriteLine ($"all targets were processed in '{ totalTimer.Elapsed }'");
             } catch (Exception e) {
-                Console.Error.WriteLine(e);
+                Console.Error.WriteLine (e);
             }
         }
-
     }
 }

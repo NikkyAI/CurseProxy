@@ -50,16 +50,32 @@ the example host is `https://cursemeta.nikky.moe`
 
 omitting all filters will default them to `true`
 
+category filter
+
 - `bool` mods
 - `bool` texturepacks
 - `bool` worlds
 - `bool` modpacks
 
-property retriever may be in in the format `object.property.value`
-may be used more than once
-WARNING: uses reflection code, use at your own risk, has to be enabled in config
+order by property
 
-- `string` property
+- `string` order
+- `bool` reverse
+
+returns only `limit` results after sorting
+
+- `int` limit
+
+group by property (will affect ordering)
+returns a dictionary
+
+- `string` group
+
+property retriever may be in in the format `object.property.value`
+may be used more than once or comma seperated
+NOTE: uses reflection code, has to be enabled in config
+
+- `string[]` property
 
 [GET `/api/addon/{addonID}`](https://cursemeta.nikky.moe/api/addon/257572)
 

@@ -3,8 +3,6 @@ bin/
 out/
 .vs/
 
-Controllers/UpdateController\.cs
-
 Controllers/TestCotroller\.cs
 
 Utility/ReverseMapping\.cs
@@ -14,3 +12,7 @@ manifest\.json
 src/Reversemapping\.cs
 
 ids\.json
+
+runRemote\.sh
+
+TODO-private\.md

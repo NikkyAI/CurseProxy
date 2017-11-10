@@ -77,10 +77,10 @@ namespace Cursemeta {
                 if (addons != null) return addons;
             }
             var list = new List<int> (ids);
-            var split = list.split (16384);
+            var split = list.Split (16384);
             var result = new List<AddOn> ();
             Console.WriteLine ($"v2GetAddOnsAsync {ids.Length}");
-            foreach (List<int> idList in split) {
+            foreach (var idList in split) {
                 var partResult = await client.v2GetAddOnsAsync (idList.ToArray ());
                 if (result == null) continue;
                 //TODO: var addon = result.filter();

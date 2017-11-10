@@ -29,7 +29,7 @@ namespace Cursemeta.Tasks {
     
     public class SyncConfig {
         public string Schedule { get; private set; } = "* */24 * * *";
-        public bool Enabled { get; private set; } = true;
+        public bool Enabled { get; private set; } = false;
         public bool OnStartup { get; private set; } = false;
         public int BatchSize { get; private set; } = 500;
         public bool Addons { get; private set; } = true;

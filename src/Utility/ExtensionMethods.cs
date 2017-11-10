@@ -146,9 +146,9 @@ namespace Cursemeta {
             return old == null;
         }
 
-        public static IEnumerable<List<T>> split<T> (this List<T> source, int nSize = 30) {
-            for (int i = 0; i < source.Count; i += nSize) {
-                yield return source.GetRange (i, Math.Min (nSize, source.Count - i));
+        public static IEnumerable<IEnumerable<T>> Split<T> (this IEnumerable<T> source, int nSize = 30) {
+            for (int i = 0; i < source.Count(); i += nSize) {
+                yield return source.Skip(i).Take(Math.Min (nSize, source.Count() - i));
             }
         }
 

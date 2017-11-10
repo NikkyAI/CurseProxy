@@ -58,7 +58,7 @@ namespace Cursemeta {
                 var ids = text.FromJson<Dictionary<int, IEnumerable<int>> > ();
                 
                 var batchSize = 1000;
-                var batches = ids.Keys.ToList ().split (batchSize);
+                var batches = ids.Keys.Split (batchSize);
                 var timer = new Stopwatch ();
                 timer.Start ();
                 
@@ -93,7 +93,22 @@ namespace Cursemeta {
 
             return true;
         }
+        
+        private bool AddAddon(AddOn addon) {
+            var changed = false;
+            changed |= idCache.UpdateOrAdd (addon.Id, new ConcurrentDictionary<int, byte> ());
 
+            foreach(var file in addon.LatestFiles) {
+                changed |= idCache[addon.Id].TryAdd(file.Id, 1);
+            }
+
+            foreach(var file in addon.GameVersionLatestFiles) {
+                changed |= idCache[addon.Id].TryAdd(file.ProjectFileID, 1);
+            }
+ 
+            return changed;
+        }
+        
         public bool Add (AddOn addon, bool save = true) {
             Task.Run (() => {
                 var directory = GetAddonDir (addon.Id);
@@ -103,8 +118,8 @@ namespace Cursemeta {
             });
 
             // update addon in cache
-            var changed = idCache.UpdateOrAdd (addon.Id, new ConcurrentDictionary<int, byte> ());
-
+            var changed = AddAddon(addon);
+            
             if (changed) {
                 Save (save);
             }
@@ -155,7 +170,7 @@ namespace Cursemeta {
             bool changed = false;
             foreach (var addon in addons) {
                 // changed |= addonsCache.UpdateOrAdd (addon.Id, addon);
-                changed |= idCache.TryAdd (addon.Id, new ConcurrentDictionary<int, byte> ());
+                changed |= AddAddon(addon);
             }
             if (changed) {
                 return Save (save);
