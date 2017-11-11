@@ -15,10 +15,12 @@ namespace Cursemeta.Controllers {
     [Route ("api/[controller]")]
     public class UpdateController : Controller {
         private readonly ILogger logger;
+        private readonly Update update;
         private static Task syncTask = null;
 
-        public UpdateController (ILogger<ManifestController> _logger) {
+        public UpdateController (ILogger<RegisterController> _logger, Update _update) {
             logger = _logger;
+            update = _update;
         }
 
         // GET api/update/sync
@@ -26,6 +28,7 @@ namespace Cursemeta.Controllers {
         [HttpGet ("sync")]
         async public Task<IActionResult> GetSync () {
             try {
+                await Task.Run(() => {});
                 var config = Config.instance.Value.task.sync;
                 int batchSize = Request.Query.GetInt ("batch").ElementAtOr (0, config.BatchSize);
                 bool addons = Request.Query.GetBool ("addons").ElementAtOr (0, config.Addons);
@@ -34,7 +37,7 @@ namespace Cursemeta.Controllers {
                 bool changelogs = Request.Query.GetBool ("changelogs").ElementAtOr (0, config.Changelogs);
                 bool gc = Request.Query.GetBool ("gc").ElementAtOr (0, false);
 
-                var task = Update.Sync (batchSize, addons, descriptions, files, changelogs, gc);
+                var task = update.Sync (batchSize, addons, descriptions, files, changelogs, gc);
                 if (task == null)
                     return new ContentResult {
                         ContentType = "text/json",
@@ -58,12 +61,39 @@ namespace Cursemeta.Controllers {
                 }
 
             } catch (Exception e) {
-                return new ContentResult {
-                    ContentType = "text/json",
-                        StatusCode = (int) HttpStatusCode.InternalServerError,
-                        Content = e.ToPrettyJson ()
-                };
+                logger.LogError ("{@Exception}", e);
+                throw;
             }
-        } 
+        }
+
+        private static Task scanTask = null;
+
+        // GET api/update/find
+        // http://localhost:5000/api/update/scan
+        [HttpGet ("scan")]
+        async public Task<IActionResult> GetScanFiles () {
+            try {
+                await Task.Run(() => {});                
+                bool kill = Request.Query.GetBool ("kill").ElementAtOr (0, false);
+                int batchSize = Request.Query.GetInt ("batch").ElementAtOr (0, 262144);
+                var task = update.ScanFiles (kill, batchSize);
+                if (scanTask != null) {
+                    var oldStatus = scanTask.Status;
+                    if (scanTask == task) {
+                        return Json (new { message = "Task:Scan was already running", status = task.Status });
+                    }
+                    scanTask = task;
+                    return Json (new { message = "Task:Scan was cancelled/restarted", status = task.Status, previous = oldStatus });
+                } else {
+                    scanTask = task;
+                    // var result = await task;
+                    return Json (new { message = "Task:Scan was started", status = task.Status /* , result = result */ });
+                }
+            } catch (Exception e) {
+                logger.LogError ("{@Exception}", e);
+                throw;
+            }
+        }
+
     }
 }

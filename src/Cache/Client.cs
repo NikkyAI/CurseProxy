@@ -5,29 +5,34 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cursemeta.AddOnService;
 using Cursemeta.LoginService;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace Cursemeta {
-    public class CacheClient {
-        private static readonly Lazy<Task<AddOnServiceClient>> LazyAddonClient = new Lazy<Task<AddOnServiceClient>> (() => Authenticate ());
-        public static readonly Lazy<CacheClient> LazyClient = new Lazy<CacheClient> (() => new CacheClient ());
-        
-        public readonly AddOnServiceClient client = LazyAddonClient.Value.Result;
-        private readonly Cache cache = Cache.LazyCache.Value;
+    public class Client {
+        private readonly ILogger logger;
+        private readonly Cache cache;
 
-        private CacheClient () { }
+        public readonly AddOnServiceClient client;
+        private readonly ClientLoginServiceClient loginClient;
+
+        public Client (ILogger<Client> _logger, Cache _cache) {
+            logger = _logger;
+            cache = _cache;
+            loginClient = new ClientLoginServiceClient (ClientLoginServiceClient.EndpointConfiguration.BinaryHttpsClientLoginServiceEndpoint);
+            client = Authenticate ().Result;
+        }
 
         // private Dictionary<int, AddOn> addons = new Dictionary<int, AddOn> ();
         // private Dictionary<int, Dictionary<int, AddOnFile>> addonFiles = new Dictionary<int, Dictionary<int, AddOnFile>> ();
         // private Dictionary<int, Dictionary<int, string>> addonFileChangelogs = new Dictionary<int, Dictionary<int, string>> ();
         // private Dictionary<int, string> addonDescriptions = new Dictionary<int, string> ();
 
-        private static async Task<AddOnServiceClient> Authenticate () {
+        private async Task<AddOnServiceClient> Authenticate () {
             AddOnServiceClient client;
-            var loginClient = new ClientLoginServiceClient (ClientLoginServiceClient.EndpointConfiguration.BinaryHttpsClientLoginServiceEndpoint);
 
             var deserializer = new DeserializerBuilder ()
                 .IgnoreUnmatchedProperties ()
@@ -41,13 +46,18 @@ namespace Cursemeta {
             using (var reader = new StreamReader (File.OpenRead (path))) {
                 var request = deserializer.Deserialize<LoginRequest> (reader);
                 loginResponse = await loginClient.LoginAsync (request);
-                Console.WriteLine ($"Login: {loginResponse.Status}");
+                logger.LogInformation ($"Login: {loginResponse.Status}");
             }
 
             client = new AddOnServiceClient (AddOnServiceClient.EndpointConfiguration.BinaryHttpsAddOnServiceEndpoint);
             client.Endpoint.EndpointBehaviors.Add (new TokenEndpointBehavior (loginResponse));
 
             return client;
+        }
+
+        public async Task<RegisterUserResult> Register (RegisterRequest registerRequest) {
+            var loginClient = new ClientLoginServiceClient (ClientLoginServiceClient.EndpointConfiguration.BinaryHttpsClientLoginServiceEndpoint);
+            return await loginClient.RegisterAsync (registerRequest);
         }
 
         private static readonly JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings {
@@ -79,7 +89,7 @@ namespace Cursemeta {
             var list = new List<int> (ids);
             var split = list.Split (16384);
             var result = new List<AddOn> ();
-            Console.WriteLine ($"v2GetAddOnsAsync {ids.Length}");
+            logger.LogDebug ($"v2GetAddOnsAsync {ids.Length}");
             foreach (var idList in split) {
                 var partResult = await client.v2GetAddOnsAsync (idList.ToArray ());
                 if (result == null) continue;
@@ -146,9 +156,10 @@ namespace Cursemeta {
                 if (result != null) {
                     var changed = this.cache.Add (addonID, result, save);
                 }
-                if(!cache) return result;
+                if (!cache) return result;
             } catch (Exception e) {
-                Console.WriteLine (e.ToPrettyJson ());
+                logger.LogError ("{@Exception}", e);
+                throw;
             }
             var ids = this.cache.GetIDs (addonID);
             if (ids == null) return null;
@@ -179,6 +190,7 @@ namespace Cursemeta {
             return result;
         }
 
+        //TODO: create tests for this, figure out what it is, write to file and analyze
         async public Task<byte[]> GetAddOnDumpAsync (int id) {
             return await client.GetAddOnDumpAsync (id);
         }

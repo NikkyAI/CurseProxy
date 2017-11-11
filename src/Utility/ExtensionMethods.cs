@@ -6,6 +6,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Cursemeta.AddOnService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -66,7 +67,7 @@ namespace Cursemeta {
         private static readonly Serializer serializer =
             new SerializerBuilder ()
             .WithNamingConvention (new CamelCaseNamingConvention ())
-            .EmitDefaults()
+            .EmitDefaults ()
             .Build ();
 
         private static readonly Deserializer deserializer =
@@ -147,9 +148,42 @@ namespace Cursemeta {
         }
 
         public static IEnumerable<IEnumerable<T>> Split<T> (this IEnumerable<T> source, int nSize = 30) {
-            for (int i = 0; i < source.Count(); i += nSize) {
-                yield return source.Skip(i).Take(Math.Min (nSize, source.Count() - i));
+            var temp = source;
+            int i = 0;
+            while (temp.ElementAtOrDefault (0) != null) {
+                temp = temp.Skip (nSize);
+                i += nSize;
+                yield return temp.Take (nSize);
             }
+            // for (int i = 0; i < source.Count (); i += nSize) {
+            //     // yield return source.Skip (i).Take (Math.Min (nSize, source.Count () - i));
+            //     yield return source.Skip (i).Take (nSize);
+            // }
+        }
+
+        public static IEnumerable<IEnumerable<T>> Batch<T> (this IEnumerable<T> source, int size) {
+            T[] bucket = null;
+            var count = 0;
+
+            foreach (var item in source) {
+                if (bucket == null)
+                    bucket = new T[size];
+
+                bucket[count++] = item;
+
+                if (count != size)
+                    continue;
+
+                // yield return bucket.Select (x => x);
+                yield return bucket;
+
+                bucket = null;
+                count = 0;
+            }
+
+            // Return the last bucket with all remaining elements
+            if (bucket != null && count > 0)
+                yield return bucket.Take (count);
         }
 
         public static T ElementAtOr<T> (this IEnumerable<T> source, int index, T defaultValue = default (T)) {
@@ -191,6 +225,14 @@ namespace Cursemeta {
                 return ret.ToArray ();
             }
             return new bool[0];
+        }
+
+        public static bool isHidden (this AddOnService.FileStatus fileStatus) {
+            return fileStatus == FileStatus.Deleted ||
+                fileStatus != FileStatus.Normal ||
+                fileStatus == FileStatus.NeedsApproval ||
+                fileStatus == FileStatus.UnderReview ||
+                fileStatus == FileStatus.Locked;
         }
     }
 }

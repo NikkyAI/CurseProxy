@@ -24,7 +24,7 @@ namespace Cursemeta.Configs {
                 return LazyBasePath.Value;
             }
         }
-        
+
         public string Base { get; set; } = null;
         public string Addons { get; set; } = "addons";
 
@@ -39,9 +39,9 @@ namespace Cursemeta.Configs {
                     return Path.Combine (BasePath, Addons);
             });
         }
-        
-        public void test() {
-            Console.WriteLine(Directory.Exists(AddonsPath));
+
+        public void test () {
+            Console.WriteLine (Directory.Exists (AddonsPath));
         }
     }
 }

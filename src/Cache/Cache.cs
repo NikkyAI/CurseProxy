@@ -7,15 +7,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Cursemeta.AddOnService;
+using Cursemeta.Configs;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using Cursemeta.Configs;
 
 namespace Cursemeta {
 
     public class Cache {
-        public static readonly Lazy<Cache> LazyCache = new Lazy<Cache> (() => new Cache ());
-        private CacheConfig cacheConfig = Config.instance.Value.cache;
+        private readonly ILogger logger;
+        private CacheConfig config = Config.instance.Value.cache;
 
         private string idPath = Path.Combine (Config.instance.Value.cache.BasePath, "ids.json");
 
@@ -33,47 +34,48 @@ namespace Cursemeta {
         private ConcurrentDictionary<int, ConcurrentDictionary<int, byte>> idCache = new ConcurrentDictionary<int, ConcurrentDictionary<int, byte>> ();
 
         private string GetAddonDir (int addonID) {
-            return Path.Combine (cacheConfig.AddonsPath, $"{addonID}");
+            return Path.Combine (config.AddonsPath, $"{addonID}");
         }
         private string GetAddonPath (int addonID) {
-            return Path.Combine (cacheConfig.AddonsPath, $"{addonID}", "index.json");
+            return Path.Combine (config.AddonsPath, $"{addonID}", "index.json");
         }
         private string GetDescriptionPath (int addonID) {
-            return Path.Combine (cacheConfig.AddonsPath, $"{addonID}", "description.html");
+            return Path.Combine (config.AddonsPath, $"{addonID}", "description.html");
         }
         private string GetFileDir (int addonID) {
-            return Path.Combine (cacheConfig.AddonsPath, $"{addonID}", "files");
+            return Path.Combine (config.AddonsPath, $"{addonID}", "files");
         }
         private string GetFilePath (int addonID, int fileID) {
-            return Path.Combine (cacheConfig.AddonsPath, $"{addonID}", "files", $"{fileID}.json");
+            return Path.Combine (config.AddonsPath, $"{addonID}", "files", $"{fileID}.json");
         }
         private string GetChangelogPath (int addonID, int fileID) {
-            return Path.Combine (cacheConfig.AddonsPath, $"{addonID}", "files", $"{fileID}.changelog.html");
+            return Path.Combine (config.AddonsPath, $"{addonID}", "files", $"{fileID}.changelog.html");
         }
 
-        public Cache () {
+        public Cache (ILogger<Cache> _logger) {
+            logger = _logger;
             if (File.Exists (idPath)) {
-                Console.WriteLine ($"reading {idPath}");
+                logger.LogDebug ($"reading {idPath}");
                 string text = File.ReadAllText (idPath);
                 var ids = text.FromJson<Dictionary<int, IEnumerable<int>> > ();
-                
+
                 var batchSize = 1000;
                 var batches = ids.Keys.Split (batchSize);
                 var timer = new Stopwatch ();
                 timer.Start ();
-                
-                foreach(int addonID in ids.Keys) {
+
+                foreach (int addonID in ids.Keys) {
                     var fileIDs = ids[addonID];
-                    idCache[addonID] = new ConcurrentDictionary<int, byte>();
-                    foreach(var fileID in fileIDs) {
-                        idCache[addonID][fileID] = 1; 
+                    idCache[addonID] = new ConcurrentDictionary<int, byte> ();
+                    foreach (var fileID in fileIDs) {
+                        idCache[addonID][fileID] = 1;
                     }
                 }
 
                 timer.Stop ();
-                Console.WriteLine ($"all IDs were processed in '{ timer.Elapsed }'");
+                logger.LogTrace ($"all IDs were processed in '{ timer.Elapsed }'");
             } else {
-                Console.Error.WriteLine($"cannot find file {idPath}");
+                logger.LogError ($"cannot find file {idPath}");
             }
         }
 
@@ -84,31 +86,29 @@ namespace Cursemeta {
 
         public bool Save (bool write = true) {
             if (write) {
-                // TODO: save ID mapping
-                // File.WriteAllText (idFile, ids.ToPrettyJson ());
+                // save ID mapping
+                logger.LogDebug("saving id mapping to {path}", idPath);
                 File.WriteAllText (idPath, GetIDs ().ToPrettyJson ());
             }
-            //TODO: move into if write block
-            // ReverseMapping.ReMap (addonsCache.Values);
 
             return true;
         }
-        
-        private bool AddAddon(AddOn addon) {
+
+        private bool AddAddon (AddOn addon) {
             var changed = false;
             changed |= idCache.UpdateOrAdd (addon.Id, new ConcurrentDictionary<int, byte> ());
 
-            foreach(var file in addon.LatestFiles) {
-                changed |= idCache[addon.Id].TryAdd(file.Id, 1);
+            foreach (var file in addon.LatestFiles) {
+                changed |= idCache[addon.Id].TryAdd (file.Id, 1);
             }
 
-            foreach(var file in addon.GameVersionLatestFiles) {
-                changed |= idCache[addon.Id].TryAdd(file.ProjectFileID, 1);
+            foreach (var file in addon.GameVersionLatestFiles) {
+                changed |= idCache[addon.Id].TryAdd (file.ProjectFileID, 1);
             }
- 
+
             return changed;
         }
-        
+
         public bool Add (AddOn addon, bool save = true) {
             Task.Run (() => {
                 var directory = GetAddonDir (addon.Id);
@@ -118,8 +118,8 @@ namespace Cursemeta {
             });
 
             // update addon in cache
-            var changed = AddAddon(addon);
-            
+            var changed = AddAddon (addon);
+
             if (changed) {
                 Save (save);
             }
@@ -170,7 +170,7 @@ namespace Cursemeta {
             bool changed = false;
             foreach (var addon in addons) {
                 // changed |= addonsCache.UpdateOrAdd (addon.Id, addon);
-                changed |= AddAddon(addon);
+                changed |= AddAddon (addon);
             }
             if (changed) {
                 return Save (save);

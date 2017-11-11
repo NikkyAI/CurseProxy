@@ -4,23 +4,33 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cursemeta;
 using Cursemeta.Scheduling;
+using Microsoft.Extensions.Logging;
 
 namespace Cursemeta.Tasks {
     public class SyncTask : IScheduledTask {
+        private readonly ILogger logger;
+        private readonly Update update;
+
         SyncConfig config = Config.instance.Value.task.sync;
         public string Schedule => config.Schedule;
+
         private int RunCount = 0;
+
+        public SyncTask (ILogger<CompleteTask> _logger, Update _update) {
+            logger = _logger;
+            update = _update;
+        }
 
         public async Task ExecuteAsync (CancellationToken cancellationToken) {
             if (RunCount++ == 0 && !config.OnStartup) {
-                Console.WriteLine ($"Task:Sync skipped on startup");
+                logger.LogInformation ("Task:Sync skipped on startup");
                 return;
             }
-            Console.WriteLine ($"Task:Sync {RunCount} started");
+            logger.LogInformation ("Run {RunCount} started", RunCount);
 
-            await Update.Sync (config.BatchSize, config.Addons, config.Descriptions, config.Files, config.Changelogs);
-            
-            Console.WriteLine ($"Task:Sync {RunCount} finished");
+            await update.Sync (config.BatchSize, config.Addons, config.Descriptions, config.Files, config.Changelogs);
+
+            logger.LogInformation ("Run {RunCount} finished", RunCount);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Cursemeta.AddOnService;
+using Serilog;
 
 namespace Cursemeta {
 
@@ -16,7 +17,6 @@ namespace Cursemeta {
         private static int modpacks_id = 4471;
         
         public static IEnumerable<AddOn> filter(this IEnumerable<AddOn> source, bool mods, bool texture_packs, bool worlds, bool modpacks) {
-            //Console.WriteLine($"filter {mods} {texture_packs} {worlds} {modpacks}");
             return source.Where (a => 
                 (mods && (a.CategorySection.ID == mods_id)) || 
                 (texture_packs && (a.CategorySection.ID == texture_packs_id)) || 

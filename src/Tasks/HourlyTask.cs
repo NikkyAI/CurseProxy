@@ -4,23 +4,32 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cursemeta;
 using Cursemeta.Scheduling;
+using Microsoft.Extensions.Logging;
 
 namespace Cursemeta.Tasks {
     public class HourlyTask : IScheduledTask {
-        HourlyConfig config = Config.instance.Value.task.hourly;
+        private readonly ILogger logger;
+        private readonly Feed feed;
+
+        private readonly HourlyConfig config = Config.instance.Value.task.hourly;
         public string Schedule => config.Schedule;
         private int RunCount = 0;
 
+        public HourlyTask (ILogger<HourlyTask> _logger, Feed _feed) {
+            logger = _logger;
+            feed = _feed;
+        }
+
         public async Task ExecuteAsync (CancellationToken cancellationToken) {
             if (RunCount++ == 0 && !config.OnStartup) {
-                Console.WriteLine ($"Task:Hourly skipped on startup");
+                logger.LogInformation ($"Skipped on startup");
                 return;
             }
-            Console.WriteLine ($"Task:Hourly {RunCount} started");
+            logger.LogInformation ("Run {RunCount} started", RunCount);
 
-            await ProjectFeed.GetHourly ();
+            await feed.GetHourly ();
 
-            Console.WriteLine ($"Task:Hourly {RunCount} finished");
+            logger.LogInformation ("Run {RunCount} finished", RunCount);
         }
     }
 }

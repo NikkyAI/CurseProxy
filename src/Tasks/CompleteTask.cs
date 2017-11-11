@@ -5,22 +5,31 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cursemeta;
 using Cursemeta.Scheduling;
+using Microsoft.Extensions.Logging;
 
 namespace Cursemeta.Tasks {
     public class CompleteTask : IScheduledTask {
-        CompleteConfig config = Config.instance.Value.task.complete;
+        private readonly ILogger logger;
+        private readonly Feed feed;
+
+        private readonly CompleteConfig config = Config.instance.Value.task.complete;
         public string Schedule => config.Schedule;
         private int RunCount = 0;
 
+        public CompleteTask (ILogger<CompleteTask> _logger, Feed _feed) {
+            logger = _logger;
+            feed = _feed;
+        }
+
         public async Task ExecuteAsync (CancellationToken cancellationToken) {
             if (RunCount++ == 0 && !config.OnStartup) {
-                Console.WriteLine ($"Task:Complete skipped on startup");
+                logger.LogInformation ($"Skipped on startup");
             }
-            Console.WriteLine ($"Task:Complete {RunCount} started");
+            logger.LogInformation ("Run {RunCount} started", RunCount);
 
-            await ProjectFeed.GetComplete ();
+            await feed.GetComplete ();
 
-            Console.WriteLine ($"Task:Complete {RunCount} finished");
+            logger.LogInformation ("Run {RunCount} finished", RunCount);
         }
     }
 }

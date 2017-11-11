@@ -46,7 +46,7 @@ the example host is `https://cursemeta.nikky.moe`
 
 [GET `/api/feed/complete`](https://cursemeta.nikky.moe/api/feed/complete)
 
-[GET `/api/addon`](https://cursemeta.nikky.moe/api/addon?mods=1&modpacks=true&texturepacks=0&worlds=false) WIP
+[GET `/api/addon`](https://cursemeta.nikky.moe/api/addon??mods=1&order=downloadcount&reverse=1&limit=1000&property=id,name,gamePopularityRank,primaryauthorname,websiteurl&property=downloadcount) WIP
 
 omitting all filters will default them to `true`
 
@@ -108,10 +108,10 @@ curl -X POST \
 ]
 ```
 
-[GET `/api/modpack`](https://cursemeta.nikky.moe/api/addon/ids)
+[GET `/api/addon/ids`](https://cursemeta.nikky.moe/api/addon/ids)
 
 
-[POST `/api/modpack`](https://cursemeta.nikky.moe/api/manifest)
+[POST `/api/manifest`](https://cursemeta.nikky.moe/api/manifest)
 
 ```sh
 curl -X POST \
@@ -120,7 +120,7 @@ curl -X POST \
   -d @manifest.json
 ```
 
-[GET `/api/modpack`](https://cursemeta.nikky.moe/api/update/sync)
+[GET `/api/update/sync`](https://cursemeta.nikky.moe/api/update/sync)
 
 parameters:
 
@@ -128,6 +128,33 @@ parameters:
 - `bool` descriptions
 - `bool` files
 - `bool` changelogs (enabling WILL cripple performance)
+
+[GET `/api/update/scan`](https://cursemeta.nikky.moe/api/update/scan)
+
+scans for hidden / deleted file ids
+parameters:
+
+- `bool` addons
+- `bool` descriptions
+- `bool` files
+- `bool` changelogs (enabling WILL cripple performance)
+
+[POST `/api/register`](https://cursemeta.nikky.moe/api/register)
+
+```sh
+curl -X POST \
+  'https://cursemeta.nikky.moe/api/register' \
+  -H 'content-type: application/json' \
+  -d @registerRequest.json
+
+# registerRequest.json
+{
+  "username": "user",
+  "password": "P4$$w0rd", # you should use 16+ character passords
+  "email": "user@example.com",
+  "newsletterOptIn": false
+}
+```
 
 ## Config
 
