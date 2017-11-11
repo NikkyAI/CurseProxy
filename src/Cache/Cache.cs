@@ -73,7 +73,7 @@ namespace Cursemeta {
                 }
 
                 timer.Stop ();
-                logger.LogTrace ($"all IDs were processed in '{ timer.Elapsed }'");
+                logger.LogDebug ($"all IDs were processed in '{ timer.Elapsed }'");
             } else {
                 logger.LogError ($"cannot find file {idPath}");
             }

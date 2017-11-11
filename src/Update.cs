@@ -32,6 +32,7 @@ namespace Cursemeta {
         public Task Sync (int batchSize = 500, bool addons = true, bool descriptions = false, bool files = true, bool changelogs = false, bool gc = false) {
             if (syncTask == null || syncTask.IsCompleted.Equals (true)) {
                 syncTask = _Sync (batchSize, addons, descriptions = false, files, changelogs, gc);
+                logger.LogDebug ("started task"); //TODO: add paramters to debug output
                 return syncTask;
             }
             return syncTask;
@@ -41,7 +42,7 @@ namespace Cursemeta {
             try {
                 SyncRunCounter++;
                 logger.LogInformation ("run {SyncRunCounter}", SyncRunCounter);
-                logger.LogTrace ("batch size: {batchSize}", batchSize);
+                logger.LogDebug ("batch size: {batchSize}", batchSize);
                 if (gc) {
                     GC.Collect ();
                     GC.WaitForPendingFinalizers ();
@@ -138,6 +139,7 @@ namespace Cursemeta {
                 findTaskSource = new CancellationTokenSource ();
                 var token = findTaskSource.Token;
                 scanTask = _ScanFiles (token, batchSize);
+                logger.LogDebug ("started task"); //TODO: add paramters to debug output
             }
             return scanTask;
         }
@@ -154,8 +156,8 @@ namespace Cursemeta {
                 int processedAddons = 0;
                 int totalAddons = addonIDs.Count ();
 
-                logger.LogInformation ($"totalAddonCount: {totalAddons}");
-                logger.LogInformation ($"batchSize: {batchSize}");
+                logger.LogInformation ("totalAddonCount: {totalAddons}", totalAddons);
+                logger.LogInformation ("batchSize: {batchSize}", batchSize);
 
                 Stopwatch totalTimer = new Stopwatch ();
                 Stopwatch timer = new Stopwatch ();
@@ -169,7 +171,7 @@ namespace Cursemeta {
                     var fileIDs = ids[addonID];
                     if (fileIDs.Count () == 0) {
                         //TODO: set keys to full range here
-                        logger.LogInformation ($"[{addonID}] skipping empty file list");
+                        logger.LogInformation ("[{addonID}] skipping empty file list", addonID);
                         processedAddons++;
                         timer.Restart ();
                         continue;
@@ -182,30 +184,30 @@ namespace Cursemeta {
                     var rangeTo = maxId + (distance) / 4;
                     var rangeCount = rangeTo - rangeFrom;
 
-                    logger.LogInformation ($"[{addonID}] min: {minId} max: {maxId} from: {rangeFrom} to: {rangeTo} length: {rangeCount}");
+                    logger.LogInformation ("[{addonID}] min: {minId} max: {maxId} from: {rangeFrom} to: {rangeTo} length: {rangeCount}", addonID, minId, maxId, rangeFrom, rangeTo, rangeCount);
                     var keys = Enumerable.Range (rangeFrom, rangeCount)
                         .Except (fileIDs)
                         .Select (fileID =>
                             new AddOnFileKey { AddOnID = addonID, FileID = fileID }
                         ).ToArray ();
                     var batches = keys.Batch (batchSize);
-                    int b = 0;
+                    int processedBatches = 0;
                     int processedTotal = 0;
                     int totalCount = keys.Count ();
                     int totalBatches = batches.Count ();
-                    logger.LogInformation ($"[{addonID}] {totalCount} possible files");
+                    logger.LogInformation ("[{addonID}] {totalCount} possible files", addonID, totalCount);
                     var resultIDs = new List<int> ();
                     foreach (var batch in batches) {
                         token.ThrowIfCancellationRequested ();
-                        b++;
+                        processedBatches++;
                         var partResult = (client.GetAddOnFilesAsync (batch.ToArray (), false, false).Result).SelectMany (pair => pair.Value);
                         processedTotal += batch.Count ();
-                        logger.LogInformation ($"[{addonID}] [{b}/{totalBatches}] [{processedTotal}/{totalCount}] found: {partResult.Count()}");
+                        logger.LogInformation ("[{addonID}] {batchProgress}% [{processedBatches}/{totalBatches}] {totalProgress}% [{processedTotal}/{totalCount}] found: {partCount}", addonID, (processedBatches / (float) totalBatches * 100), processedBatches, totalBatches, (processedTotal / (float) totalCount * 100), processedTotal, totalCount, partResult.Count ());
                         resultIDs.AddRange (partResult.Select (f => f.Id));
                     }
                     cache.Save ();
 
-                    logger.LogInformation ($"[{addonID}] hidden files: {resultIDs.ToPrettyJson (false)}");
+                    logger.LogInformation ("[{addonID}] hidden files: {resultIDs}", addonID, resultIDs);
                     hiddenFileIDs[addonID] = resultIDs.ToArray ();
 
                     processedAddons++;
