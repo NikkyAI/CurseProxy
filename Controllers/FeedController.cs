@@ -44,6 +44,7 @@ namespace Cursemeta.Controllers {
         }
 
         // GET api/feed/complete
+        // http://localhost:5000/api/feed/complete
         [HttpGet ("complete")]
         async public Task<IActionResult> GetComplete () {
             try {

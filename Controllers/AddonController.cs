@@ -234,14 +234,26 @@ namespace Cursemeta.Controllers {
                 var flatFiles = fileDict.Values.SelectMany (f => f);
                 flatFiles = flatFiles.Where (f => f.FileStatus != FileStatus.Normal && f.FileStatus != FileStatus.SemiNormal);
 
-                var groupedFiles = flatFiles.GroupBy (f => f.FileStatus).ToDictionary (f => f.Key, f => f.ToArray ());
+                var properties = Request.Query.GetString ("property").SelectMany (s => s.Split (","));
 
-                // var result = new Dictionary<int, object>();
-                // foreach ( var addonID in fileDict.Keys) {
-                //     var files = fileDict[addonID].Where(f => f.FileStatus != FileStatus.Normal && f.FileStatus != FileStatus.SemiNormal);
-                //     if(files.Count() > 0) result[addonID] = files;
-                // }
-                return Json (groupedFiles);
+                if (properties.Count () > 0) {
+                    var groupedFiles = flatFiles.GroupBy (f => f.FileStatus, f => {
+                        var x = new Dictionary<string, Object> ();
+                        foreach (String property in properties) {
+                            object value = f.GetPropValue (property);
+                            x.Add (property, value);
+                        }
+                        return x;
+                    }).ToDictionary (f => f.Key, f => f.ToArray ());
+                    return Json (groupedFiles);
+                } else {
+                    var groupedAddons = flatFiles.GroupBy (f => f.FileStatus, f => f).ToDictionary (f => f.Key, f => f.ToArray ());
+                    return Json (groupedAddons);
+                }
+
+                //var groupedFiles = flatFiles.GroupBy (f => f.FileStatus).ToDictionary (f => f.Key, f => f.ToArray ());
+
+                //return Json (groupedFiles);
             } catch (Exception e) {
                 logger.LogError ("{@Exception}", e);
                 throw;

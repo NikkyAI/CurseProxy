@@ -5,16 +5,12 @@ out/
 
 Controllers/TestCotroller\.cs
 
-Utility/ReverseMapping\.cs
-
-manifest\.json
-
 src/Reversemapping\.cs
-
-ids\.json
 
 runRemote\.sh
 
 TODO-private\.md
+
+unused/
 
 logs/

@@ -184,7 +184,7 @@ namespace Cursemeta {
                     var rangeTo = maxId + (distance) / 4;
                     var rangeCount = rangeTo - rangeFrom;
 
-                    logger.LogInformation ("[{addonID}] min: {minId} max: {maxId} from: {rangeFrom} to: {rangeTo} length: {rangeCount}", addonID, minId, maxId, rangeFrom, rangeTo, rangeCount);
+                    //logger.LogInformation ("[{addonID}] min: {minId} max: {maxId} from: {rangeFrom} to: {rangeTo} length: {rangeCount}", addonID, minId, maxId, rangeFrom, rangeTo, rangeCount);
                     var keys = Enumerable.Range (rangeFrom, rangeCount)
                         .Except (fileIDs)
                         .Select (fileID =>
@@ -195,33 +195,37 @@ namespace Cursemeta {
                     int processedTotal = 0;
                     int totalCount = keys.Count ();
                     int totalBatches = batches.Count ();
-                    logger.LogInformation ("[{addonID}] {totalCount} possible files", addonID, totalCount);
+                    //logger.LogInformation ("[{addonID}] {totalCount} possible files", addonID, totalCount);
                     var resultIDs = new List<int> ();
                     foreach (var batch in batches) {
                         token.ThrowIfCancellationRequested ();
                         processedBatches++;
                         var partResult = (client.GetAddOnFilesAsync (batch.ToArray (), false, false).Result).SelectMany (pair => pair.Value);
                         processedTotal += batch.Count ();
-                        logger.LogInformation ("[{addonID}] {batchProgress}% [{processedBatches}/{totalBatches}] {totalProgress}% [{processedTotal}/{totalCount}] found: {partCount}", addonID, (processedBatches / (float) totalBatches * 100), processedBatches, totalBatches, (processedTotal / (float) totalCount * 100), processedTotal, totalCount, partResult.Count ());
+                        // logger.LogInformation ("[{addonID}] {batchProgress}% [{processedBatches}/{totalBatches}] {totalProgress}% [{processedTotal}/{totalCount}] found: {partCount}", addonID, (processedBatches / (float) totalBatches * 100), processedBatches, totalBatches, (processedTotal / (float) totalCount * 100), processedTotal, totalCount, partResult.Count ());
                         resultIDs.AddRange (partResult.Select (f => f.Id));
                     }
                     cache.Save ();
 
-                    logger.LogInformation ("[{addonID}] hidden files: {resultIDs}", addonID, resultIDs);
+                    if (resultIDs.Count > 0) {
+                        logger.LogInformation ("[{addonID}] hidden files: {resultIDs}", addonID, resultIDs);
+                    }
                     hiddenFileIDs[addonID] = resultIDs.ToArray ();
 
                     processedAddons++;
-                    var elapsed = timer.Elapsed;
-                    var totalTimeElapsed = totalTimer.Elapsed;
-                    var average = totalTimeElapsed / processedAddons;
-                    var averagePrediction = average * (totalAddons - processedAddons);
-                    var currentPrediction = elapsed * (totalAddons - processedAddons);
 
-                    // logger.LogInformation (report.ToPrettyJson ());
-                    logger.LogInformation ("elapsed: {elapsed}, average: {average}, total: {total}", elapsed, average, totalTimeElapsed);
-                    logger.LogInformation ("progress: {progress}% [{processedAddons} / {totalAddons}]", processedAddons / (float) totalAddons * 100, processedAddons, totalAddons);
-                    logger.LogInformation ("prediction [ current: {predictionCurrent}, average: {averagePrediction} ]", currentPrediction, averagePrediction);
-                    timer.Restart ();
+                    if (processedAddons % 10 == 0) {
+                        var elapsed = timer.Elapsed;
+                        var totalTimeElapsed = totalTimer.Elapsed;
+                        var average = totalTimeElapsed / processedAddons;
+                        var averagePrediction = average * (totalAddons - processedAddons);
+                        var currentPrediction = elapsed * (totalAddons - processedAddons);
+                        // logger.LogInformation (report.ToPrettyJson ());
+                        logger.LogInformation ("elapsed: {elapsed}, average: {average}, total: {total}", elapsed, average, totalTimeElapsed);
+                        logger.LogInformation ("progress: {progress}% [{processedAddons} / {totalAddons}]", processedAddons / (float) totalAddons * 100, processedAddons, totalAddons);
+                        logger.LogInformation ("prediction [ current: {predictionCurrent}, average: {averagePrediction} ]", currentPrediction, averagePrediction);
+                        timer.Restart ();
+                    }
 
                 }
                 timer.Stop ();
