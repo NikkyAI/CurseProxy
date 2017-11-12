@@ -16,7 +16,7 @@ namespace Cursemeta.Tasks {
 
         private int RunCount = 0;
 
-        public SyncTask (ILogger<CompleteTask> _logger, Update _update) {
+        public SyncTask (ILogger<SyncTask> _logger, Update _update) {
             logger = _logger;
             update = _update;
         }

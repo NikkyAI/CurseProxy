@@ -15,7 +15,7 @@ namespace Cursemeta.Tasks {
         private int RunCount = 0;
         HttpClient httpClient = new HttpClient ();
 
-        public TestTask (ILogger<CompleteTask> _logger, Config _config) {
+        public TestTask (ILogger<TestTask> _logger, Config _config) {
             logger = _logger;
         }
 
