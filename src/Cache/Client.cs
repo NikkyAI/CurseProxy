@@ -87,7 +87,7 @@ namespace Cursemeta {
                 if (addons != null) return addons;
             }
             var list = new List<int> (ids);
-            var split = list.Split (16384);
+            var split = list.Split (8192);
             var result = new List<AddOn> ();
             logger.LogDebug ($"v2GetAddOnsAsync {ids.Length}");
             foreach (var idList in split) {
@@ -105,6 +105,7 @@ namespace Cursemeta {
         }
 
         async public Task<string> v2GetChangeLogAsync (int addonID, int fileID, bool cache = true, bool save = true) {
+            var addon = await GetAddOnAsync(addonID); // make sure addon exists and cache folders are created
             if (cache) {
                 var changelog = this.cache.GetChangelog (addonID, fileID);
                 if (changelog != null) return changelog;
@@ -117,20 +118,22 @@ namespace Cursemeta {
             return result;
         }
 
-        async public Task<string> v2GetAddOnDescriptionAsync (int id, bool cache = true, bool save = true) {
+        async public Task<string> v2GetAddOnDescriptionAsync (int addonID, bool cache = true, bool save = true) {
+            var addon = await GetAddOnAsync(addonID); // make sure addon exists and cache folders are created
             if (cache) {
-                var description = this.cache.GetDescription (id);
+                var description = this.cache.GetDescription (addonID);
                 if (description != null) return description;
             }
-            var result = await client.v2GetAddOnDescriptionAsync (id);
+            var result = await client.v2GetAddOnDescriptionAsync (addonID);
             if (result == null) return result;
             var task = Task.Run (() => {
-                this.cache.Add (id, result, save);
+                this.cache.Add (addonID, result, save);
             });
             return result;
         }
 
         async public Task<AddOnFile> GetAddOnFileAsync (int addonID, int fileID, bool cache = true, bool save = true) {
+            var addon = await GetAddOnAsync(addonID); // make sure addon exists and cache folders are created
             if (cache) {
                 var file = this.cache.Get (addonID, fileID);
                 if (file != null) {
@@ -147,6 +150,7 @@ namespace Cursemeta {
         }
 
         async public Task<AddOnFile[]> GetAllFilesForAddOnAsync (int addonID, bool cache = true, bool save = true) {
+            var addon = await GetAddOnAsync(addonID); // make sure addon exists and cache folders are created
             if (cache) {
                 var files = this.cache.GetFiles (addonID);
                 if (files != null) return files;
@@ -181,8 +185,9 @@ namespace Cursemeta {
             var result = await client.GetAddOnFilesAsync (addOnFileKeys);
             if (result == null) return result;
             //TODO: var fileDict = result.filter();
-            var task = Task.Run (() => {
+            var task = Task.Run (async () => {
                 foreach (var addonID in result.Keys) {
+                    var addon = await GetAddOnAsync(addonID); // make sure addon exists and cache folders are created
                     this.cache.Add (addonID, result[addonID], false);
                 }
                 this.cache.Save (save);
