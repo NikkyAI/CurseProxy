@@ -183,10 +183,10 @@ namespace Cursemeta {
             timer.Start ();
             if (addonIDs.All (k => idCache.ContainsKey (k))) {
                 var addons = new AddOn[addonIDs.Length];
-                for( int i = 0; i< addons.Length; i++) {
+                for (int i = 0; i < addons.Length; i++) {
                     addons[i] = GetAddonPath (addonIDs[i]).FromJsonFile<AddOn> ();
-                    if(addons[i] == null) {
-                        logger.LogError("Get Addon cannot Find {file}", GetAddonPath (addonIDs[i]));
+                    if (addons[i] == null) {
+                        logger.LogError ("Get Addon cannot Find {file}", GetAddonPath (addonIDs[i]));
                         return null;
                     }
                 }
@@ -304,13 +304,16 @@ namespace Cursemeta {
                 })) {
                 var ret = new Dictionary<int, AddOnFile[]> ();
                 foreach (var addonID in mapping.Keys) {
-                    var files = idCache[addonID].Keys.Select (fileID => {
-                        var path = GetFilePath (addonID, fileID);
-                        return path.FromJsonFile<AddOnFile> ();
-                    });
-                    if (files.All (a => a != null))
-                        ret[addonID] = files.OrderBy (f => f.FileDate).ToArray ();
-                    else return null;
+                    var fileIDs = mapping[addonID].ToArray();
+                    var files = new AddOnFile[fileIDs.Length];
+                    for (int i = 0; i < files.Length; i++) {
+                        files[i] = GetFilePath (addonID, fileIDs[i]).FromJsonFile<AddOnFile> ();
+                        if (files[i] == null) {
+                            logger.LogError ("Get AddonFile cannot Find {file}", GetFilePath (addonID, fileIDs[i]));
+                            return null;
+                        }
+                    }
+                    ret[addonID] = files.OrderBy (f => f.FileDate).ToArray ();
                 }
                 return ret;
             }
