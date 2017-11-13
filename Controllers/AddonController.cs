@@ -38,7 +38,9 @@ namespace Cursemeta.Controllers {
                 var ids = cache.GetIDs ();
                 var keys = ids.Keys.ToArray ();
                 await Task.Run (() => { });
-                IEnumerable<AddOn> addons = await client.v2GetAddOnsAsync (keys);
+                
+                bool useCache = Request.Query.GetBool ("cache").ElementAtOr (0, true);
+                IEnumerable<AddOn> addons = await client.v2GetAddOnsAsync (keys, useCache);
 
                 // category filter
 
@@ -250,10 +252,6 @@ namespace Cursemeta.Controllers {
                     var groupedAddons = flatFiles.GroupBy (f => f.FileStatus, f => f).ToDictionary (f => f.Key, f => f.ToArray ());
                     return Json (groupedAddons);
                 }
-
-                //var groupedFiles = flatFiles.GroupBy (f => f.FileStatus).ToDictionary (f => f.Key, f => f.ToArray ());
-
-                //return Json (groupedFiles);
             } catch (Exception e) {
                 logger.LogError ("{@Exception}", e);
                 throw;

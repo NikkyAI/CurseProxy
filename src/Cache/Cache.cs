@@ -87,7 +87,7 @@ namespace Cursemeta {
         public bool Save (bool write = true) {
             if (write) {
                 // save ID mapping
-                logger.LogDebug("saving id mapping to {path}", idPath);
+                logger.LogDebug ("saving id mapping to {path}", idPath);
                 File.WriteAllText (idPath, GetIDs ().ToPrettyJson ());
             }
 
@@ -179,13 +179,20 @@ namespace Cursemeta {
         }
 
         public AddOn[] Get (int[] addonIDs) {
+            var timer = new Stopwatch ();
+            timer.Start ();
             if (addonIDs.All (k => idCache.ContainsKey (k))) {
-                var addons = addonIDs.Select (addonID => {
-                    var path = GetAddonPath (addonID);
-                    return path.FromJsonFile<AddOn> ();
-                });
-                if (addons.All (a => a != null))
-                    return addons.ToArray ();
+                var addons = new AddOn[addonIDs.Length];
+                for( int i = 0; i< addons.Length; i++) {
+                    addons[i] = GetAddonPath (addonIDs[i]).FromJsonFile<AddOn> ();
+                    if(addons[i] == null) {
+                        logger.LogError("Get Addon cannot Find {file}", GetAddonPath (addonIDs[i]));
+                        return null;
+                    }
+                }
+                logger.LogDebug ("Get Addon (cache) reading files took {timeElapsed}", timer.Elapsed);
+                timer.Restart ();
+                return addons;
             }
             return null;
         }

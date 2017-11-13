@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Cursemeta.AddOnService;
@@ -82,16 +83,21 @@ namespace Cursemeta {
         }
 
         async public Task<AddOn[]> v2GetAddOnsAsync (int[] ids, bool cache = true, bool save = true) {
+            var timer = new Stopwatch();
+            timer.Start();
             if (cache) {
                 var addons = this.cache.Get (ids);
+                logger.LogDebug("v2GetAddOnsAsync (cache) {idsLength} took {timeElapsed}", ids.Length, timer.Elapsed);
                 if (addons != null) return addons;
             }
             var list = new List<int> (ids);
-            var split = list.Split (8192);
+            var split = list.Batch (8192);
             var result = new List<AddOn> ();
-            logger.LogDebug ($"v2GetAddOnsAsync {ids.Length}");
+            logger.LogDebug ("v2GetAddOnsAsync {addonCount}", ids.Length);
             foreach (var idList in split) {
-                var partResult = await client.v2GetAddOnsAsync (idList.ToArray ());
+                var idArray = idList.ToArray();
+                var partResult = await client.v2GetAddOnsAsync (idArray.ToArray ());
+                logger.LogDebug("v2GetAddOnsAsync (api) {addonCount} took {timeElapsed}", idArray.Length, timer.Elapsed);
                 if (result == null) continue;
                 //TODO: var addon = result.filter();
                 var task = Task.Run (() => {
@@ -99,8 +105,10 @@ namespace Cursemeta {
                 });
                 result.AddRange (partResult);
             }
+            timer.Restart();
             this.cache.Save (save);
-
+            logger.LogDebug("v2GetAddOnsAsync (cache save) took {timeElapsed}", timer.Elapsed);
+            
             return result.ToArray ();
         }
 
@@ -151,7 +159,7 @@ namespace Cursemeta {
 
         async public Task<AddOnFile[]> GetAllFilesForAddOnAsync (int addonID, bool cache = true, bool save = true) {
             var addon = await GetAddOnAsync(addonID); // make sure addon exists and cache folders are created
-            if (cache) {
+            if (cache && Config.instance.Value.task.sync.Enabled) {
                 var files = this.cache.GetFiles (addonID);
                 if (files != null) return files;
             }
