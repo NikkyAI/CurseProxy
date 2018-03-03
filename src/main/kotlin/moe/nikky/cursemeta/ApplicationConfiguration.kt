@@ -11,6 +11,7 @@ import io.ktor.gson.gson
 import io.ktor.html.respondHtml
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.request.header
 import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.get
@@ -128,7 +129,6 @@ fun Application.main() {
 //            call.respond(PersonRepo.add(receive))
 //        }
         get("/") {
-            val host = "${call.request.local.scheme}://${call.request.local.host}:${call.request.local.port}"
             call.respondHtml {
                 head {
                     title("CurseMeta API")
@@ -141,12 +141,13 @@ fun Application.main() {
                     p {
                         +"How are you doing?"
                     }
-                    a(href = "$host/api/addon/") { +"get started here" }
+                    a(href = "/api/addon/") { +"get started here" }
                 }
             }
         }
         get("/debug/") {
-            val host = "${call.request.local.scheme}://${call.request.local.host}:${call.request.local.port}"
+            val scheme = call.request.header("X-Forwarded-Proto") ?: call.request.local.scheme
+            val host = call.request.header("Host") ?: "${call.request.local.host}:${call.request.local.port}"
             call.respondHtml {
                 head {
                     title("CurseMeta API")
@@ -155,6 +156,12 @@ fun Application.main() {
                     h1 { +"CurseMeta API debug" }
                     p {
                         +"Hello World"
+                    }
+                    p {
+                        +"scheme = $scheme"
+                    }
+                    p {
+                        +"host = $host"
                     }
                     h2 { +"call.request.local" }
                     listOf(
@@ -167,9 +174,9 @@ fun Application.main() {
                     ).forEach { p { +it } }
 
                     h2 { +"Headers" }
-                    call.request.headers.entries().forEach {
+                    call.request.headers.entries().forEach {(key, value) ->
                         p {
-                            +"${it.key} = ${it.value}"
+                            +"$key = $value"
                         }
                     }
                 }
