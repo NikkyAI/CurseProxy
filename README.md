@@ -53,7 +53,7 @@ curl -X POST \
 ]
 ```
 
-[GET `/api/addon/ids`](https://cursemeta.nikky.moe/api/addon/ids)
+[GET `/api/ids`](https://cursemeta.nikky.moe/api/ids)
 
 
 [POST `/api/manifest`](https://cursemeta.nikky.moe/api/manifest) TBD / planned
