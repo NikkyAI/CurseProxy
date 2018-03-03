@@ -1,4 +1,4 @@
-//package moe.nikky.cursemeta.addon
+//package moe.nikky.curseproxy.addon
 //
 ///**
 // * Created by nikky on 27/02/18.

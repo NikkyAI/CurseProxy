@@ -1,7 +1,7 @@
-package moe.nikky.cursemeta.addon
+package moe.nikky.curseproxy.addon
 
 import addons.curse.AddOnFile
-import moe.nikky.cursemeta.addon.AddOnServiceClient.Companion.client
+import moe.nikky.curseproxy.addon.AddOnServiceClient.Companion.client
 
 /**
  * Created by nikky on 27/02/18.

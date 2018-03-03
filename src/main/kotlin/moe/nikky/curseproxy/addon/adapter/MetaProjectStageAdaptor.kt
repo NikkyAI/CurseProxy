@@ -1,14 +1,14 @@
-package moe.nikky.cursemeta.addon.adapter
+package moe.nikky.curseproxy.addon.adapter
 
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import org.datacontract.schemas._2004._07.curse_addons.ProjectStage
-import org.datacontract.schemas._2004._07.curse_addons.ProjectStatus
 import java.io.IOException
 
-object MetaProjectStatusAdaptor : TypeAdapter<ProjectStatus>() {
-    override fun write(out: JsonWriter, value: ProjectStatus?) {
+object MetaProjectStageAdaptor : TypeAdapter<ProjectStage>() {
+    @Throws(IOException::class)
+    override fun write(out: JsonWriter, value: ProjectStage?) {
         if (value != null)
             out.value(value.value)
         else
@@ -16,8 +16,8 @@ object MetaProjectStatusAdaptor : TypeAdapter<ProjectStatus>() {
     }
 
     @Throws(IOException::class)
-    override fun read(`in`: JsonReader): ProjectStatus {
+    override fun read(`in`: JsonReader): ProjectStage {
         val value = `in`.nextString()
-        return ProjectStatus.Factory.fromValue(value)
+        return ProjectStage.Factory.fromValue(value)
     }
 }

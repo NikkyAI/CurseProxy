@@ -1,4 +1,4 @@
-package moe.nikky.cursemeta.addon.adapter
+package moe.nikky.curseproxy.addon.adapter
 
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader

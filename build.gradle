@@ -48,58 +48,9 @@ compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-mainClassName = 'io.ktor.server.netty.DevelopmentEngine' //"moe.nikky.cursemeta.KtorServerKt"
-applicationName = "cursemeta"
+mainClassName = 'io.ktor.server.netty.DevelopmentEngine'
+applicationName = "curseproxy"
 
 shadowJar {
     classifier = null
 }
-
-//dependencies {
-//    compile "org.apache.axis2:axis2-kernel:1.7.7"
-//    compile "org.apache.axis2:axis2-adb:1.7.7"
-//    compile ("org.apache.axis2:axis2-transport-http:1.7.7"){
-//        exclude group: "commons-httpclient", module:"commons-httpclient"
-//    }
-//    compile "org.apache.axis2:axis2-transport-local:1.7.7"
-//    compile "org.apache.axis2:addressing:1.7.7"
-//    compile "org.apache.axis2:axis2-jaxws:1.7.7"
-//    //compile "com.sangupta:murmur:1.0.0"
-//    compile 'com.google.code.gson:gson:2.8.2'
-//    compile 'com.github.scribejava:scribejava-core:5.2.0-java7again'
-//    compile 'com.github.scribejava:scribejava-httpclient-apache:5.2.0-java7again'
-//    compile 'org.apache.httpcomponents:httpclient-cache:4.5.4'
-//    compile "org.apache.commons:commons-compress:1.16.1"
-//    compile 'it.unimi.dsi:fastutil:8.1.1'
-//}
-
-//wsdl {
-//    axis2 {
-//        AddOnService {
-//            wsdlFile = file('src/main/resources/META-INF/wsdl/AddOnService.svc.singleWsdl')
-//            serverSide = true
-//            allPorts = true
-//            serviceDescription = true
-//            packageName = 'gen'
-//            databindingMethod = 'none'
-//            // more parameters are possible
-//            outputDir = file('src/gen/java')
-////            sourceSetName = "gen"
-//            //serverSide = true
-//            generateAllClasses = true
-//            unpackClasses = true
-//            flattenFiles = true
-//            //unwrapParams = true
-//            //portName = "WsHttpAddOnServiceEndpoint"
-//        }
-////        MinecraftAddOnService {
-////            wsdlFile = file('src/main/resources/META-INF/wsdl/MinecraftAddOnService.svc.singleWsdl')
-////            serverSide = true
-////            //allPorts = true
-////            serviceDescription = true
-////            packageName = 'gen.minecraftAddonService'
-////            databindingMethod = 'none'
-////            // more parameters are possible
-////        }
-//    }
-//}

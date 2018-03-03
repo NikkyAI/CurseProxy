@@ -1,11 +1,11 @@
-package moe.nikky.cursemeta.addon
+package moe.nikky.curseproxy.addon
 
 import addons.curse.AddOn
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap
 import kotlinx.coroutines.experimental.async
-import moe.nikky.cursemeta.LOG
+import moe.nikky.curseproxy.LOG
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap

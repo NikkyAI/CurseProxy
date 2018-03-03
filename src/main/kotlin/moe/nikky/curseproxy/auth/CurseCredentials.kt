@@ -1,10 +1,10 @@
-package moe.nikky.cursemeta.auth
+package moe.nikky.curseproxy.auth
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
-import moe.nikky.cursemeta.LOG
+import moe.nikky.curseproxy.LOG
 import java.io.File
 
 data class CurseCredentials(

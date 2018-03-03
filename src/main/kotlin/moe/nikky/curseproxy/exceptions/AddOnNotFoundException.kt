@@ -1,4 +1,4 @@
-package moe.nikky.cursemeta.exceptions
+package moe.nikky.curseproxy.exceptions
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName

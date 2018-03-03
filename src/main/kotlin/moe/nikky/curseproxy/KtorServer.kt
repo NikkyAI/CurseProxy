@@ -1,4 +1,4 @@
-package moe.nikky.cursemeta
+package moe.nikky.curseproxy
 
 import io.ktor.application.Application
 import io.ktor.server.engine.embeddedServer

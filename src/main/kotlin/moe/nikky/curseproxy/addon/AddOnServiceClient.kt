@@ -1,4 +1,4 @@
-package moe.nikky.cursemeta.addon
+package moe.nikky.curseproxy.addon
 
 import addons.curse.AddOn
 import addons.curse.AddOnFile
@@ -9,10 +9,10 @@ import com.thiakil.curseapi.login.LoginSession
 import com.thiakil.curseapi.soap.AddOnService
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap
-import moe.nikky.cursemeta.LOG
-import moe.nikky.cursemeta.auth.CurseCredentials
-import moe.nikky.cursemeta.exceptions.AddOnFileNotFoundException
-import moe.nikky.cursemeta.exceptions.AddOnNotFoundException
+import moe.nikky.curseproxy.LOG
+import moe.nikky.curseproxy.auth.CurseCredentials
+import moe.nikky.curseproxy.exceptions.AddOnFileNotFoundException
+import moe.nikky.curseproxy.exceptions.AddOnNotFoundException
 import org.datacontract.schemas._2004._07.curse_addonservice_requests.AddOnFileKey
 
 /**

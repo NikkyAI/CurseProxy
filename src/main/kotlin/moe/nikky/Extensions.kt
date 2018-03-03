@@ -1,16 +1,14 @@
 package moe.nikky
 
 import addons.curse.*
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.TypeAdapter
 import com.thiakil.curseapi.json.ProjectFeed
 import com.thiakil.curseapi.json.adaptors.*
-import moe.nikky.cursemeta.addon.adapter.*
+import moe.nikky.curseproxy.addon.adapter.*
+import moe.nikky.curseproxy.addon.adapter.PackageTypesAdaptor
 import org.datacontract.schemas._2004._07.curse_addons.*
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.util.*
 
 /**
  * Created by nikky on 27/02/18.
@@ -24,7 +22,7 @@ fun GsonBuilder.setup(): GsonBuilder = this
         //.serializeNulls() // do we want to keep nulls for keeping objjects complete
         // or leave them out and let cliuents guess a little ?
 
-        .registerTypeAdapter(PackageTypes::class.java, MetaPackageTypesAdaptor)
+        .registerTypeAdapter(PackageTypes::class.java, PackageTypesAdaptor)
         .registerTypeAdapter(DependencyType::class.java, MetaDependencyTypeAdaptor)
         .registerTypeAdapter(ProjectStage::class.java, MetaProjectStageAdaptor)
         .registerTypeAdapter(ProjectStatus::class.java, MetaProjectStatusAdaptor)

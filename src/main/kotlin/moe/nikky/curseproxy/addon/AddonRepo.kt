@@ -1,10 +1,10 @@
-package moe.nikky.cursemeta.addon
+package moe.nikky.curseproxy.addon
 
 import addons.curse.AddOn
 import com.thiakil.curseapi.json.ProjectFeedDownloader
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap
-import moe.nikky.cursemeta.addon.AddOnServiceClient.Companion.client
-import moe.nikky.cursemeta.LOG
+import moe.nikky.curseproxy.addon.AddOnServiceClient.Companion.client
+import moe.nikky.curseproxy.LOG
 import java.io.File
 
 /**

@@ -1,4 +1,4 @@
-package moe.nikky.cursemeta
+package moe.nikky.curseproxy
 
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -17,16 +17,16 @@ import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import kotlinx.html.*
-import moe.nikky.cursemeta.addon.AddonRepo
-import moe.nikky.cursemeta.addon.FileRepo
-import moe.nikky.cursemeta.addon.IDCache
-import moe.nikky.cursemeta.exceptions.*
+import moe.nikky.curseproxy.addon.AddonRepo
+import moe.nikky.curseproxy.addon.FileRepo
+import moe.nikky.curseproxy.addon.IDCache
+import moe.nikky.curseproxy.exceptions.*
 import moe.nikky.setup
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 
-val LOG: Logger = LoggerFactory.getLogger("cursemeta")
+val LOG: Logger = LoggerFactory.getLogger("curseproxy")
 
 const val REST_ENDPOINT = "/api/addon"
 
@@ -131,10 +131,10 @@ fun Application.main() {
         get("/") {
             call.respondHtml {
                 head {
-                    title("CurseMeta API")
+                    title("CurseProxy API")
                 }
                 body {
-                    h1 { +"CurseMeta API" }
+                    h1 { +"CurseProxy API" }
                     p {
                         +"Hello World"
                     }
@@ -150,10 +150,10 @@ fun Application.main() {
             val host = call.request.header("Host") ?: "${call.request.local.host}:${call.request.local.port}"
             call.respondHtml {
                 head {
-                    title("CurseMeta API")
+                    title("CurseProxy API")
                 }
                 body {
-                    h1 { +"CurseMeta API debug" }
+                    h1 { +"CurseProxy API debug" }
                     p {
                         +"Hello World"
                     }

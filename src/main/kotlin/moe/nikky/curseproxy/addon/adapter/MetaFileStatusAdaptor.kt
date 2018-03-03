@@ -1,23 +1,23 @@
-package moe.nikky.cursemeta.addon.adapter
+package moe.nikky.curseproxy.addon.adapter
 
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import org.datacontract.schemas._2004._07.curse_addons.FileStatus
-import org.datacontract.schemas._2004._07.curse_addons.FileType
 import java.io.IOException
 
-object MetaFileTypeAdaptor : TypeAdapter<FileType>() {
+object MetaFileStatusAdaptor : TypeAdapter<FileStatus>() {
     @Throws(IOException::class)
-    override fun write(out: JsonWriter, value: FileType?) {
+    override fun write(out: JsonWriter, value: FileStatus?) {
         if (value != null)
             out.value(value.value)
         else
             out.nullValue()
     }
 
-    override fun read(`in`: JsonReader): FileType {
+    @Throws(IOException::class)
+    override fun read(`in`: JsonReader): FileStatus {
         val value = `in`.nextString()
-        return FileType.Factory.fromValue(value)
+        return FileStatus.Factory.fromValue(value)
     }
 }
