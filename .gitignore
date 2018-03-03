@@ -1,0 +1,11 @@
+.idea/
+.gradle/
+build/
+out/
+run/
+*.iml
+auth.json
+ids.json
+docs
+wsdl
+\.floo
