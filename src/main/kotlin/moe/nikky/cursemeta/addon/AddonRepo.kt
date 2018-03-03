@@ -51,11 +51,11 @@ object AddonRepo {
         }
     }
 
-    fun get(id: Int): AddOn? {
+    fun get(id: Int): AddOn {
         return client.getAddOn(id)
     }
 
-    fun getDescription(id: Int): String? {
+    fun getDescription(id: Int): String {
         return client.v2GetAddOnDescription(id)
     }
 

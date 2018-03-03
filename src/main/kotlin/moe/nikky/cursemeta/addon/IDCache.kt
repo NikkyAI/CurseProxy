@@ -23,6 +23,7 @@ object IDCache {
     private val idMap: IDMap
 
     init {
+        LOG.info("initializing ID map")
         idMap = if (idFile.isFile)
             gson.fromJson(idFile.readText(), object : TypeToken<IDMap>() {}.type)
         else {
@@ -69,6 +70,13 @@ object IDCache {
             //LOG.debug("adding $addonID $fileIDs to cache")
             val ids = idMap[addonID] ?: mutableSetOf<Int>().apply { idMap[addonID] = this }
             ids.addAll(fileIDs)
+        }
+    }
+    fun set(addonID: Int, fileID: Int) {
+        async {
+            //LOG.debug("adding $addonID $fileIDs to cache")
+            val ids = idMap[addonID] ?: mutableSetOf<Int>().apply { idMap[addonID] = this }
+            ids.add(fileID)
         }
     }
 

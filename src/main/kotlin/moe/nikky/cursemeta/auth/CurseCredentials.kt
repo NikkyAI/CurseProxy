@@ -2,13 +2,14 @@ package moe.nikky.cursemeta.auth
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import moe.nikky.cursemeta.LOG
 import java.io.File
 
 data class CurseCredentials(
-        @SerializedName("username") val username: String,
-        @SerializedName("password") val password: String
+        @Expose @SerializedName("username") val username: String,
+        @Expose @SerializedName("password") val password: String
 ) {
     companion object {
         private val credentialsFile = File("auth.json")

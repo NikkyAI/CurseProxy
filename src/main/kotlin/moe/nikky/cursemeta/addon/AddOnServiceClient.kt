@@ -3,7 +3,6 @@ package moe.nikky.cursemeta.addon
 import addons.curse.AddOn
 import addons.curse.AddOnFile
 import com.curse.addonservice.*
-import com.google.gson.Gson
 import com.thiakil.curseapi.login.CurseAuth
 import com.thiakil.curseapi.login.CurseToken
 import com.thiakil.curseapi.login.LoginSession
@@ -12,9 +11,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap
 import moe.nikky.cursemeta.LOG
 import moe.nikky.cursemeta.auth.CurseCredentials
-import moe.nikky.exceptionString
+import moe.nikky.cursemeta.exceptions.AddOnFileNotFoundException
+import moe.nikky.cursemeta.exceptions.AddOnNotFoundException
 import org.datacontract.schemas._2004._07.curse_addonservice_requests.AddOnFileKey
-import java.io.File
 
 /**
  * Created by nikky on 27/02/18.
@@ -50,9 +49,9 @@ class AddOnServiceClient(private val stub: AddOnService) : AddOnService by stub 
                 if (diff < 0) {
                     val response = CurseAuth.renewAccessToken(session.token)
                     LOG.debug("old token: ${session.token}")
-                    session.token = response.Token
-                    session.renewAfter = response.RenewAfter
-                    session.expires = response.Expires
+                    session.token = response.token
+                    session.renewAfter = response.renewAfter
+                    session.expires = response.expires
 
                     LOG.debug("new token: ${session.token}")
                     LOG.debug("new expires: ${session.expires / 1000.0 / 60.0 / 60.0}")
@@ -65,10 +64,10 @@ class AddOnServiceClient(private val stub: AddOnService) : AddOnService by stub 
             }
     }
 
-    override fun getAddOn(id: Int): AddOn? {
+    override fun getAddOn(id: Int): AddOn {
         val request = GetAddOn()
         request.id = id
-        val response = stub.getAddOn(id) ?: return null
+        val response = stub.getAddOn(id) ?: throw AddOnNotFoundException(id)
 
         IDCache.set(id, response.latestFiles.map { it.id })
         IDCache.save()
@@ -79,21 +78,7 @@ class AddOnServiceClient(private val stub: AddOnService) : AddOnService by stub 
     override fun v2GetAddOns(vararg ids: Int): List<AddOn> {
         return ids.toList().chunked(8192).map {
             //LOG.debug("requesting $ids")
-            val response = try {
-                stub.v2GetAddOns(*it.toIntArray()) ?: listOf()
-            } catch (e: Exception) {
-                LOG.error(e.exceptionString)
-                ids.forEach {
-
-                    try {
-//                        LOG.debug("requesting $it")
-                        val junk = getAddOn(it)
-                    } catch (e: Exception) {
-                        LOG.error("$it ${e.message} https://cursemeta.nikky.moe/api/addon/$it")
-                    }
-                }
-                return listOf()
-            }
+            val response = stub.v2GetAddOns(*it.toIntArray()) ?: listOf()
 
             IDCache.set(response.map { it.id })
             IDCache.save()
@@ -102,8 +87,8 @@ class AddOnServiceClient(private val stub: AddOnService) : AddOnService by stub 
         }.flatten()
     }
 
-    override fun v2GetAddOnDescription(id: Int): String? {
-        val response = stub.v2GetAddOnDescription(id) ?: return null
+    override fun v2GetAddOnDescription(id: Int): String {
+        val response = stub.v2GetAddOnDescription(id) ?: throw AddOnNotFoundException(id)
 
         IDCache.set(id)
         IDCache.save()
@@ -111,8 +96,8 @@ class AddOnServiceClient(private val stub: AddOnService) : AddOnService by stub 
         return response
     }
 
-    override fun getAddOnFile(addonID: Int, fileID: Int): AddOnFile? {
-        val response = stub.getAddOnFile(addonID, fileID)
+    override fun getAddOnFile(addonID: Int, fileID: Int): AddOnFile {
+        val response = stub.getAddOnFile(addonID, fileID) ?: throw AddOnFileNotFoundException(addonID, fileID)
         //if (!response) listOf<AddOn>()
 
         IDCache.set(addonID, listOf(fileID))
@@ -156,7 +141,7 @@ class AddOnServiceClient(private val stub: AddOnService) : AddOnService by stub 
             else -> mutableListOf()
         }
 
-        val files = stub.getAllFilesForAddOn(addonID) ?: listOf()
+        val files = stub.getAllFilesForAddOn(addonID) ?: throw AddOnNotFoundException(addonID)
 
         val ids = files.map { it.id }
         IDCache.set(addonID, ids)
@@ -169,6 +154,13 @@ class AddOnServiceClient(private val stub: AddOnService) : AddOnService by stub 
         }
 
         return files
+    }
+
+    override fun v2GetChangeLog(addonID: Int, fileID: Int): String {
+        val changelog = stub.v2GetChangeLog(addonID, fileID) ?: throw AddOnFileNotFoundException(addonID, fileID)
+        IDCache.set(addonID, fileID)
+        IDCache.save()
+        return changelog
     }
 
 }

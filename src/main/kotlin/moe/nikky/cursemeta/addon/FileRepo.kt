@@ -23,11 +23,11 @@ object FileRepo {
 
     }
 
-    fun get(addonID: Int, fileID: Int): AddOnFile? {
+    fun get(addonID: Int, fileID: Int): AddOnFile {
         return client.getAddOnFile(addonID, fileID)
     }
 
-    fun getChangelog(addonID: Int, fileID: Int): String? {
+    fun getChangelog(addonID: Int, fileID: Int): String {
         return client.v2GetChangeLog(addonID, fileID)
     }
 

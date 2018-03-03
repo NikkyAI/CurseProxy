@@ -58,7 +58,7 @@ val Any.json: String
 val Any.flatjson: String
     get() = flatGson.toJson(this)
 
-val Throwable.exceptionString: String
+val Throwable.stackTraceString: String
     get() {
         val sw = StringWriter()
         this.printStackTrace(PrintWriter(sw))
