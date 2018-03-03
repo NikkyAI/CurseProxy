@@ -156,12 +156,21 @@ fun Application.main() {
                     p {
                         +"Hello World"
                     }
-                    p {
-                        +"local = ${call.request.local}"
-                    }
-                    a(href = "$host/api/addon/") { +"get started here" }
-                    p {
-                        +call.request.headers.entries().joinToString { "${it.key} = ${it.value}\n" }
+                    h2 { +"call.request.local" }
+                    listOf(
+                            "scheme = ${call.request.local.scheme}",
+                            "version = ${call.request.local.version}",
+                            "port = ${call.request.local.port}",
+                            "host = ${call.request.local.host}",
+                            "uri = ${call.request.local.uri}",
+                            "method = ${call.request.local.method}"
+                    ).forEach { p { +it } }
+
+                    h2 { +"Headers" }
+                    call.request.headers.entries().forEach {
+                        p {
+                            +"${it.key} = ${it.value}"
+                        }
                     }
                 }
             }
