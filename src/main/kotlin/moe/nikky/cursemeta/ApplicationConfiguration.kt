@@ -128,6 +128,7 @@ fun Application.main() {
 //            call.respond(PersonRepo.add(receive))
 //        }
         get("/") {
+            val host = "${call.request.local.scheme}://${call.request.local.host}:${call.request.local.port}"
             call.respondHtml {
                 head {
                     title("CurseMeta API")
@@ -140,7 +141,28 @@ fun Application.main() {
                     p {
                         +"How are you doing?"
                     }
-                    a(href = "http://localhost:8080/api/addon/") { +"get started here" }
+                    a(href = "$host/api/addon/") { +"get started here" }
+                }
+            }
+        }
+        get("/debug/") {
+            val host = "${call.request.local.scheme}://${call.request.local.host}:${call.request.local.port}"
+            call.respondHtml {
+                head {
+                    title("CurseMeta API")
+                }
+                body {
+                    h1 { +"CurseMeta API debug" }
+                    p {
+                        +"Hello World"
+                    }
+                    p {
+                        +"local = ${call.request.local}"
+                    }
+                    a(href = "$host/api/addon/") { +"get started here" }
+                    p {
+                        +call.request.headers.entries().joinToString { "${it.key} = ${it.value}\n" }
+                    }
                 }
             }
         }
