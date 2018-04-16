@@ -5,4 +5,13 @@
 - caching to reduce api requests
   - use database for concurrent access
 
-- frontend ?
+- scheduled executing (crontab)
+  could construct a custom jb manager with
+  coroutines + delay and look up times in the database 
+
+- load config from hocon file in `pwd`
+  http://ktor.io/servers/configuration.html#custom
+
+- frontend
+  - endpoint documentation as website
+  - project explorer ?
