@@ -17,18 +17,16 @@ import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import kotlinx.html.*
-import moe.nikky.curseproxy.addon.AddonRepo
-import moe.nikky.curseproxy.addon.FileRepo
-import moe.nikky.curseproxy.addon.IDCache
-import moe.nikky.curseproxy.exceptions.*
-import moe.nikky.setup
+import moe.nikky.curseproxy.exceptions.MessageException
+import moe.nikky.curseproxy.exceptions.MissingParameterException
+import moe.nikky.curseproxy.exceptions.StackTraceMessage
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 
 val LOG: Logger = LoggerFactory.getLogger("curseproxy")
 
-const val REST_ENDPOINT = "/api/addon"
+const val REST_ENDPOINT = "/api"
 
 fun Application.main() {
 
@@ -49,8 +47,12 @@ fun Application.main() {
 //        reporter.start(10, TimeUnit.SECONDS)
 //    }
     install(ContentNegotiation) {
+//        jackson {
+//            configure(SerializationFeature.INDENT_OUTPUT, true)
+//        }
+
         gson {
-            setup()
+//            setup()
             setPrettyPrinting()
         }
     }
@@ -58,76 +60,21 @@ fun Application.main() {
     routing {
         get(REST_ENDPOINT) {
             LOG.debug("Get all AddOns")
-            val addons = AddonRepo.get()
-            LOG.info("addon count: ${addons.count()}")
+            val ids = IDCache.get()
+            LOG.info("ids count: ${ids.count()}")
 
-            call.respond(addons)
+            call.respond(ids)
         }
 
-        get("$REST_ENDPOINT/{addonID}") {
-            val addonID = call.parameters["addonID"]?.toInt()
-                    ?: throw MissingParameterException("addonID")
-            LOG.debug("Get AddOn with addonID=$addonID")
-            with(AddonRepo.get(addonID)) {
+        get("$REST_ENDPOINT/{id}") {
+            val id = call.parameters["id"]?.toInt()
+                    ?: throw MissingParameterException("id")
+            LOG.debug("Get AddOn with id=$id")
+            with(IDCache.get(id)) {
                 call.respond(this)
             }
         }
 
-        get("$REST_ENDPOINT/{addonID}/description") {
-            val addonID = call.parameters["addonID"]?.toInt()
-                    ?: throw MissingParameterException("addonID")
-            LOG.debug("Get AddOn Description with addonID=$addonID")
-            call.respondText(AddonRepo.getDescription(addonID), contentType = ContentType.parse("text/html"))
-        }
-
-        get("$REST_ENDPOINT/{addonID}/files") {
-            val addonID = call.parameters["addonID"]?.toInt() ?: throw MissingParameterException("addonID")
-            val files = FileRepo.get(addonID)
-            call.respond(files)
-        }
-
-        get("$REST_ENDPOINT/{addonID}/files/{fileID}") {
-            val addonID = call.parameters["addonID"]?.toInt()
-                    ?: throw MissingParameterException("addonID")
-            val fileID = call.parameters["fileID"]?.toInt()
-                    ?: throw MissingParameterException("fileID")
-            call.respond(FileRepo.get(addonID, fileID))
-        }
-
-        get("$REST_ENDPOINT/{addonID}/files/{fileID}/changelog") {
-            val addonID = call.parameters["addonID"]?.toInt()
-                    ?: throw MissingParameterException("addonID")
-            val fileID = call.parameters["fileID"]?.toInt()
-                    ?: throw MissingParameterException("fileID")
-            with(FileRepo.getChangelog(addonID, fileID)) {
-                call.respondText(this, contentType = ContentType.parse("text/html"))
-            }
-        }
-
-        get("/api/ids") {
-            val idMap = IDCache.getIDMap()
-            call.respond(idMap)
-        }
-
-//        get(REST_ENDPOINT) {
-//            LOG.debug("Get all Person entities")
-//            call.respond(PersonRepo.getAll())
-//        }
-//        delete("${REST_ENDPOINT}/{id}") {
-//            val id = call.parameters["id"] ?: throw IllegalArgumentException("Parameter id not found")
-//            LOG.debug("Delete Person entity with Id=$id")
-//            call.respondSuccessJson(PersonRepo.remove(id))
-//        }
-//        delete(REST_ENDPOINT) {
-//            LOG.debug("Delete all Person entities")
-//            PersonRepo.clear()
-//            call.respondSuccessJson()
-//        }
-//        post(REST_ENDPOINT) {
-//            val receive = call.receive<Person>()
-//            println("Received Post Request: $receive")
-//            call.respond(PersonRepo.add(receive))
-//        }
         get("/") {
             call.respondHtml {
                 head {
@@ -190,18 +137,12 @@ fun Application.main() {
                     StackTraceMessage(cause)
             )
         }
-        exception<AddOnNotFoundException> { cause ->
-            call.respond(
-                    HttpStatusCode.NotFound,
-                    cause
-            )
-        }
-        exception<AddOnFileNotFoundException> { cause ->
-            call.respond(
-                    HttpStatusCode.NotFound,
-                    cause
-            )
-        }
+//        exception<AddOnNotFoundException> { cause ->
+//            call.respond(
+//                    HttpStatusCode.NotFound,
+//                    cause
+//            )
+//        }
         exception<MissingParameterException> { cause ->
             call.respond(
                     HttpStatusCode.NotAcceptable,
@@ -228,11 +169,8 @@ fun Application.main() {
         }
     }
 
-    AddonRepo.sync()
     LOG.info("loading IDs")
-    val idMap = IDCache.getIDMap()
-    val idCount = idMap.values.sumBy { it.size }
-    LOG.info("loaded $idCount IDs")
-    AddonRepo.get(287323)
-    LOG.info("loaded addon test complete")
+    val idMap = IDCache.get()
+    LOG.info("loaded ${idMap.size} IDs")
+//    LOG.info("loaded addon test complete")
 }

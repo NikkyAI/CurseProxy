@@ -1,5 +1,4 @@
 plugins {
-    //id "com.intershop.gradle.wsdl" version "1.1.0"
     id "org.jetbrains.kotlin.jvm" version "1.2.30"
     id 'com.github.johnrengelman.shadow' version '2.0.2'
     id 'application'
@@ -26,20 +25,18 @@ repositories {
 }
 
 dependencies {
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
-    compile group: 'com.thiakil', name: 'CurseApi', version: '1.+'
-//    compile group: 'com.github.thiakil', name: 'CurseApi', version: 'master-SNAPSHOT'
     compile group: 'com.github.aballano', name: 'MnemoniK', version: 'master-SNAPSHOT'
 
-    compile group: 'io.ktor', name: 'ktor', version : project.ktor_version
-    compile group: 'io.ktor', name: 'ktor-gson', version : project.ktor_version
-    compile group: 'io.ktor', name: 'ktor-features', version : project.ktor_version
-    compile group: 'io.ktor', name: 'ktor-html-builder', version : project.ktor_version
-    compile group: 'io.ktor', name: 'ktor-metrics', version : project.ktor_version
-    compile group: 'io.ktor', name: 'ktor-server-netty', version : project.ktor_version
-
+    ['ktor', 'ktor-gson', 'ktor-features', 'ktor-html-builder', 'ktor-metrics', 'ktor-server-netty'].each {
+        compile group: 'io.ktor', name: it, version: project.ktor_version
+    }
     compile group: 'ch.qos.logback', name: 'logback-classic', version : '1.2.1'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '+'
+    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '+'
+    compile group: 'com.github.kittinunf.fuel', name: 'fuel', version: '+'
+
 
     testCompile group: 'io.ktor', name: 'ktor-server-test-host', version : project.ktor_version
 }

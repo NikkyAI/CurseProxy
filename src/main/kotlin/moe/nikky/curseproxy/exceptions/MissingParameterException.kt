@@ -10,6 +10,4 @@ import com.google.gson.annotations.SerializedName
  */
 data class MissingParameterException(
         @Expose @SerializedName("missing") val missing: String
-) : MessageException("Parameter not found") {
-
-}
+) : MessageException("Parameter not found")
