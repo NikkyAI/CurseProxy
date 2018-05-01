@@ -54,6 +54,7 @@ fun Application.main() {
         gson {
 //            setup()
             setPrettyPrinting()
+            disableHtmlEscaping()
         }
     }
 
