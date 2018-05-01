@@ -89,7 +89,7 @@ fun Application.main() {
                     p {
                         +"How are you doing?"
                     }
-                    a(href = "/api/addon/") { +"get started here" }
+                    a(href = "/api/") { +"get started here" }
                 }
             }
         }
