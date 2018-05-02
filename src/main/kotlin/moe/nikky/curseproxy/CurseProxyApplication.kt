@@ -17,6 +17,8 @@ import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import kotlinx.html.*
+import moe.nikky.curseproxy.Widget.widget
+import moe.nikky.curseproxy.exceptions.AddonNotFoundException
 import moe.nikky.curseproxy.exceptions.MessageException
 import moe.nikky.curseproxy.exceptions.MissingParameterException
 import moe.nikky.curseproxy.exceptions.StackTraceMessage
@@ -59,7 +61,7 @@ fun Application.main() {
     }
 
     routing {
-        get(REST_ENDPOINT) {
+        get("/api/ids") {
             LOG.debug("Get all AddOns")
             val ids = IDCache.get()
             LOG.info("ids count: ${ids.count()}")
@@ -67,13 +69,26 @@ fun Application.main() {
             call.respond(ids)
         }
 
-        get("$REST_ENDPOINT/{id}") {
+        get("/api/ids/{id}") {
             val id = call.parameters["id"]?.toInt()
-                    ?: throw MissingParameterException("id")
+                    ?: throw NumberFormatException("id")
             LOG.debug("Get AddOn with id=$id")
             with(IDCache.get(id)) {
                 call.respond(this)
             }
+        }
+
+        get("/api/widget/{id}") {
+            val id = call.parameters["id"]?.toInt()
+                    ?: throw NumberFormatException("id")
+            val versions = call.parameters.getAll("version") ?: emptyList()
+            call.respondHtml{
+                widget(id, versions.toMutableList())
+            }
+        }
+        get("/api/widget.css") {
+            val css = Widget::class.java.getResource("/css/widget.css").readText()
+            call.respondText(css, ContentType("text", "css"))
         }
 
         get("/") {
@@ -89,7 +104,7 @@ fun Application.main() {
                     p {
                         +"How are you doing?"
                     }
-                    a(href = "/api/") { +"get started here" }
+                    a(href = "/api/ids/") { +"get started here" }
                 }
             }
         }
@@ -138,12 +153,12 @@ fun Application.main() {
                     StackTraceMessage(cause)
             )
         }
-//        exception<AddOnNotFoundException> { cause ->
-//            call.respond(
-//                    HttpStatusCode.NotFound,
-//                    cause
-//            )
-//        }
+        exception<AddonNotFoundException> { cause ->
+            call.respond(
+                    HttpStatusCode.NotFound,
+                    cause
+            )
+        }
         exception<MissingParameterException> { cause ->
             call.respond(
                     HttpStatusCode.NotAcceptable,

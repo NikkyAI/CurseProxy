@@ -7,6 +7,8 @@ import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import moe.nikky.curseproxy.CurseUtil.META_URL
+import moe.nikky.curseproxy.CurseUtil.getAddon
 import voodoo.curse.AddOn
 import java.io.File
 
@@ -17,8 +19,6 @@ import java.io.File
  */
 
 object IDCache {
-    val META_URL = "https://cursemeta.dries007.net"
-    val useragent = "curseProxy (https://github.com/nikky/CurseProxy)"
 
     val mapper = jacksonObjectMapper() // Enable Json parsing
             .registerModule(KotlinModule()) // Enable Kotlin support
@@ -51,23 +51,6 @@ object IDCache {
         return addon.name
     }
 
-    private fun getAddonCall(addonId: Int): AddOn? {
-        val url = "$META_URL/api/v2/direct/GetAddOn/$addonId"
 
-        LOG.debug("get $url")
-        val (_, _, result) = url.httpGet()
-                .header("User-Agent" to useragent)
-                .responseString()
-        return when (result) {
-            is Result.Success -> {
-                mapper.readValue(result.value)
-            }
-            is Result.Failure -> {
-                LOG.error(result.error.toString())
-                null
-            }
-        }
-    }
-    val getAddon = ::getAddonCall.memoize()
 
 }
