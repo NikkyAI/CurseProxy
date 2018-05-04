@@ -92,9 +92,6 @@ object Widget {
                         span("line small") {
                             +addon.summary
                         }
-                        div {
-                            +"Test"
-                        }
                         span("line small") {
                             +"version info etc.."
                         }

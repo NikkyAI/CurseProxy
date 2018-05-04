@@ -88,8 +88,6 @@ parameters:
 
 Coming Soon
 
-## crontab
+## IFrame tests
 
-Scheduled execution of file scans
-
-Maybe coming soon ?
+<iframe src="https://curse.nikky.moe/api/widget/287323?version=1.12.2&version=1.11.2&version=1.10.2&version=1.7.10"></iframe>
