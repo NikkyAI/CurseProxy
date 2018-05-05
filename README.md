@@ -42,3 +42,4 @@ pinning the fileid too
 all files
 
 - [![Files](https://curse.nikky.moe/api/img/287323/files?logo&style=for-the-badge&version=1.12.2)](https://minecraft.curseforge.com/projects/287323/files)
+- [![Files](https://curse.nikky.moe/api/img/248453/files?logo&style=for-the-badge)](https://minecraft.curseforge.com/projects/248453/files)
