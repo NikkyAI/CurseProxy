@@ -110,14 +110,17 @@ fun Application.main() {
         get("/api/img/{id}") {
             val id = call.parameters["id"]?.toInt()
                     ?: throw NumberFormatException("id")
+            val style = call.parameters["style"]
             val addon = CurseUtil.getAddon(id) ?: throw AddonNotFoundException(id)
             val versions = call.parameters.getAll("version") ?: emptyList()
             val file = addon.latestFile(versions)
 
             val name = addon.name.replace("-", "--")
             val fileName = file.fileName.replace(addon.name, "").replace("-", "--")
-            val url = "https://img.shields.io/badge/$name-$fileName-orange.svg"
-
+            var url = "https://img.shields.io/badge/$name-$fileName-orange.svg"
+            if(style != null) {
+                url += "?style=$style"
+            }
             call.respondRedirect(url = url, permanent = false)
         }
 
@@ -126,12 +129,16 @@ fun Application.main() {
                     ?: throw NumberFormatException("id")
             val fileid = call.parameters["fileid"]?.toInt()
                     ?: throw NumberFormatException("fileid")
+            val style = call.parameters["style"]
             val addon = CurseUtil.getAddon(id) ?: throw AddonNotFoundException(id)
             val file = CurseUtil.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
 
             val name = addon.name.replace("-", "--")
             val fileName = file.fileName.replace(addon.name, "").replace("-", "--")
-            val url = "https://img.shields.io/badge/$name-$fileName-orange.svg"
+            var url = "https://img.shields.io/badge/$name-$fileName-orange.svg"
+            if(style != null) {
+                url += "?style=$style"
+            }
 
             call.respondRedirect(url = url, permanent = false)
         }

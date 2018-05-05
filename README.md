@@ -94,6 +94,9 @@ no parameters for newest file on the newest gameversion
 
 [![Download](https://curse.nikky.moe/api/img/287323)](https://curse.nikky.moe/api/url/287323)
 
+supporting all the shields io styles: `plastic`, `flat`, `flat-square`, `for-the-badge`, `social`
+[![Download](https://curse.nikky.moe/api/img/287323?style=flat)](https://curse.nikky.moe/api/url/287323)
+
 for older versions
 
 [![Download](https://curse.nikky.moe/api/img/287323?version=1.7.10)](https://curse.nikky.moe/api/url/287323?version=1.7.10)
