@@ -81,6 +81,14 @@ object CurseUtil {
 fun AddOn.files(versions: List<String>): List<AddOnFile> {
     val files = getAllFilesForAddOn(id)
     return if (versions.isEmpty()) {
+        files.sortedByDescending { it.fileDate }
+    } else {
+        files.filter { it.gameVersion.intersect(versions).isNotEmpty() }.sortedByDescending { it.fileDate }
+    }
+}
+fun AddOn.filesLatestVersion(versions: List<String>): List<AddOnFile> {
+    val files = getAllFilesForAddOn(id)
+    return if (versions.isEmpty()) {
         val version = files.map { it.gameVersion.sortedWith(VersionComparator.reversed()).first() }.sortedWith(VersionComparator.reversed()).first()
         files.filter { it.gameVersion.contains(version) }.sortedByDescending { it.fileDate }
     } else {
@@ -88,4 +96,4 @@ fun AddOn.files(versions: List<String>): List<AddOnFile> {
     }
 }
 
-fun AddOn.latestFile(versions: List<String>) = files(versions).first()
+fun AddOn.latestFile(versions: List<String>) = filesLatestVersion(versions).first()
