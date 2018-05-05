@@ -90,4 +90,4 @@ Coming Soon
 
 ## IFrame tests
 
-<iframe src="https://curse.nikky.moe/api/widget/287323?version=1.12.2&version=1.11.2&version=1.10.2&version=1.7.10"></iframe>
+[![Download](https://curse.nikky.moe/api/img/287323)](https://curse.nikky.moe/api/url/287323)
