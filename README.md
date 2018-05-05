@@ -88,6 +88,6 @@ parameters:
 
 Coming Soon
 
-## IFrame tests
+## Badge demo
 
 [![Download](https://curse.nikky.moe/api/img/287323)](https://curse.nikky.moe/api/url/287323)
