@@ -19,7 +19,11 @@ the example host is `https://curse.nikky.moe`
 no parameters for newest file on the newest gameversion  
 [![Download](https://curse.nikky.moe/api/img/287323)](https://curse.nikky.moe/api/url/287323)  
 [![Download](https://curse.nikky.moe/api/img/257572)](https://curse.nikky.moe/api/url/257572)  
-[![Download](https://curse.nikky.moe/api/img/245041)](https://curse.nikky.moe/api/url/245041)  
+[![Download](https://curse.nikky.moe/api/img/245041)](https://curse.nikky.moe/api/url/245041)
+
+with the curseforge logo
+[![Download](https://curse.nikky.moe/api/img/287323?logo)](https://curse.nikky.moe/api/url/287323)
+
 
 supporting all the shields io styles: `plastic`, `flat`, `flat-square`, `for-the-badge`, `social`  
 [![Download](https://curse.nikky.moe/api/img/287323?style=social)](https://curse.nikky.moe/api/url/287323)

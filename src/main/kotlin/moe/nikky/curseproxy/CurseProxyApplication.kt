@@ -19,6 +19,7 @@ import io.ktor.routing.routing
 import kotlinx.html.*
 import moe.nikky.curseproxy.Widget.widget
 import moe.nikky.curseproxy.exceptions.*
+import moe.nikky.encodeBase64
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -111,18 +112,35 @@ fun Application.main() {
             val id = call.parameters["id"]?.toInt()
                     ?: throw NumberFormatException("id")
             val style = call.parameters["style"]
+            val link = call.parameters.contains("link")
+            val logo = call.parameters.contains("logo")
+
             val addon = CurseUtil.getAddon(id) ?: throw AddonNotFoundException(id)
             val versions = call.parameters.getAll("version") ?: emptyList()
             val file = addon.latestFile(versions)
 
-            val name = addon.name.replace("-", "--")
-            val fileName = file.fileName.replace(addon.name, "")
-                    .replace(Regex("^[\\s-.]+"), "")
+            val name = addon.name
                     .replace("-", "--")
-            var url = "https://img.shields.io/badge/$name-$fileName-orange.svg"
-            if(style != null) {
-                url += "?style=$style"
+                    .replace("_", "__")
+            val fileName = file.fileName.replace(addon.name, "")
+                    .replace(Regex("^[\\s-._]+"), "")
+                    .replace("-", "--")
+                    .replace("_", "__")
+
+            var url = "https://img.shields.io/badge/$name-$fileName-orange.svg?maxAge=3600"
+            if(logo) {
+                val logoData = "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
+                url += "&logo=$logoData"
             }
+            if(link) {
+                val left = "https://minecraft.curseforge.com/projects/$id"
+                val right = file.downloadURL
+                url += "&link=$left&link=$right"
+            }
+            if(style != null) {
+                url += "&style=$style"
+            }
+
             call.respondRedirect(url = url, permanent = false)
         }
 
@@ -132,16 +150,32 @@ fun Application.main() {
             val fileid = call.parameters["fileid"]?.toInt()
                     ?: throw NumberFormatException("fileid")
             val style = call.parameters["style"]
+            val link = call.parameters.contains("link")
+            val logo = call.parameters.contains("logo")
+
             val addon = CurseUtil.getAddon(id) ?: throw AddonNotFoundException(id)
             val file = CurseUtil.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
 
-            val name = addon.name.replace("-", "--")
-            val fileName = file.fileName.replace(addon.name, "")
-                    .replace(Regex("^[\\s-.]+"), "")
+            val name = addon.name
                     .replace("-", "--")
-            var url = "https://img.shields.io/badge/$name-$fileName-orange.svg"
+                    .replace("_", "__")
+            val fileName = file.fileName.replace(addon.name, "")
+                    .replace(Regex("^[\\s-._]+"), "")
+                    .replace("-", "--")
+                    .replace("_", "__")
+
+            var url = "https://img.shields.io/badge/$name-$fileName-orange.svg?maxAge=3600"
+            if(logo) {
+                val logoData = "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
+                url += "&logo=$logoData"
+            }
+            if(link) {
+                val left = "https://minecraft.curseforge.com/projects/$id"
+                val right = file.downloadURL
+                url += "&link=$left&link=$right"
+            }
             if(style != null) {
-                url += "?style=$style"
+                url += "&style=$style"
             }
 
             call.respondRedirect(url = url, permanent = false)
@@ -156,6 +190,9 @@ fun Application.main() {
                     a(href = "/api/url/$id") {
                         img(src = "/api/img/$id")
                     }
+                    br{}
+                    img(src = "/api/img/$id?link")
+
                 }
             }
         }
