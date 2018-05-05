@@ -161,9 +161,19 @@ fun Application.main() {
         }
 
         get("/") {
-            call.respondRedirect(url = "https://github.com/NikkyAI/CurseProxy/blob/master/README.md", permanent = false)
+            call.respondHtml {
+                head {
+                    title("CurseProxy API")
+                }
+                body {
+                    h1 { +"CurseProxy API" }
+                    p {
+                        +"How are you doing?"
+                    }
+                    a(href = "https://github.com/NikkyAI/CurseProxy/blob/master/README.md") { +"get started here" }
+                }
+            }
         }
-
         get("/debug/") {
             val scheme = call.request.header("X-Forwarded-Proto") ?: call.request.local.scheme
             val host = call.request.header("Host") ?: "${call.request.local.host}:${call.request.local.port}"
