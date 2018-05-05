@@ -1,35 +1,27 @@
 package moe.nikky.curseproxy
 
-import com.github.kittinunf.fuel.httpGet
-import com.github.kittinunf.result.Result
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.features.*
+import io.ktor.features.CallLogging
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.DefaultHeaders
+import io.ktor.features.StatusPages
 import io.ktor.gson.gson
 import io.ktor.html.respondHtml
-import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.header
-import io.ktor.response.*
+import io.ktor.response.respond
+import io.ktor.response.respondFile
+import io.ktor.response.respondRedirect
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import kotlinx.html.*
 import moe.nikky.curseproxy.Widget.widget
-import moe.nikky.curseproxy.exceptions.AddonNotFoundException
-import moe.nikky.curseproxy.exceptions.MessageException
-import moe.nikky.curseproxy.exceptions.MissingParameterException
-import moe.nikky.curseproxy.exceptions.StackTraceMessage
+import moe.nikky.curseproxy.exceptions.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import voodoo.curse.AddOn
-import java.awt.Color
-import java.awt.image.BufferedImage
-import java.awt.image.BufferedImage.TYPE_INT_RGB
 import java.io.File
-import javax.imageio.ImageIO
-import java.awt.AlphaComposite
-import java.awt.Graphics2D
 
 
 val LOG: Logger = LoggerFactory.getLogger("curseproxy")
@@ -55,12 +47,12 @@ fun Application.main() {
 //        reporter.start(10, TimeUnit.SECONDS)
 //    }
     install(ContentNegotiation) {
-//        jackson {
+        //        jackson {
 //            configure(SerializationFeature.INDENT_OUTPUT, true)
 //        }
 
         gson {
-//            setup()
+            //            setup()
             setPrettyPrinting()
             disableHtmlEscaping()
         }
@@ -88,7 +80,7 @@ fun Application.main() {
             val id = call.parameters["id"]?.toInt()
                     ?: throw NumberFormatException("id")
             val versions = call.parameters.getAll("version") ?: emptyList()
-            call.respondHtml{
+            call.respondHtml {
                 widget(id, versions.toMutableList())
             }
         }
@@ -105,6 +97,16 @@ fun Application.main() {
             val file = addon.latestFile(versions)
             call.respondRedirect(url = file.downloadURL, permanent = false)
         }
+
+        get("/api/url/{id}/{fileid}") {
+            val id = call.parameters["id"]?.toInt()
+                    ?: throw NumberFormatException("id")
+            val fileid = call.parameters["fileid"]?.toInt()
+                    ?: throw NumberFormatException("fileid")
+            val file = CurseUtil.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
+            call.respondRedirect(url = file.downloadURL, permanent = false)
+        }
+
         get("/api/img/{id}") {
             val id = call.parameters["id"]?.toInt()
                     ?: throw NumberFormatException("id")
@@ -119,13 +121,29 @@ fun Application.main() {
             call.respondRedirect(url = url, permanent = false)
         }
 
+        get("/api/img/{id}/{fileid}") {
+            val id = call.parameters["id"]?.toInt()
+                    ?: throw NumberFormatException("id")
+            val fileid = call.parameters["fileid"]?.toInt()
+                    ?: throw NumberFormatException("fileid")
+            val addon = CurseUtil.getAddon(id) ?: throw AddonNotFoundException(id)
+            val file = CurseUtil.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
+
+            val name = addon.name.replace("-", "--")
+            val fileName = file.fileName.replace(addon.name, "").replace("-", "--")
+            val url = "https://img.shields.io/badge/$name-$fileName-orange.svg"
+
+            call.respondRedirect(url = url, permanent = false)
+        }
+
+
         get("/api/demo/{id}") {
             val id = call.parameters["id"]?.toInt()
                     ?: throw NumberFormatException("id")
             call.respondHtml {
                 body {
                     a(href = "/api/url/$id") {
-                        img (src = "/api/img/$id")
+                        img(src = "/api/img/$id")
                     }
                 }
             }
@@ -177,7 +195,7 @@ fun Application.main() {
                     ).forEach { p { +it } }
 
                     h2 { +"Headers" }
-                    call.request.headers.entries().forEach {(key, value) ->
+                    call.request.headers.entries().forEach { (key, value) ->
                         p {
                             +"$key = $value"
                         }
@@ -194,6 +212,12 @@ fun Application.main() {
             )
         }
         exception<AddonNotFoundException> { cause ->
+            call.respond(
+                    HttpStatusCode.NotFound,
+                    cause
+            )
+        }
+        exception<AddonFileNotFoundException> { cause ->
             call.respond(
                     HttpStatusCode.NotFound,
                     cause

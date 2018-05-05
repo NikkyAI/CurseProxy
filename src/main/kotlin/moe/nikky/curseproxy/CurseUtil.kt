@@ -59,7 +59,22 @@ object CurseUtil {
     }
 
     val getAllFilesForAddOn = ::getAllFilesForAddOnCall.memoize()
+    private fun getAddonFileCall(addonId: Int, fileId: Int): AddOnFile? {
+        val url = "$META_URL/api/v2/direct/GetAddOnFile/$addonId/$fileId"
 
+        LOG.debug("get $url")
+        val (_, _, result) = url.httpGet()
+                .header("User-Agent" to useragent)
+                .responseString()
+        return when (result) {
+            is Result.Success -> {
+                mapper.readValue(result.value)
+            }
+            else -> null
+        }
+    }
+
+    val getAddonFile = ::getAddonFileCall.memoize()
 }
 
 fun AddOn.latestFile(versions: List<String>): AddOnFile {

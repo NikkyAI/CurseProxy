@@ -90,4 +90,15 @@ Coming Soon
 
 ## Badge demo
 
+no parameters for newest file on the newest gameversion
+
 [![Download](https://curse.nikky.moe/api/img/287323)](https://curse.nikky.moe/api/url/287323)
+
+for older versions
+
+[![Download](https://curse.nikky.moe/api/img/287323?version=1.7.10)](https://curse.nikky.moe/api/url/287323?version=1.7.10)
+
+pinning the fileid too
+
+[![Download](https://curse.nikky.moe/api/img/246105/2535073)](https://curse.nikky.moe/api/url/246105/2535073)
+
