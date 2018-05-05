@@ -108,20 +108,13 @@ fun Application.main() {
         get("/api/img/{id}") {
             val id = call.parameters["id"]?.toInt()
                     ?: throw NumberFormatException("id")
-            val fcolor = call.parameters["fcolor"] ?: "FFFFFF"
-            val bcolor = call.parameters["bcolor"] ?: "f05523"
-            val font = call.parameters["font"] ?: "arial"
-            val size = call.parameters["size"] ?: "12"
             val addon = CurseUtil.getAddon(id) ?: throw AddonNotFoundException(id)
             val versions = call.parameters.getAll("version") ?: emptyList()
             val file = addon.latestFile(versions)
 
-//            val url = "https://img.shields.io/badge/Matter%20Link-1.12.2--1.1.5-orange.svg"
-
             val name = addon.name.replace("-", "--")
             val fileName = file.fileName.replace(addon.name, "").replace("-", "--")
             val url = "https://img.shields.io/badge/$name-$fileName-orange.svg"
-            LOG.info("redirect: '$url'")
 
             call.respondRedirect(url = url, permanent = false)
         }
