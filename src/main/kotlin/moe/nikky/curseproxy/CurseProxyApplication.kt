@@ -116,7 +116,9 @@ fun Application.main() {
             val file = addon.latestFile(versions)
 
             val name = addon.name.replace("-", "--")
-            val fileName = file.fileName.replace(addon.name, "").replace("-", "--")
+            val fileName = file.fileName.replace(addon.name, "")
+                    .replace(Regex("^[\\s-.]+"), "")
+                    .replace("-", "--")
             var url = "https://img.shields.io/badge/$name-$fileName-orange.svg"
             if(style != null) {
                 url += "?style=$style"
@@ -134,7 +136,9 @@ fun Application.main() {
             val file = CurseUtil.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
 
             val name = addon.name.replace("-", "--")
-            val fileName = file.fileName.replace(addon.name, "").replace("-", "--")
+            val fileName = file.fileName.replace(addon.name, "")
+                    .replace(Regex("^[\\s-.]+"), "")
+                    .replace("-", "--")
             var url = "https://img.shields.io/badge/$name-$fileName-orange.svg"
             if(style != null) {
                 url += "?style=$style"
