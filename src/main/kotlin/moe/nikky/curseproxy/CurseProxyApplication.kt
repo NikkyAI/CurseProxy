@@ -1,19 +1,17 @@
 package moe.nikky.curseproxy
 
+import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.result.Result
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.features.CallLogging
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.DefaultHeaders
-import io.ktor.features.StatusPages
+import io.ktor.features.*
 import io.ktor.gson.gson
 import io.ktor.html.respondHtml
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.header
-import io.ktor.response.respond
-import io.ktor.response.respondText
+import io.ktor.response.*
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import kotlinx.html.*
@@ -24,6 +22,14 @@ import moe.nikky.curseproxy.exceptions.MissingParameterException
 import moe.nikky.curseproxy.exceptions.StackTraceMessage
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import voodoo.curse.AddOn
+import java.awt.Color
+import java.awt.image.BufferedImage
+import java.awt.image.BufferedImage.TYPE_INT_RGB
+import java.io.File
+import javax.imageio.ImageIO
+import java.awt.AlphaComposite
+import java.awt.Graphics2D
 
 
 val LOG: Logger = LoggerFactory.getLogger("curseproxy")
@@ -86,9 +92,50 @@ fun Application.main() {
                 widget(id, versions.toMutableList())
             }
         }
+
         get("/api/widget.css") {
-            val css = Widget::class.java.getResource("/css/widget.css").readText()
-            call.respondText(css, ContentType("text", "css"))
+            call.respondFile(File(Widget::class.java.getResource("/css/widget.css").file))
+        }
+
+        get("/api/url/{id}") {
+            val id = call.parameters["id"]?.toInt()
+                    ?: throw NumberFormatException("id")
+            val addon = CurseUtil.getAddon(id) ?: throw AddonNotFoundException(id)
+            val versions = call.parameters.getAll("version") ?: emptyList()
+            val file = addon.latestFile(versions)
+            call.respondRedirect(url = file.downloadURL, permanent = false)
+        }
+        get("/api/img/{id}") {
+            val id = call.parameters["id"]?.toInt()
+                    ?: throw NumberFormatException("id")
+            val fcolor = call.parameters["fcolor"] ?: "FFFFFF"
+            val bcolor = call.parameters["bcolor"] ?: "f05523"
+            val font = call.parameters["font"] ?: "arial"
+            val size = call.parameters["size"] ?: "12"
+            val addon = CurseUtil.getAddon(id) ?: throw AddonNotFoundException(id)
+            val versions = call.parameters.getAll("version") ?: emptyList()
+            val file = addon.latestFile(versions)
+
+//            val url = "https://img.shields.io/badge/Matter%20Link-1.12.2--1.1.5-orange.svg"
+
+            val name = addon.name.replace("-", "--")
+            val fileName = file.fileName.replace(addon.name, "").replace("-", "--")
+            val url = "https://img.shields.io/badge/$name-$fileName-orange.svg"
+            LOG.info("redirect: '$url'")
+
+            call.respondRedirect(url = url, permanent = false)
+        }
+
+        get("/api/demo/{id}") {
+            val id = call.parameters["id"]?.toInt()
+                    ?: throw NumberFormatException("id")
+            call.respondHtml {
+                body {
+                    a(href = "/api/url/$id") {
+                        img (src = "/api/img/$id")
+                    }
+                }
+            }
         }
 
         get("/") {

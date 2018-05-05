@@ -1,6 +1,8 @@
 package voodoo.curse
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import moe.nikky.curseproxy.CurseUtil
+import moe.nikky.curseproxy.CurseUtil.getAllFilesForAddOn
 
 
 /**

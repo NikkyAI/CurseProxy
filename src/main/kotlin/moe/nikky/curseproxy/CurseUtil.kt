@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
+import moe.nikky.curseproxy.CurseUtil.getAllFilesForAddOn
 import voodoo.curse.AddOn
 import voodoo.curse.AddOnFile
 
@@ -59,4 +60,14 @@ object CurseUtil {
 
     val getAllFilesForAddOn = ::getAllFilesForAddOnCall.memoize()
 
+}
+
+fun AddOn.latestFile(versions: List<String>): AddOnFile {
+    val files = getAllFilesForAddOn(id)
+    return if(versions.isEmpty()) {
+        val version = files.map { it.gameVersion.sortedWith(VersionComparator.reversed()).first() }.sortedWith(VersionComparator.reversed()).first()
+        files.filter { it.gameVersion.contains(version) }.sortedByDescending { it.fileDate }.first()
+    } else {
+        files.filter { it.gameVersion.intersect(versions).isNotEmpty() }.sortedByDescending { it.fileDate }.first()
+    }
 }
