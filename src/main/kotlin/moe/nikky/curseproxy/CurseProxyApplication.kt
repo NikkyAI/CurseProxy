@@ -128,16 +128,49 @@ fun Application.main() {
                     .replace("_", "__")
 
             var url = "https://img.shields.io/badge/$name-$fileName-orange.svg?maxAge=3600"
-            if(logo) {
+            if (logo) {
                 val logoData = "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
                 url += "&logo=$logoData"
             }
-            if(link) {
+            if (link) {
                 val left = "https://minecraft.curseforge.com/projects/$id"
                 val right = file.downloadURL
                 url += "&link=$left&link=$right"
             }
-            if(style != null) {
+            if (style != null) {
+                url += "&style=$style"
+            }
+
+            call.respondRedirect(url = url, permanent = false)
+        }
+
+        get("/api/img/{id}/files") {
+            val id = call.parameters["id"]?.toInt()
+                    ?: throw NumberFormatException("id")
+            val style = call.parameters["style"]
+            val link = call.parameters.contains("link")
+            val logo = call.parameters.contains("logo")
+
+            val addon = CurseUtil.getAddon(id) ?: throw AddonNotFoundException(id)
+            val versions = call.parameters.getAll("version") ?: emptyList()
+            val files = addon.files(versions)
+            val count = files.count()
+
+            val name = addon.name
+                    .replace("-", "--")
+                    .replace("_", "__")
+            val label = "$count Files"
+            var url = "https://img.shields.io/badge/$name-$label-orange.svg?maxAge=3600"
+            if (logo) {
+                val logoData = "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
+                url += "&logo=$logoData"
+            }
+            if (link) {
+                val left = "https://minecraft.curseforge.com/projects/$id"
+                val right = "https://minecraft.curseforge.com/projects/$id/files"
+                url += "&link=$left&link=$right"
+            }
+            if (style != null) {
                 url += "&style=$style"
             }
 
@@ -165,16 +198,16 @@ fun Application.main() {
                     .replace("_", "__")
 
             var url = "https://img.shields.io/badge/$name-$fileName-orange.svg?maxAge=3600"
-            if(logo) {
+            if (logo) {
                 val logoData = "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
                 url += "&logo=$logoData"
             }
-            if(link) {
+            if (link) {
                 val left = "https://minecraft.curseforge.com/projects/$id"
                 val right = file.downloadURL
                 url += "&link=$left&link=$right"
             }
-            if(style != null) {
+            if (style != null) {
                 url += "&style=$style"
             }
 
@@ -190,7 +223,7 @@ fun Application.main() {
                     a(href = "/api/url/$id") {
                         img(src = "/api/img/$id")
                     }
-                    br{}
+                    br {}
                     img(src = "/api/img/$id?link")
 
                 }

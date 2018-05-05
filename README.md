@@ -38,3 +38,7 @@ for older versions
 pinning the fileid too
 
 - [![Download](https://curse.nikky.moe/api/img/246105/2535073)](https://curse.nikky.moe/api/url/246105/2535073)
+
+all files
+
+- [![Files](https://curse.nikky.moe/api/img/287323/files?logo&style=for-the-badge&version=1.12.2)](https://minecraft.curseforge.com/projects/287323/files)

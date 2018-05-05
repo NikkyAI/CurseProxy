@@ -41,6 +41,7 @@ object CurseUtil {
             }
         }
     }
+
     val getAddon = ::getAddonCall.memoize()
 
     private fun getAllFilesForAddOnCall(addonId: Int): List<AddOnFile> {
@@ -77,12 +78,14 @@ object CurseUtil {
     val getAddonFile = ::getAddonFileCall.memoize()
 }
 
-fun AddOn.latestFile(versions: List<String>): AddOnFile {
+fun AddOn.files(versions: List<String>): List<AddOnFile> {
     val files = getAllFilesForAddOn(id)
-    return if(versions.isEmpty()) {
+    return if (versions.isEmpty()) {
         val version = files.map { it.gameVersion.sortedWith(VersionComparator.reversed()).first() }.sortedWith(VersionComparator.reversed()).first()
-        files.filter { it.gameVersion.contains(version) }.sortedByDescending { it.fileDate }.first()
+        files.filter { it.gameVersion.contains(version) }.sortedByDescending { it.fileDate }
     } else {
-        files.filter { it.gameVersion.intersect(versions).isNotEmpty() }.sortedByDescending { it.fileDate }.first()
+        files.filter { it.gameVersion.intersect(versions).isNotEmpty() }.sortedByDescending { it.fileDate }
     }
 }
+
+fun AddOn.latestFile(versions: List<String>) = files(versions).first()
