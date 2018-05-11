@@ -24,7 +24,7 @@ object CurseUtil {
             .registerModule(KotlinModule()) // Enable Kotlin support
             .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
 
-    fun getAddonCall(addonId: Int): AddOn? {
+    fun getAddon(addonId: Int): AddOn? {
         val url = "$META_URL/api/v2/direct/GetAddOn/$addonId"
 
         LOG.debug("get $url")
@@ -42,9 +42,7 @@ object CurseUtil {
         }
     }
 
-    val getAddon = ::getAddonCall.memoize()
-
-    private fun getAllFilesForAddOnCall(addonId: Int): List<AddOnFile> {
+    fun getAllFilesForAddOn(addonId: Int): List<AddOnFile> {
         val url = "$META_URL/api/v2/direct/GetAllFilesForAddOn/$addonId"
 
         LOG.debug("get $url")
@@ -59,8 +57,7 @@ object CurseUtil {
         }
     }
 
-    val getAllFilesForAddOn = ::getAllFilesForAddOnCall.memoize()
-    private fun getAddonFileCall(addonId: Int, fileId: Int): AddOnFile? {
+    fun getAddonFile(addonId: Int, fileId: Int): AddOnFile? {
         val url = "$META_URL/api/v2/direct/GetAddOnFile/$addonId/$fileId"
 
         LOG.debug("get $url")
@@ -74,8 +71,6 @@ object CurseUtil {
             else -> null
         }
     }
-
-    val getAddonFile = ::getAddonFileCall.memoize()
 }
 
 fun AddOn.files(versions: List<String>): List<AddOnFile> {
@@ -86,6 +81,7 @@ fun AddOn.files(versions: List<String>): List<AddOnFile> {
         files.filter { it.gameVersion.intersect(versions).isNotEmpty() }.sortedByDescending { it.fileDate }
     }
 }
+
 fun AddOn.filesLatestVersion(versions: List<String>): List<AddOnFile> {
     val files = getAllFilesForAddOn(id)
     return if (versions.isEmpty()) {
