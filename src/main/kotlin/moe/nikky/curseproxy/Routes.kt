@@ -1,15 +1,14 @@
 package moe.nikky.curseproxy
 
+import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.result.Result
+import com.google.gson.Gson
 import io.ktor.application.Application
 import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.features.CallLogging
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.DefaultHeaders
-import io.ktor.features.StatusPages
-import io.ktor.gson.gson
+import io.ktor.application.log
+import io.ktor.content.default
+import io.ktor.content.static
 import io.ktor.html.respondHtml
-import io.ktor.http.HttpStatusCode
 import io.ktor.request.header
 import io.ktor.response.respond
 import io.ktor.response.respondFile
@@ -17,64 +16,71 @@ import io.ktor.response.respondRedirect
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import kotlinx.html.*
-import moe.nikky.curseproxy.Widget.widget
-import moe.nikky.curseproxy.exceptions.*
+import moe.nikky.curseproxy.curse.Widget.widget
+import moe.nikky.curseproxy.curse.CurseUtil
+import moe.nikky.curseproxy.curse.Widget
+import moe.nikky.curseproxy.curse.auth.curseAuth
+import moe.nikky.curseproxy.curse.files
+import moe.nikky.curseproxy.curse.latestFile
+import moe.nikky.curseproxy.exceptions.AddonFileNotFoundException
+import moe.nikky.curseproxy.exceptions.AddonNotFoundException
+import moe.nikky.curseproxy.graphql.AppSchema
 import moe.nikky.encodeBase64
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import org.koin.ktor.ext.inject
 import java.io.File
 
-
-val LOG: Logger = LoggerFactory.getLogger("curseproxy")
-
-const val REST_ENDPOINT = "/api"
-
-fun Application.main() {
-
-    install(DefaultHeaders)
-    install(CallLogging)
-    //TODO: enable in production
-//    install(HttpsRedirect)
-//    install(HSTS)
-//    install(CORS) {
-//        maxAge = Duration.ofDays(1)
-//    }
-//    install(Metrics) {
-//        val reporter = Slf4jReporter.forRegistry(registry)
-//                .outputTo(log)
-//                .convertRatesTo(TimeUnit.SECONDS)
-//                .convertDurationsTo(TimeUnit.MILLISECONDS)
-//                .build()
-//        reporter.start(10, TimeUnit.SECONDS)
-//    }
-    install(ContentNegotiation) {
-        //        jackson {
-//            configure(SerializationFeature.INDENT_OUTPUT, true)
-//        }
-
-        gson {
-            //            setup()
-            setPrettyPrinting()
-            disableHtmlEscaping()
-        }
-    }
+@Suppress("unused")
+fun Application.routes() {
 
     routing {
-        get("/api/ids") {
-            LOG.debug("Get all AddOns")
-            val ids = IDCache.get()
-            LOG.info("ids count: ${ids.count()}")
+        val appSchema: AppSchema by inject()
+        val gson: Gson by inject()
 
-            call.respond(ids)
+        graphql(log, gson, appSchema.schema)
+
+        static("/database") {
+            default("database.html")
         }
 
-        get("/api/ids/{id}") {
+//        get("/api/ids") {
+//            LOG.debug("Get all AddOns")
+//            val ids = IDCache.get()
+//            LOG.info("ids count: ${ids.count()}")
+//
+//            call.respond(ids)
+//        }
+
+//        get("/api/ids/{id}") {
+//            val id = call.parameters["id"]?.toInt()
+//                    ?: throw NumberFormatException("id")
+//            LOG.debug("Get AddOn with id=$id")
+//            with(IDCache.get(id)) {
+//                call.respond(this)
+//            }
+//        }
+
+        val ADDON_API = "https://addons-v2.forgesvc.net/api"
+
+        get("/api/addon/{id}") {
             val id = call.parameters["id"]?.toInt()
                     ?: throw NumberFormatException("id")
-            LOG.debug("Get AddOn with id=$id")
-            with(IDCache.get(id)) {
-                call.respond(this)
+//            var addonRequest = AddonRequest()
+            val url = "$ADDON_API/addon/$id"
+            val (request, response, result) = url.httpGet()
+                    .curseAuth()
+//                    .body()
+                    .responseString()
+            when (result) {
+                is Result.Success -> {
+                    log.info("json: ${result.value}")
+                }
+                is Result.Failure -> {
+                    log.error("failed $request ${result.error}")
+                }
             }
+//            call.respondHtml {
+//                widget(id, versions.toMutableList())
+//            }
         }
 
         get("/api/widget/{id}") {
@@ -282,53 +288,4 @@ fun Application.main() {
             }
         }
     }
-    install(StatusPages) {
-        exception<Throwable> { cause ->
-            call.respond(
-                    HttpStatusCode.InternalServerError,
-                    StackTraceMessage(cause)
-            )
-        }
-        exception<AddonNotFoundException> { cause ->
-            call.respond(
-                    HttpStatusCode.NotFound,
-                    cause
-            )
-        }
-        exception<AddonFileNotFoundException> { cause ->
-            call.respond(
-                    HttpStatusCode.NotFound,
-                    cause
-            )
-        }
-        exception<MissingParameterException> { cause ->
-            call.respond(
-                    HttpStatusCode.NotAcceptable,
-                    cause
-            )
-        }
-        exception<MessageException> { cause ->
-            call.respond(
-                    HttpStatusCode.NotAcceptable,
-                    cause
-            )
-        }
-        exception<IllegalArgumentException> { cause ->
-            call.respond(
-                    HttpStatusCode.NotAcceptable,
-                    StackTraceMessage(cause)
-            )
-        }
-        exception<NumberFormatException> { cause ->
-            call.respond(
-                    HttpStatusCode.NotAcceptable,
-                    StackTraceMessage(cause)
-            )
-        }
-    }
-
-    LOG.info("loading IDs")
-    val idMap = IDCache.get()
-    LOG.info("loaded ${idMap.size} IDs")
-//    LOG.info("loaded addon test complete")
 }

@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.2.30"
+    id "org.jetbrains.kotlin.jvm" version "1.2.41"
     id 'com.github.johnrengelman.shadow' version '2.0.2'
     id 'application'
 }
@@ -9,44 +9,73 @@ version '0.1-SNAPSHOT'
 
 apply plugin: 'kotlin'
 
-kotlin {
-    experimental {
-        coroutines "enable"
-    }
-}
+mainClassName = 'io.ktor.server.netty.DevelopmentEngine'
+applicationName = "curseproxy"
 
 repositories {
-    jcenter()
     mavenCentral()
+    jcenter()
     maven { url "http://dl.bintray.com/kotlin/ktor" }
     maven { url "https://dl.bintray.com/kotlin/kotlinx" }
-    maven { url 'http://maven.thiakil.com' }
+    maven { url "https://dl.bintray.com/pgutkowski/Maven" }
+    maven { url "https://dl.bintray.com/kotlin/squash" }
     maven { url 'https://jitpack.io' }
 }
 
-dependencies {
-    compile group: 'com.github.aballano', name: 'MnemoniK', version: 'master-SNAPSHOT'
+ext {
+    ktor_version = '0.9.1'
+    logback_version = '1.2.3'
+    fuel_version = '1.12.1'
+    kgraphql_version = '0.2.5'
+    koin_version = '0.8.2'
+    squash_version = '0.2.2'
+}
 
-    ['ktor', 'ktor-gson', 'ktor-features', 'ktor-html-builder', 'ktor-metrics', 'ktor-server-netty'].each {
-        compile group: 'io.ktor', name: it, version: project.ktor_version
+
+dependencies {
+//    compile group: 'com.github.aballano', name: 'MnemoniK', version: 'master-SNAPSHOT'
+
+    ['ktor', 'ktor-gson', 'ktor-jackson', 'ktor-features', 'ktor-locations', 'ktor-html-builder', 'ktor-server-core', 'ktor-server-netty'].each {
+        compile group: 'io.ktor', name: it, version: ktor_version
     }
-    compile group: 'ch.qos.logback', name: 'logback-classic', version : '1.2.1'
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+
+    // Logging
+    compile "ch.qos.logback:logback-classic:$logback_version"
+
+    // Networking
+    compile "com.github.kittinunf.fuel:fuel:$fuel_version"
+
+    // GraphQL
+    compile "com.github.pgutkowski:kgraphql:$kgraphql_version"
+    
+    // Dependency Injection
+    compile "org.koin:koin-ktor:$koin_version"
+
+    // Database
+    compile "org.jetbrains.squash:squash-h2:$squash_version"
+
 
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '+'
     compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '+'
-    compile group: 'com.github.kittinunf.fuel', name: 'fuel', version: '+'
 
-
-    testCompile group: 'io.ktor', name: 'ktor-server-test-host', version : project.ktor_version
+    // Testing
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'io.ktor', name: 'ktor-server-test-host', version : ktor_version
 }
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-mainClassName = 'io.ktor.server.netty.DevelopmentEngine'
-applicationName = "curseproxy"
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
+}
 
 shadowJar {
     classifier = null

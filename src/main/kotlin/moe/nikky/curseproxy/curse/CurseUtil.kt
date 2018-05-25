@@ -1,13 +1,14 @@
-package moe.nikky.curseproxy
+package moe.nikky.curseproxy.curse
 
-import aballano.kotlinmemoization.memoize
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
-import moe.nikky.curseproxy.CurseUtil.getAllFilesForAddOn
+import moe.nikky.curseproxy.curse.CurseUtil.getAllFilesForAddOn
+import moe.nikky.curseproxy.LOG
+import moe.nikky.curseproxy.VersionComparator
 import voodoo.curse.AddOn
 import voodoo.curse.AddOnFile
 
@@ -25,7 +26,7 @@ object CurseUtil {
             .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
 
     fun getAddon(addonId: Int): AddOn? {
-        val url = "$META_URL/api/v2/direct/GetAddOn/$addonId"
+        val url = "${META_URL}/api/v2/direct/GetAddOn/$addonId"
 
         LOG.debug("get $url")
         val (_, _, result) = url.httpGet()
@@ -43,7 +44,7 @@ object CurseUtil {
     }
 
     fun getAllFilesForAddOn(addonId: Int): List<AddOnFile> {
-        val url = "$META_URL/api/v2/direct/GetAllFilesForAddOn/$addonId"
+        val url = "${META_URL}/api/v2/direct/GetAllFilesForAddOn/$addonId"
 
         LOG.debug("get $url")
         val (_, _, result) = url.httpGet()
@@ -58,7 +59,7 @@ object CurseUtil {
     }
 
     fun getAddonFile(addonId: Int, fileId: Int): AddOnFile? {
-        val url = "$META_URL/api/v2/direct/GetAddOnFile/$addonId/$fileId"
+        val url = "${META_URL}/api/v2/direct/GetAddOnFile/$addonId/$fileId"
 
         LOG.debug("get $url")
         val (_, _, result) = url.httpGet()

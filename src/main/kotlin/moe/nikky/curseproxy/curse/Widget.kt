@@ -1,6 +1,8 @@
-package moe.nikky.curseproxy
+package moe.nikky.curseproxy.curse
 
 import kotlinx.html.*
+import moe.nikky.curseproxy.LOG
+import moe.nikky.curseproxy.VersionComparator
 import moe.nikky.curseproxy.exceptions.AddonNotFoundException
 
 object Widget {

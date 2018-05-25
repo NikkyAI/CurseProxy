@@ -1,0 +1,2 @@
+package moe.nikky.curseproxy
+

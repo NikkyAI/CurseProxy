@@ -10,3 +10,4 @@ docs
 wsdl
 \.floo
 init.py
+auth.json
