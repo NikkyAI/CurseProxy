@@ -14,7 +14,7 @@ import java.io.File
 
 object AuthToken : KoinComponent {
     private val mapper: ObjectMapper by inject()
-    val AUTH_API = "https://logins-v1.curseapp.net"
+    private val AUTH_API = "https://logins-v1.curseapp.net"
 
     var session: Session = login()
         private set
