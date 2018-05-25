@@ -1,31 +1,30 @@
 package moe.nikky.curseproxy.curse
 
-import com.fasterxml.jackson.databind.MapperFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import moe.nikky.curseproxy.curse.CurseUtil.getAllFilesForAddOn
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.VersionComparator
-import voodoo.curse.AddOn
-import voodoo.curse.AddOnFile
+import moe.nikky.curseproxy.model.Addon
+import moe.nikky.curseproxy.model.AddonFile
+import org.koin.standalone.KoinComponent
+import org.koin.standalone.inject
 
 /**
  * Created by nikky on 01/05/18.
  * @author Nikky
  * @version 1.0
  */
-object CurseUtil {
+@Deprecated("use new CurseClient")
+object CurseUtil : KoinComponent{
     val META_URL = "https://cursemeta.dries007.net"
     val useragent = "curseProxy (https://github.com/nikky/CurseProxy)"
 
-    val mapper = jacksonObjectMapper() // Enable Json parsing
-            .registerModule(KotlinModule()) // Enable Kotlin support
-            .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
+    private val mapper: ObjectMapper by inject()
 
-    fun getAddon(addonId: Int): AddOn? {
+    fun getAddon(addonId: Int): Addon? {
         val url = "${META_URL}/api/v2/direct/GetAddOn/$addonId"
 
         LOG.debug("get $url")
@@ -43,7 +42,7 @@ object CurseUtil {
         }
     }
 
-    fun getAllFilesForAddOn(addonId: Int): List<AddOnFile> {
+    fun getAllFilesForAddOn(addonId: Int): List<AddonFile> {
         val url = "${META_URL}/api/v2/direct/GetAllFilesForAddOn/$addonId"
 
         LOG.debug("get $url")
@@ -58,7 +57,7 @@ object CurseUtil {
         }
     }
 
-    fun getAddonFile(addonId: Int, fileId: Int): AddOnFile? {
+    fun getAddonFile(addonId: Int, fileId: Int): AddonFile? {
         val url = "${META_URL}/api/v2/direct/GetAddOnFile/$addonId/$fileId"
 
         LOG.debug("get $url")
@@ -74,7 +73,7 @@ object CurseUtil {
     }
 }
 
-fun AddOn.files(versions: List<String>): List<AddOnFile> {
+fun Addon.files(versions: List<String>): List<AddonFile> {
     val files = getAllFilesForAddOn(id)
     return if (versions.isEmpty()) {
         files.sortedByDescending { it.fileDate }
@@ -83,7 +82,7 @@ fun AddOn.files(versions: List<String>): List<AddOnFile> {
     }
 }
 
-fun AddOn.filesLatestVersion(versions: List<String>): List<AddOnFile> {
+fun Addon.filesLatestVersion(versions: List<String>): List<AddonFile> {
     val files = getAllFilesForAddOn(id)
     return if (versions.isEmpty()) {
         val version = files.map { it.gameVersion.sortedWith(VersionComparator.reversed()).first() }.sortedWith(VersionComparator.reversed()).first()
@@ -93,4 +92,4 @@ fun AddOn.filesLatestVersion(versions: List<String>): List<AddOnFile> {
     }
 }
 
-fun AddOn.latestFile(versions: List<String>) = filesLatestVersion(versions).first()
+fun Addon.latestFile(versions: List<String>) = filesLatestVersion(versions).first()

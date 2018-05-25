@@ -14,6 +14,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.locations.Locations
 import io.ktor.response.respond
+import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.curse.auth.AuthToken
 import moe.nikky.curseproxy.di.mainModule
 import moe.nikky.curseproxy.exceptions.*
@@ -108,6 +109,15 @@ fun Application.main() {
     //TODO: startup / getting data
 
     AuthToken.test()
+
+    val matterlink = CurseClient.getAddon(287323)
+    val matterlinkFiles = CurseClient.getAddonFiles(287323)
+    log.info(matterlink.toString())
+    log.info(matterlinkFiles.toString())
+    val jei = CurseClient.getAddon(238222)
+    val jeiFiles = CurseClient.getAddonFiles(238222)
+    log.info(jei.toString())
+    log.info(jeiFiles.toString())
 
     LOG.info("loading IDs")
 

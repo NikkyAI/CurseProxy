@@ -5,6 +5,7 @@ import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.VersionComparator
 import moe.nikky.curseproxy.exceptions.AddonNotFoundException
 
+@Deprecated("needs to be updated to use new CurseClient")
 object Widget {
 
     fun HTML.widget(id: Int, versions: MutableList<String>) {

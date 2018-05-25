@@ -1,0 +1,145 @@
+{
+  "id": 287323,
+  "name": "MatterLink",
+  "authors": [
+    {
+      "name": "NikkyAI",
+      "url": "https://www.curseforge.com/members/NikkyAI.aspx"
+    },
+    {
+      "name": "DaMachinator",
+      "url": "https://www.curseforge.com/members/DaMachinator.aspx"
+    }
+  ],
+  "attachments": [
+    {
+      "id": 141245,
+      "projectID": 287323,
+      "description": "",
+      "isDefault": true,
+      "thumbnailUrl": "https://media.forgecdn.net/avatars/thumbnails/141/245/256/256/636540604549161691.png",
+      "title": "636540604549161691.png",
+      "url": "https://media.forgecdn.net/avatars/141/245/636540604549161691.png"
+    }
+  ],
+  "websiteUrl": "https://www.curseforge.com/minecraft/mc-mods/matterlink",
+  "gameId": 432,
+  "summary": "Simple bridge between Minecraft, Mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat, Hipchat(via xmpp), Matrix and Steam.",
+  "defaultFileId": 2565384,
+  "commentCount": 0,
+  "downloadCount": 888.0,
+  "rating": 0,
+  "installCount": 0,
+  "latestFiles": [
+    {
+      "id": 2565384,
+      "fileName": "MatterLink 1.7.10-1.6.0",
+      "fileNameOnDisk": "MatterLink-1.7.10-1.6.0.jar",
+      "fileDate": "2018-05-24T21:31:23.453",
+      "releaseType": 2,
+      "fileStatus": 2,
+      "downloadUrl": "https://files.forgecdn.net/files/2565/384/MatterLink-1.7.10-1.6.0.jar",
+      "isAlternate": false,
+      "alternateFileId": 0,
+      "dependencies": [],
+      "isAvailable": true,
+      "modules": [
+        {
+          "folderName": "META-INF",
+          "fimgerprint": 4079564384
+        },
+        {
+          "folderName": "matterlink",
+          "fimgerprint": 301493428
+        },
+        {
+          "folderName": "mcmod.info",
+          "fimgerprint": 991104573
+        },
+        {
+          "folderName": "org",
+          "fimgerprint": 520080332
+        },
+        {
+          "folderName": "kotlin",
+          "fimgerprint": 3903050002
+        }
+      ],
+      "packageFingerprint": 2957241886,
+      "gameVersion": [
+        "1.7.10"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "id": 435,
+      "name": "Server Utility",
+      "url": "https://www.curseforge.com/mc-mods/minecraft/category/server-utility"
+    },
+    {
+      "id": 421,
+      "name": "API and Library",
+      "url": "https://www.curseforge.com/mc-mods/minecraft/category/library-api"
+    }
+  ],
+  "primaryAuthorName": "NikkyAI",
+  "externalUrl": null,
+  "status": 1,
+  "stage": 1,
+  "donationUrl": null,
+  "primaryCategoryName": "Server Utility",
+  "primaryCategoryAvatarUrl": "https://media.forgecdn.net/avatars/6/48/635351498950580836.png",
+  "likes": 0,
+  "categorySection": {
+    "Id": 6,
+    "gameId": 432,
+    "name": "Mods",
+    "packageType": 6,
+    "path": "mods",
+    "initialInclusionPattern": ".",
+    "extraIncludePattern": null
+  },
+  "packageType": 6,
+  "avatarUrl": null,
+  "slug": "matterlink",
+  "clientUrl": "https://www.curseforge.com/minecraft/mc-mods/matterlink",
+  "gameVersionLatestFiles": [
+    {
+      "gameVersion": "1.10.2",
+      "projectFileId": 2565381,
+      "projectFileName": "MatterLink 1.10.2-1.6.0",
+      "fileType": 2
+    },
+    {
+      "gameVersion": "1.11.2",
+      "projectFileId": 2565382,
+      "projectFileName": "MatterLink 1.11.2-1.6.0",
+      "fileType": 2
+    },
+    {
+      "gameVersion": "1.12.2",
+      "projectFileId": 2565383,
+      "projectFileName": "MatterLink 1.12.2-1.6.0",
+      "fileType": 2
+    },
+    {
+      "gameVersion": "1.7.10",
+      "projectFileId": 2565384,
+      "projectFileName": "MatterLink 1.7.10-1.6.0",
+      "fileType": 2
+    }
+  ],
+  "isFeatured": 0,
+  "popularityScore": 31.1739,
+  "gamePopularityRank": 7201,
+  "fullDescription": "<h1>MatterLink</h1>\r\n<p>A MatterBridge endpoint for MC servers!</p>\r\n<p>THIS MOD REQUIRES YOU TO ALSO RUN A MATTERBRIDGE RELAY <a href=\"https://github.com/42wim/matterbridge\" rel=\"nofollow\">https://github.com/42wim/matterbridge</a></p>\r\n<p>Chat with us on IRC: #matterbridge @ irc.esper.net</p>\r\n<p>Requires the matterbridge config api section to be setup along these lines:</p>\r\n<pre><code>[api]\r\n[api.local]\r\n    BindAddress=\"0.0.0.0:4242\" # or listen only to localhost: 127.0.0.1:4242\r\n    #OPTIONAL (no authorization if token is empty)\r\n    Token=\"mytoken\"\r\n    Buffer=1000\r\n    RemoteNickFormat=\"{NICK}\"\r\n    ShowJoinPart = true\r\n</code></pre>\r\n<h2><a href=\"https://github.com/elytra/MatterLink#features\" rel=\"nofollow\"></a>Features</h2>\r\n<h3><span style=\"font-size:18px\">Custom bridge commands, including passthrough to MC!</span></h3>\r\n<p><span style=\"font-size:14px\">Default commands: <code>help, tps, list, seed, uptime, whoami</code></span></p>\r\n<p><span style=\"font-size:14px\">Commands are specified in JSON format as follows:</span></p>\r\n<h4><br>Passthrough command</h4>\r\n<p><span style=\"font-size:14px\">(executes the configured command as if from the MC server console)</span></p>\r\n<div>\r\n<pre><span>\"</span>tps<span>\": </span>{\r\n    <span><span>\"</span>type<span>\"</span></span>: <span><span>\"</span>PASSTHROUGH<span>\"</span></span>,\r\n    <span><span>\"</span>execute<span>\"</span></span>: <span><span>\"</span>forge tps<span>\"</span></span>,\r\n    <span><span>\"</span>permLevel<span>\"</span></span>: <span>0</span>,\r\n    <span><span>\"</span>help<span>\"</span></span>: <span><span>\"</span>Print server tps<span>\"</span></span>,\r\n    <span><span>\"</span>allowArgs<span>\"</span></span>: <span>false,<br></span>    \"timeout\": 20\r\n}</pre>\r\n</div>\r\n<h4>Response command</h4>\r\n<div>\r\n<pre><span>\"</span>uptime<span>\": </span>{\r\n    <span><span>\"</span>type<span>\"</span></span>: <span><span>\"</span>RESPONSE<span>\"</span></span>,\r\n    <span><span>\"</span>response<span>\"</span></span>: <span><span>\"</span>{uptime}<span>\"</span></span>,\r\n    <span><span>\"</span>permLevel<span>\"</span></span>: <span>1</span>,\r\n    <span><span>\"</span>help<span>\"</span></span>: <span><span>\"</span>Print server uptime<span>\"</span></span>,\r\n    <span><span>\"</span>allowArgs<span>\"</span></span>: <span>false,<br>    \"timeout\": 20</span>\r\n}</pre>\r\n</div>\r\n<h3><span style=\"font-size:18px\">Command permissions!</span></h3>\r\n<p>Higher numbers mean more permissions. Configured on a network-by-network basis.<br>see what information you need by running <code>whoami</code><br>For IRC, this is your hostmask.<br> For Discord, this is your userid (NOT the four-digit number.)</p>\r\n<div>\r\n<pre>{\r\n  <span><span>\"</span>irc.esper<span>\"</span></span>: {\r\n    <span><span>\"</span>~DaMachina@hostname.com<span>\"</span></span>:<span>1000</span>\r\n  }\r\n}</pre>\r\n</div>\r\n<h3><span style=\"font-size:18px\">Edit and reload the config file without restarting the server!</span></h3>\r\n<pre><code>/bridge &lt;connect|disconnect|reload&gt;\r\n    connect:    Connects the MC chat to the MatterBridge server\r\n    disconnect: Disconnects the chat from the MatterBridge server\r\n    reload:     Disconnects, reloads the config and custom command files, \r\n                then reconnects.\r\n</code></pre>\r\n<h2><a href=\"https://github.com/elytra/MatterLink#downloads\" rel=\"nofollow\"></a>Downloads</h2>\r\n<p><a href=\"https://github.com/elytra/MatterLink/releases\" rel=\"nofollow\"><img src=\"https://img.shields.io/github/downloads/elytra/MatterLink/total.svg?style=for-the-badge&label=Github Releases&logo=github\" alt=\"\" width=\"253\" height=\"28\"></a></p>\r\n<p><a href=\"/linkout?remoteUrl=https%253a%252f%252fci.elytradev.com%252fjob%252felytra%252fjob%252fMatterLink%252fjob%252fmaster%252flastSuccessfulBuild%252fartifact%252f\" rel=\"nofollow\"><img src=\"https://img.shields.io/jenkins/s/https/ci.elytradev.com/job/elytra/job/MatterLink/job/master.svg?style=for-the-badge&label=Jenkins Build\" alt=\"\" width=\"211\" height=\"28\"></a></p>\r\n<p><a href=\"https://minecraft.curseforge.com/projects/287323/files\" rel=\"nofollow\"><img src=\"https://curse.nikky.moe/api/img/287323/files?logo&style=for-the-badge&version=1.12.2\" alt=\"\" width=\"200\" height=\"28\"></a></p>\r\n<h2><a href=\"https://github.com/elytra/MatterLink#dependencies\" rel=\"nofollow\"></a>Dependencies</h2>\r\n<p>&nbsp;<a href=\"https://minecraft.curseforge.com/projects/248453\" rel=\"nofollow\"><img src=\"https://curse.nikky.moe/api/img/248453/files?logo&style=for-the-badge\" alt=\"\" width=\"304\" height=\"28\"></a></p>\r\n<h2><a href=\"https://github.com/elytra/MatterLink#setup\" rel=\"nofollow\"></a>Setup</h2>\r\n<p>Now you just need to run MatterBridge on the server, the default configuration works with the provided sample.</p>\r\n<p>Install matterbridge and try out the basic sample:</p>\r\n<pre><code>go get github.com/42wim/matterbridge\r\nmv matterbridge-sample.toml matterbridge.toml\r\nmatterbridge\r\n</code></pre>\r\n<p>now start the server with matterlink (and forgelin) in the mods folder</p>\r\n<p>and then <a href=\"https://github.com/42wim/matterbridge#configuration\" rel=\"nofollow\">RTFM!!!</a> and configure all your needed gateways, endpoints etc</p>\r\n<p>powered by wishful thinking</p>",
+  "gameName": "Minecraft",
+  "portalName": "www.curseforge.com",
+  "sectionName": "mc-mods",
+  "dateModified": "2018-05-24T21:52:10.927",
+  "dateCreated": "2018-02-12T19:27:34.87",
+  "dateReleased": "2018-05-24T21:31:23.453",
+  "isAvailable": true,
+  "categoryList": "Server Utility, API and Library"
+}

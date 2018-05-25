@@ -37,6 +37,7 @@ fun Application.routes() {
         val gson: Gson by inject()
 
         graphql(log, gson, appSchema.schema)
+        curse()
 
         static("/database") {
             default("database.html")

@@ -1,6 +1,5 @@
 # Auth
 
-reference: https://logins-v1.curseapp.net/help
+[reference](https://logins-v1.curseapp.net/help) 
 
-
-https://github.com/modmuss50/CAV2
+[modmuss50/CAV2](https://github.com/modmuss50/CAV2)

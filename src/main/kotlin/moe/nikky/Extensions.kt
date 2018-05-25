@@ -1,5 +1,9 @@
 package moe.nikky
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import moe.nikky.ExtensioHelper.mapper
+import org.koin.standalone.KoinComponent
+import org.koin.standalone.inject
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -10,6 +14,19 @@ import java.util.*
  * @author Nikky
  * @version 1.0
  */
+object ExtensioHelper : KoinComponent {
+    private val mapper: ObjectMapper by inject()
+
+    fun json(thing: Any?): String = mapper.writeValueAsString(thing)
+}
+
+val Any?.json: String
+    get() = ExtensioHelper.json(this)
+
+fun File.encodeBase64(): String{
+    val bytes = this.readBytes()
+    return Base64.getEncoder().encodeToString(bytes)
+}
 
 val Throwable.stackTraceString: String
     get() {
@@ -17,9 +34,3 @@ val Throwable.stackTraceString: String
         this.printStackTrace(PrintWriter(sw))
         return sw.toString()
     }
-
-fun File.encodeBase64(): String{
-    val bytes = this.readBytes()
-    val base64 = Base64.getEncoder().encodeToString(bytes)
-    return base64
-}
