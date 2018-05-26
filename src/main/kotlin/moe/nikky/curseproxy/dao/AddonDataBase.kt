@@ -1,6 +1,7 @@
 package moe.nikky.curseproxy.dao
 
 import moe.nikky.curseproxy.LOG
+import moe.nikky.curseproxy.model.Section
 import moe.nikky.curseproxy.model.SparseAddon
 import org.jetbrains.squash.connection.DatabaseConnection
 import org.jetbrains.squash.connection.transaction
@@ -22,7 +23,7 @@ fun ResultRow.toSparseAddon() = SparseAddon(
         name = this[SparseAddons.name],
         primaryAuthorName = this[SparseAddons.primaryAuthorName],
         primaryCategoryName = this[SparseAddons.primaryCategoryName],
-        sectionName = this[SparseAddons.sectionName],
+        sectionName = Section.valueOf(this[SparseAddons.sectionName]),
         dateModified = this[SparseAddons.dateModified],
         dateCreated = this[SparseAddons.dateCreated],
         dateReleased = this[SparseAddons.dateReleased]
@@ -43,7 +44,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
         row?.toSparseAddon()
     }
 
-    override fun getAll(size: Long?, name: String?, author: String?, category: String?, section: String?) = db.transaction {
+    override fun getAll(size: Long?, name: String?, author: String?, category: String?, section: Section?) = db.transaction {
         from(SparseAddons)
                 .select()
                 .apply {
@@ -61,7 +62,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                     }
                     section?.let {
                         LOG.debug("added section filter '$it'")
-                        where { SparseAddons.sectionName like it}
+                        where { SparseAddons.sectionName eq it.toString()}
                     }
                     size?.let {
                         LOG.debug("added size limit '$it'")
@@ -82,7 +83,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
             it[name] = addon.name
             it[primaryAuthorName] = addon.primaryAuthorName
             it[primaryCategoryName] = addon.primaryCategoryName
-            it[sectionName] = addon.sectionName
+            it[sectionName] = addon.sectionName.toString()
             it[dateModified] = addon.dateModified
             it[dateCreated] = addon.dateCreated
             it[dateReleased] = addon.dateReleased

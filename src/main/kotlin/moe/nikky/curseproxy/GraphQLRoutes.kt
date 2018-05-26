@@ -7,14 +7,15 @@ import io.ktor.http.ContentType
 import io.ktor.locations.Location
 import io.ktor.locations.post
 import io.ktor.request.receive
+import io.ktor.request.receiveText
 import io.ktor.response.respondText
 import io.ktor.routing.Route
 import org.slf4j.Logger
 
 @Location("/graphql")
-data class GraphQLRequest(val query: String = "", val variables: Map<String, Any> = emptyMap())
+data class GraphQLRequest(val query: String = "", val variables: Map<String, Any>? = emptyMap(), val operationName: String? = null)
 
-fun Route.graphql(log: Logger, gson: ObjectMapper, schema: Schema) {
+fun Route.graphql(log: Logger, mapper: ObjectMapper, schema: Schema) {
 //    graphQL(
 //            "path/to/schema.graphqls",
 //            MyQueryResolver()
@@ -24,8 +25,9 @@ fun Route.graphql(log: Logger, gson: ObjectMapper, schema: Schema) {
 
         val query = request.query
         log.info("the graphql query: $query")
+        log.info("the graphql query: ${request.variables}")
 
-        val variables = gson.writeValueAsString(request.variables)
+        val variables = mapper.writeValueAsString(request.variables ?: emptyMap<String, Any>())
         log.info("the graphql variables: $variables")
 
         call.respondText(schema.execute(query, variables), ContentType.Application.Json)

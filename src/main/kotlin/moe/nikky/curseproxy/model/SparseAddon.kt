@@ -8,7 +8,7 @@ data class SparseAddon(
         val name: String,
         val primaryAuthorName: String?,
         val primaryCategoryName: String?,
-        val sectionName: String,
+        val sectionName: Section,
         val dateModified: LocalDate,
         val dateCreated: LocalDate,
         val dateReleased: LocalDate

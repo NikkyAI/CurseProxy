@@ -30,7 +30,6 @@ fun Application.routes() {
     routing {
         val appSchema: AppSchema by inject()
         val mapper: ObjectMapper by inject()
-
         graphql(log, mapper, appSchema.schema)
         curse()
 

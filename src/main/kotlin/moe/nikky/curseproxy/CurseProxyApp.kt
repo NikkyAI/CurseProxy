@@ -1,6 +1,8 @@
 package moe.nikky.curseproxy
 
+import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -26,7 +28,6 @@ import org.koin.log.PrintLogger
 import org.koin.standalone.StandAloneContext.startKoin
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import kotlin.system.measureTimeMillis
 
 val LOG: Logger = LoggerFactory.getLogger("curseproxy")
 
@@ -39,7 +40,9 @@ fun Application.main() {
     install(Locations)
     install(ContentNegotiation) {
         jackson {
-            configure(SerializationFeature.INDENT_OUTPUT, true)
+            registerModule(KotlinModule()) // Enable Kotlin support
+            enable(SerializationFeature.INDENT_OUTPUT)
+            enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
         }
 
 //        gson {

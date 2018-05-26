@@ -1,11 +1,9 @@
 package moe.nikky.curseproxy.di
 
 import com.fasterxml.jackson.databind.MapperFeature
-import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import moe.nikky.curseproxy.curse.auth.AuthToken
 import moe.nikky.curseproxy.dao.AddonDatabase
 import moe.nikky.curseproxy.dao.AddonStorage
 import moe.nikky.curseproxy.graphql.AppSchema

@@ -1,6 +1,5 @@
 package moe.nikky.curseproxy.model
 
-import java.time.LocalDate
 import java.util.*
 
 data class Addon(
@@ -38,7 +37,7 @@ data class Addon(
         val fullDescription: String,
         val gameName: String,
         val portalName: String,
-        val sectionName: String,
+        val sectionName: Section,
         val dateModified: Date,
         val dateCreated: Date,
         val dateReleased: Date,
