@@ -4,7 +4,7 @@ import com.github.pgutkowski.kgraphql.KGraphQL
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.dao.AddonStorage
 import moe.nikky.curseproxy.model.Section
-import moe.nikky.curseproxy.model.SparseAddon
+import moe.nikky.curseproxy.model.graphql.Addon
 import java.time.LocalDate
 
 class AppSchema(private val storage: AddonStorage) {
@@ -47,20 +47,23 @@ class AppSchema(private val storage: AddonStorage) {
                 description = "placeholder field"
             }
         }
-        type<SparseAddon> {
-            description = "A Addon"
+        type<Addon> {
+            description = "A CurseAddon"
 
-            property(SparseAddon::addonId) {
+            property(Addon::id) {
                 description = "project id"
             }
-            property(SparseAddon::name) {
+            property(Addon::name) {
                 description = "addon name"
             }
-            property(SparseAddon::primaryAuthorName) {
+            property(Addon::primaryAuthorName) {
                 description = "primary project author"
             }
-            property(SparseAddon::primaryCategoryName) {
+            property(Addon::primaryCategoryName) {
                 description = "primary project category"
+            }
+            property(Addon::categoryList) {
+                description = "list of project categories"
             }
         }
 

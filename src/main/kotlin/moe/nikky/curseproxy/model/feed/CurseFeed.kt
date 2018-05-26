@@ -1,8 +1,8 @@
 package moe.nikky.curseproxy.model.feed
 
-import moe.nikky.curseproxy.model.Addon
+import moe.nikky.curseproxy.model.CurseAddon
 
 data class CurseFeed(
         val timestamp: Long,
-        val data: List<Addon> = emptyList()
+        val data: List<CurseAddon> = emptyList()
 )

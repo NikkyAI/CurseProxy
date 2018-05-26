@@ -17,12 +17,10 @@ import io.ktor.jackson.jackson
 import io.ktor.locations.Locations
 import io.ktor.response.respond
 import kotlinx.coroutines.experimental.Job
-import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.curse.auth.AuthToken
 import moe.nikky.curseproxy.dao.importData
 import moe.nikky.curseproxy.di.mainModule
 import moe.nikky.curseproxy.exceptions.*
-import moe.nikky.curseproxy.model.Addon
 import org.koin.Koin
 import org.koin.log.PrintLogger
 import org.koin.standalone.StandAloneContext.startKoin
@@ -123,7 +121,7 @@ fun Application.main() {
 //    log.info(jei.toString())
 //    log.info(jeiFiles.toString())
 
-//    var addons: List<Addon>? = null
+//    var addons: List<CurseAddon>? = null
 //    val duration = measureTimeMillis {
 //        addons = CurseClient.getAllAddonsByCriteria(432)
 //    }

@@ -13,18 +13,4 @@ enum class Section {
     @JsonProperty("mc-mods") MCMODS,
     @JsonProperty("texture-packs") TEXTUREPACKS,
     @JsonProperty("worlds") WORLDS;
-
-//    companion object {
-//        @JsonCreator
-//        @JvmStatic
-//        fun fromString(key: String?): ProjectStatus? {
-//            LOG.info("parsing section " + key)
-//            return if (key == null)
-//                null
-//            else {
-//                val index = key.toIntOrNull() ?: return ProjectStatus.valueOf(key.replace("-", "").toUpperCase())
-//                return ProjectStatus.values()[index - 1]
-//            }
-//        }
-//    }
 }

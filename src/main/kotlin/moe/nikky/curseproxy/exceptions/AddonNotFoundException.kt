@@ -7,4 +7,4 @@ package moe.nikky.curseproxy.exceptions
  */
 open class AddonNotFoundException(
         val unknown_id: Int
-) : MessageException("Addon not found")
+) : MessageException("CurseAddon not found")

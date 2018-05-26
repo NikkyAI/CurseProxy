@@ -1,7 +1,7 @@
 package moe.nikky.curseproxy.curse
 
 import moe.nikky.curseproxy.VersionComparator
-import moe.nikky.curseproxy.model.Addon
+import moe.nikky.curseproxy.model.CurseAddon
 import moe.nikky.curseproxy.model.AddonFile
 
 /**
@@ -10,7 +10,7 @@ import moe.nikky.curseproxy.model.AddonFile
  * @version 1.0
  */
 
-fun Addon.files(versions: List<String>): List<AddonFile> {
+fun CurseAddon.files(versions: List<String>): List<AddonFile> {
     val files = CurseClient.getAddonFiles(id) ?: emptyList()
     return if (versions.isEmpty()) {
         files.sortedByDescending { it.fileDate }
@@ -19,7 +19,7 @@ fun Addon.files(versions: List<String>): List<AddonFile> {
     }
 }
 
-fun Addon.filesLatestVersion(versions: List<String>): List<AddonFile> {
+fun CurseAddon.filesLatestVersion(versions: List<String>): List<AddonFile> {
     val files = CurseClient.getAddonFiles(id) ?: emptyList()
     return if (versions.isEmpty()) {
         val version = files.map { it.gameVersion.sortedWith(VersionComparator.reversed()).first() }.sortedWith(VersionComparator.reversed()).first()
@@ -29,4 +29,4 @@ fun Addon.filesLatestVersion(versions: List<String>): List<AddonFile> {
     }
 }
 
-fun Addon.latestFile(versions: List<String>) = filesLatestVersion(versions).first()
+fun CurseAddon.latestFile(versions: List<String>) = filesLatestVersion(versions).first()

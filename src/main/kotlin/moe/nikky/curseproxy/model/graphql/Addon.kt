@@ -1,15 +1,16 @@
-package moe.nikky.curseproxy.model
+package moe.nikky.curseproxy.model.graphql
 
+import moe.nikky.curseproxy.model.Section
 import java.time.LocalDate
 
-data class SparseAddon(
-        val id: Int? = null,
-        val addonId: Int,
+data class Addon(
+        val id: Int,
         val name: String,
         val primaryAuthorName: String?,
         val primaryCategoryName: String?,
         val sectionName: Section,
         val dateModified: LocalDate,
         val dateCreated: LocalDate,
-        val dateReleased: LocalDate
+        val dateReleased: LocalDate,
+        val categoryList: String
 )

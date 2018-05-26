@@ -6,7 +6,7 @@ import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.auth.curseAuth
-import moe.nikky.curseproxy.model.Addon
+import moe.nikky.curseproxy.model.CurseAddon
 import moe.nikky.curseproxy.model.AddonFile
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
@@ -21,7 +21,7 @@ object CurseClient : KoinComponent {
     private val mapper: ObjectMapper by inject()
     private const val ADDON_API = "https://addons-v2.forgesvc.net/api"
 
-    fun getAddon(projectId: Int): Addon? {
+    fun getAddon(projectId: Int): CurseAddon? {
         val url = "$ADDON_API/addon/$projectId"
         val (request, response, result) = url
                 .httpGet()
@@ -92,7 +92,7 @@ object CurseClient : KoinComponent {
             gameVersion: String? = null,
             index: Int = 0,
             pageSize: Int = 1000,
-            searchFilter: String? = null): List<Addon>? {
+            searchFilter: String? = null): List<CurseAddon>? {
         val url = "$ADDON_API/addon/search"
         val (request, response, result) = url
                 .httpGet(parameters = listOf<Pair<String, Any?>>(
@@ -126,9 +126,9 @@ object CurseClient : KoinComponent {
             isSortDescending: Boolean = true,
             gameVersion: String? = null,
             pageSize: Int = 1000,
-            searchFilter: String? = null): List<Addon>? {
+            searchFilter: String? = null): List<CurseAddon>? {
         var index = 0
-        val results = mutableListOf<Addon>()
+        val results = mutableListOf<CurseAddon>()
         while (true) {
             val page = getAddonsByCriteria(gameId, sectionId, categoryId, sort, isSortDescending, gameVersion, index, pageSize, searchFilter)
                     ?: emptyList()

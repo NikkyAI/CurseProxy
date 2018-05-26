@@ -2,7 +2,7 @@ package moe.nikky.curseproxy.model
 
 import java.util.*
 
-data class Addon(
+data class CurseAddon(
         val id: Int,
         val name: String,
         val authors: List<Author> = emptyList(),
