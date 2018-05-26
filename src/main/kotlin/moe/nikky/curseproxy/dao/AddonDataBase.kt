@@ -1,6 +1,16 @@
 package moe.nikky.curseproxy.dao
 
+import io.ktor.html.insert
 import moe.nikky.curseproxy.LOG
+import moe.nikky.curseproxy.dao.Addons.categoryList
+import moe.nikky.curseproxy.dao.Addons.dateCreated
+import moe.nikky.curseproxy.dao.Addons.dateModified
+import moe.nikky.curseproxy.dao.Addons.dateReleased
+import moe.nikky.curseproxy.dao.Addons.id
+import moe.nikky.curseproxy.dao.Addons.name
+import moe.nikky.curseproxy.dao.Addons.primaryAuthorName
+import moe.nikky.curseproxy.dao.Addons.primaryCategoryName
+import moe.nikky.curseproxy.dao.Addons.sectionName
 import moe.nikky.curseproxy.model.Section
 import moe.nikky.curseproxy.model.graphql.Addon
 import org.jetbrains.squash.connection.DatabaseConnection
@@ -8,6 +18,7 @@ import org.jetbrains.squash.connection.transaction
 import org.jetbrains.squash.dialects.h2.H2Connection
 import org.jetbrains.squash.expressions.eq
 import org.jetbrains.squash.expressions.like
+import org.jetbrains.squash.expressions.literal
 import org.jetbrains.squash.expressions.or
 import org.jetbrains.squash.query.from
 import org.jetbrains.squash.query.limit
@@ -16,6 +27,7 @@ import org.jetbrains.squash.query.where
 import org.jetbrains.squash.results.ResultRow
 import org.jetbrains.squash.results.get
 import org.jetbrains.squash.schema.create
+import org.jetbrains.squash.statements.deleteFrom
 import org.jetbrains.squash.statements.fetch
 import org.jetbrains.squash.statements.insertInto
 import org.jetbrains.squash.statements.values
@@ -79,7 +91,12 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
     }
 
     override fun createAddon(addon: Addon) {
+
         db.transaction {
+            deleteFrom(Addons)
+                    .where(Addons.id eq addon.id)
+                    .execute()
+
             insertInto(Addons).values {
                 it[id] = addon.id
                 it[name] = addon.name

@@ -1,5 +1,6 @@
 package moe.nikky.curseproxy.curse
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.httpGet
@@ -8,7 +9,6 @@ import com.github.kittinunf.result.Result
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.auth.curseAuth
 import moe.nikky.curseproxy.model.AddonFile
-import moe.nikky.curseproxy.model.Category
 import moe.nikky.curseproxy.model.CurseAddon
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
@@ -110,8 +110,8 @@ object CurseClient : KoinComponent {
     }
 
     data class AddonFileKey(
-            val projectId: Int,
-            val fileId: Int
+            @JsonProperty("AddonId") val addonId: Int,
+            @JsonProperty("FileId") val fileId: Int
     )
 
     fun getAddonFiles(keys: List<AddonFileKey>): Map<Int, List<AddonFile>>? {
@@ -172,7 +172,7 @@ object CurseClient : KoinComponent {
             searchFilter: String? = null): List<CurseAddon>? {
         val url = "$ADDON_API/addon/search"
         val (request, response, result) = url
-                .httpGet(parameters = listOf<Pair<String, Any?>>(
+                .httpGet(parameters = listOf(
                         "gameId" to gameId,
                         "sectionId" to sectionId,
                         "categoryId" to categoryId,
@@ -211,12 +211,14 @@ object CurseClient : KoinComponent {
             val page = getAddonsByCriteria(gameId, sectionId, categoryId, sort, isSortDescending, gameVersion, index, pageSize, searchFilter)
                     ?: emptyList()
             results += page
+
             if (page.size < pageSize) {
                 break
             }
-            index += pageSize
+            index += pageSize -1
         }
         return results
+//        return results.distinctBy { it.id }
     }
 
 //    fun getCategoryByID(categoryID: Int) : Category? {

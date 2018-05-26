@@ -20,6 +20,21 @@ import kotlin.system.measureTimeMillis
 open class AddonsImporter : KoinComponent {
     private val addonDatabase by inject<AddonStorage>()
 
+    private fun CurseAddon.toSparse() = Addon(
+            id = this.id,
+            name = this.name,
+            primaryAuthorName = this.primaryAuthorName,
+            primaryCategoryName = this.primaryCategoryName,
+            sectionName = this.sectionName,
+            dateModified = this.dateModified.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+            dateCreated = this.dateCreated.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+            dateReleased = this.dateReleased.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+            categoryList = this.categoryList
+    )
+
+    val processedIDs = mutableSetOf<Int>()
+    val processableIDs = mutableSetOf<Int>()
+
     fun import(log: Logger) {
         var addons: List<CurseAddon>? = null
         val duration = measureTimeMillis {
@@ -27,19 +42,25 @@ open class AddonsImporter : KoinComponent {
         }
         LOG.info("loaded ${addons?.size ?: 0} addons in $duration ms")
         addons?.forEach { addon ->
-            val sparse = Addon(
-                    id = addon.id,
-                    name = addon.name,
-                    primaryAuthorName = addon.primaryAuthorName,
-                    primaryCategoryName = addon.primaryCategoryName,
-                    sectionName = addon.sectionName,
-                    dateModified = addon.dateModified.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-                    dateCreated = addon.dateCreated.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-                    dateReleased = addon.dateReleased.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-                    categoryList = addon.categoryList
-            )
-            addonDatabase.createAddon(sparse)
+            addonDatabase.createAddon(addon.toSparse())
+            processedIDs += addon.id
+
+            val dependencies = addon
+                    .latestFiles
+                    .flatMap { it.dependencies ?: emptyList() }
+                    .distinctBy { it.addOnId }
+            processableIDs.addAll(dependencies.map { it.addOnId })
         }
+
+        processableIDs.forEach {
+            if(!processedIDs.contains(it)) {
+                val addon = CurseClient.getAddon(it)
+                if(addon != null)
+                    addonDatabase.createAddon(addon.toSparse())
+            }
+        }
+
+
         log.info("import complete")
     }
 }
