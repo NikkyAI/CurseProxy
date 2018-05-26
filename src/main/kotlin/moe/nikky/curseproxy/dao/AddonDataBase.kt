@@ -43,7 +43,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
         row?.toSparseAddon()
     }
 
-    override fun getAll(size: Long, name: String?, author: String?, category: String?, section: String?) = db.transaction {
+    override fun getAll(size: Long?, name: String?, author: String?, category: String?, section: String?) = db.transaction {
         from(SparseAddons)
                 .select()
                 .apply {
@@ -63,9 +63,12 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                         LOG.debug("added section filter '$it'")
                         where { SparseAddons.sectionName like it}
                     }
+                    size?.let {
+                        LOG.debug("added size limit '$it'")
+                        limit(size)
+                    }
                 }
 //                .orderBy(Addons.date, ascending = false)
-                .limit(size)
                 .execute()
                 .map { it.toSparseAddon() }
                 .toList()

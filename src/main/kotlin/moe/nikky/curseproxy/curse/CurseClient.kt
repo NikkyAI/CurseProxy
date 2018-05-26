@@ -8,7 +8,6 @@ import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.auth.curseAuth
 import moe.nikky.curseproxy.model.Addon
 import moe.nikky.curseproxy.model.AddonFile
-import org.koin.Koin
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 
@@ -20,7 +19,7 @@ import org.koin.standalone.inject
 
 object CurseClient : KoinComponent {
     private val mapper: ObjectMapper by inject()
-    private val ADDON_API = "https://addons-v2.forgesvc.net/api"
+    private const val ADDON_API = "https://addons-v2.forgesvc.net/api"
 
     fun getAddon(projectId: Int): Addon? {
         val url = "$ADDON_API/addon/$projectId"
@@ -28,7 +27,7 @@ object CurseClient : KoinComponent {
                 .httpGet()
                 .curseAuth()
                 .responseString()
-        return when(result) {
+        return when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
             }
@@ -45,7 +44,7 @@ object CurseClient : KoinComponent {
                 .httpGet()
                 .curseAuth()
                 .responseString()
-        return when(result) {
+        return when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
             }
@@ -62,7 +61,7 @@ object CurseClient : KoinComponent {
                 .httpGet()
                 .curseAuth()
                 .responseString()
-        return when(result) {
+        return when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
             }
@@ -93,12 +92,12 @@ object CurseClient : KoinComponent {
             gameVersion: String? = null,
             index: Int = 0,
             pageSize: Int = 1000,
-            searchFilter: String? = null) : List<Addon>? {
+            searchFilter: String? = null): List<Addon>? {
         val url = "$ADDON_API/addon/search"
         val (request, response, result) = url
-                .httpGet(listOf(
+                .httpGet(parameters = listOf<Pair<String, Any?>>(
                         "gameId" to gameId,
-                        "secttionId" to sectionId,
+                        "sectionId" to sectionId,
                         "categoryId" to categoryId,
                         "gameVersion" to gameVersion,
                         "index" to index,
@@ -109,7 +108,7 @@ object CurseClient : KoinComponent {
                 ))
                 .curseAuth()
                 .responseString()
-        return when(result) {
+        return when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
             }
@@ -127,13 +126,14 @@ object CurseClient : KoinComponent {
             isSortDescending: Boolean = true,
             gameVersion: String? = null,
             pageSize: Int = 1000,
-            searchFilter: String? = null) : List<Addon>? {
+            searchFilter: String? = null): List<Addon>? {
         var index = 0
         val results = mutableListOf<Addon>()
-        while(true) {
-            val page = getAddonsByCriteria(gameId, sectionId, categoryId, sort, isSortDescending, gameVersion, index, pageSize, searchFilter) ?: emptyList()
+        while (true) {
+            val page = getAddonsByCriteria(gameId, sectionId, categoryId, sort, isSortDescending, gameVersion, index, pageSize, searchFilter)
+                    ?: emptyList()
             results += page
-            if(page.size < pageSize) {
+            if (page.size < pageSize) {
                 break
             }
             index += pageSize

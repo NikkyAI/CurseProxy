@@ -14,10 +14,9 @@ import java.io.File
 
 object AuthToken : KoinComponent {
     private val mapper: ObjectMapper by inject()
-    private val AUTH_API = "https://logins-v1.curseapp.net"
+    private const val AUTH_API = "https://logins-v1.curseapp.net"
 
-    var session: Session = login()
-        private set
+    private var session: Session = login()
 
     fun test() {
         LOG.info("renewAfter: ${session.renewAfter}")
@@ -81,19 +80,6 @@ object AuthToken : KoinComponent {
         // add token to header
         request.header("AuthenticationToken" to AuthToken.session.token)
     }
-
-//    fun authenticate(request: Request, forceRenew: Boolean) {
-//
-//        val now = System.currentTimeMillis()
-//        if (session.renewAfter < now || forceRenew) {
-//            session = AuthToken.renew()
-//        } else if (AuthToken.session.expires < now) {
-//            session = AuthToken.login()
-//        }
-//
-//        // add token to header
-//        request.header("AuthenticationToken" to AuthToken.session.token)
-//    }
 
 }
 

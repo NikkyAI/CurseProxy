@@ -2,7 +2,6 @@ package moe.nikky.curseproxy
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.pgutkowski.kgraphql.schema.Schema
-import com.google.gson.Gson
 import io.ktor.application.call
 import io.ktor.http.ContentType
 import io.ktor.locations.Location

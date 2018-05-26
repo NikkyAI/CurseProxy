@@ -9,11 +9,12 @@ import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
-import io.ktor.gson.gson
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.cio.internals.WeakTimeoutQueue
 import io.ktor.jackson.jackson
 import io.ktor.locations.Locations
 import io.ktor.response.respond
+import kotlinx.coroutines.experimental.Job
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.curse.auth.AuthToken
 import moe.nikky.curseproxy.dao.importData
@@ -37,14 +38,14 @@ fun Application.main() {
     install(CallLogging)
     install(Locations)
     install(ContentNegotiation) {
-//        jackson {
-//            configure(SerializationFeature.INDENT_OUTPUT, true)
-//        }
-
-        gson {
-            //            setup()
-            setPrettyPrinting()
+        jackson {
+            configure(SerializationFeature.INDENT_OUTPUT, true)
         }
+
+//        gson {
+//            //            setup()
+//            setPrettyPrinting()
+//        }
     }
     //TODO: enable in production
 //    install(HttpsRedirect)
@@ -133,6 +134,8 @@ fun Application.main() {
 //    LOG.info("loaded ${idMap.size} IDs")
 //    LOG.info("loaded addon test complete")
 
+    val queue = WeakTimeoutQueue(100)
+    queue.register(Job())
     importData()
 
 

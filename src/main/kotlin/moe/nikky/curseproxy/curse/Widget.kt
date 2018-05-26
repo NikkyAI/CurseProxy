@@ -5,12 +5,11 @@ import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.VersionComparator
 import moe.nikky.curseproxy.exceptions.AddonNotFoundException
 
-@Deprecated("needs to be updated to use new CurseClient")
 object Widget {
 
     fun HTML.widget(id: Int, versions: MutableList<String>) {
-        val addon = CurseUtil.getAddon(id) ?: throw AddonNotFoundException(id)
-        val files = CurseUtil.getAllFilesForAddOn(id)
+        val addon = CurseClient.getAddon(id) ?: throw AddonNotFoundException(id)
+        val files = CurseClient.getAddonFiles(id) ?: emptyList()
 
         if (versions.isEmpty()) {
             val sorted = files.map { it.gameVersion.sortedWith(VersionComparator.reversed()).first() }.sortedWith(VersionComparator.reversed())
