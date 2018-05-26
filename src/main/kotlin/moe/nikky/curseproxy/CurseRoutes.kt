@@ -48,9 +48,7 @@ fun Route.curse() {
     get("/api/addon/{id}/files") {
         val id = call.parameters["id"]?.toInt()
                 ?: throw NumberFormatException("id")
-        val fileID = call.parameters["file"]?.toInt()
-                ?: throw NumberFormatException("file")
-        val file = CurseClient.getAddonFile(id, fileID)
+        val file = CurseClient.getAddonFiles(id)
                 ?: call.respond(status = HttpStatusCode.NotFound, message = "addon with id $id does not exist")
         call.respond(file)
     }
