@@ -10,7 +10,7 @@ interface AddonStorage : Closeable {
 
     fun getSparseAddon(id: Int): SparseAddon?
 
-    fun getAll(size: Long): List<SparseAddon>
+    fun getAll(size: Long, name: String?, author: String?, category: String?, section: String?): List<SparseAddon>
 
     //TODO: get addon by name ? only if not handled by graphql already
 }

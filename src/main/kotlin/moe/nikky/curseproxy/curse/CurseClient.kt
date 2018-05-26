@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
+import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.auth.curseAuth
 import moe.nikky.curseproxy.model.Addon
 import moe.nikky.curseproxy.model.AddonFile
@@ -29,11 +30,10 @@ object CurseClient : KoinComponent {
                 .responseString()
         return when(result) {
             is Result.Success -> {
-                Koin.logger.debug("addon json: ${result.value}")
                 mapper.readValue(result.value)
             }
             is Result.Failure -> {
-                Koin.logger.log("failed $request $response ${result.error}")
+                LOG.error("failed $request $response ${result.error}")
                 null
             }
         }
@@ -47,15 +47,15 @@ object CurseClient : KoinComponent {
                 .responseString()
         return when(result) {
             is Result.Success -> {
-                Koin.logger.debug("files json: ${result.value}")
                 mapper.readValue(result.value)
             }
             is Result.Failure -> {
-                Koin.logger.log("failed $request $response ${result.error}")
+                LOG.error("failed $request $response ${result.error}")
                 null
             }
         }
     }
+
     fun getAddonFile(projectId: Int, fileId: Int): AddonFile? {
         val url = "$ADDON_API/addon/$projectId/file/$fileId"
         val (request, response, result) = url
@@ -64,13 +64,80 @@ object CurseClient : KoinComponent {
                 .responseString()
         return when(result) {
             is Result.Success -> {
-                Koin.logger.debug("file json: ${result.value}")
                 mapper.readValue(result.value)
             }
             is Result.Failure -> {
-                Koin.logger.log("failed $request $response ${result.error}")
+                LOG.error("failed $request $response ${result.error}")
                 null
             }
         }
+    }
+
+    enum class AddonSortMethod {
+        Featured,
+        Popularity,
+        LastUpdated,
+        Name,
+        Author,
+        TotalDownloads,
+        Category,
+        GameVersion
+    }
+
+    fun getAddonsByCriteria(
+            gameId: Int,
+            sectionId: Int = -1,
+            categoryId: Int = -1,
+            sort: AddonSortMethod = AddonSortMethod.Featured,
+            isSortDescending: Boolean = true,
+            gameVersion: String? = null,
+            index: Int = 0,
+            pageSize: Int = 1000,
+            searchFilter: String? = null) : List<Addon>? {
+        val url = "$ADDON_API/addon/search"
+        val (request, response, result) = url
+                .httpGet(listOf(
+                        "gameId" to gameId,
+                        "secttionId" to sectionId,
+                        "categoryId" to categoryId,
+                        "gameVersion" to gameVersion,
+                        "index" to index,
+                        "pageSize" to pageSize,
+                        "searchFilter" to searchFilter,
+                        "sort" to sort,
+                        "sortDescending" to isSortDescending
+                ))
+                .curseAuth()
+                .responseString()
+        return when(result) {
+            is Result.Success -> {
+                mapper.readValue(result.value)
+            }
+            is Result.Failure -> {
+                LOG.error("failed $request $response ${result.error}")
+                null
+            }
+        }
+    }
+    fun getAllAddonsByCriteria(
+            gameId: Int,
+            sectionId: Int = -1,
+            categoryId: Int = -1,
+            sort: AddonSortMethod = AddonSortMethod.Featured,
+            isSortDescending: Boolean = true,
+            gameVersion: String? = null,
+            pageSize: Int = 1000,
+            searchFilter: String? = null) : List<Addon>? {
+        var index = 0
+        val results = mutableListOf<Addon>()
+        while(true) {
+            val page = getAddonsByCriteria(gameId, sectionId, categoryId, sort, isSortDescending, gameVersion, index, pageSize, searchFilter) ?: emptyList()
+            results += page
+            if(page.size < pageSize) {
+                break
+            }
+            index += pageSize
+        }
+        return results
     }
 }

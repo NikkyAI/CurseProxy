@@ -6,7 +6,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
-import org.koin.Koin.Companion.logger
+import moe.nikky.curseproxy.LOG
 
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
@@ -20,9 +20,9 @@ object AuthToken : KoinComponent {
         private set
 
     fun test() {
-        logger.log("renewAfter: ${session.renewAfter}")
-        logger.log("expires:    ${session.expires}")
-        logger.log("now:        ${System.currentTimeMillis()}")
+        LOG.info("renewAfter: ${session.renewAfter}")
+        LOG.info("expires:    ${session.expires}")
+        LOG.info("now:        ${System.currentTimeMillis()}")
     }
 
     private fun login(): Session {
@@ -38,11 +38,10 @@ object AuthToken : KoinComponent {
                 .responseString()
         val loginResponse: LoginResponse = when(result) {
             is Result.Success -> {
-                logger.log("login json: ${result.value}")
                 mapper.readValue(result.value)
             }
             is Result.Failure -> {
-                logger.log("failed $request $response ${result.error}")
+                LOG.error("failed $request $response ${result.error}")
                 throw RuntimeException("login failure")
             }
         }
@@ -54,15 +53,13 @@ object AuthToken : KoinComponent {
 
         val (request, response, result) = url.httpPost()
                 .header("Content-Type" to "application/json", "AuthenticationToken" to session.token)
-//                .body(mapper.writeValueAsBytes(body))
                 .responseString()
         val renewResponse: RenewTokenResponseContract = when (result) {
             is Result.Success -> {
-                logger.log("renew json: ${result.value}")
                 mapper.readValue(result.value)
             }
             is Result.Failure -> {
-                logger.log("failed $request $response ${result.error}")
+                LOG.error("failed $request $response ${result.error}")
                 throw RuntimeException("login failure")
             }
         }

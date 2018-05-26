@@ -1,5 +1,6 @@
 package moe.nikky.curseproxy
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.pgutkowski.kgraphql.schema.Schema
 import com.google.gson.Gson
 import io.ktor.application.call
@@ -14,14 +15,18 @@ import org.slf4j.Logger
 @Location("/graphql")
 data class GraphQLRequest(val query: String = "", val variables: Map<String, Any> = emptyMap())
 
-fun Route.graphql(log: Logger, gson: Gson, schema: Schema) {
+fun Route.graphql(log: Logger, gson: ObjectMapper, schema: Schema) {
+//    graphQL(
+//            "path/to/schema.graphqls",
+//            MyQueryResolver()
+//    )
     post<GraphQLRequest> {
         val request = call.receive<GraphQLRequest>()
 
         val query = request.query
         log.info("the graphql query: $query")
 
-        val variables = gson.toJson(request.variables)
+        val variables = gson.writeValueAsString(request.variables)
         log.info("the graphql variables: $variables")
 
         call.respondText(schema.execute(query, variables), ContentType.Application.Json)

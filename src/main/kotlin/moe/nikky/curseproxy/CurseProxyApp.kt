@@ -16,18 +16,18 @@ import io.ktor.locations.Locations
 import io.ktor.response.respond
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.curse.auth.AuthToken
+import moe.nikky.curseproxy.dao.importData
 import moe.nikky.curseproxy.di.mainModule
 import moe.nikky.curseproxy.exceptions.*
+import moe.nikky.curseproxy.model.Addon
 import org.koin.Koin
 import org.koin.log.PrintLogger
 import org.koin.standalone.StandAloneContext.startKoin
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
+import kotlin.system.measureTimeMillis
 
 val LOG: Logger = LoggerFactory.getLogger("curseproxy")
-
-const val REST_ENDPOINT = "/api"
 
 fun Application.main() {
     Koin.logger = PrintLogger()
@@ -37,14 +37,13 @@ fun Application.main() {
     install(CallLogging)
     install(Locations)
     install(ContentNegotiation) {
-        jackson {
-            configure(SerializationFeature.INDENT_OUTPUT, true)
-        }
+//        jackson {
+//            configure(SerializationFeature.INDENT_OUTPUT, true)
+//        }
 
         gson {
             //            setup()
             setPrettyPrinting()
-            disableHtmlEscaping()
         }
     }
     //TODO: enable in production
@@ -110,19 +109,31 @@ fun Application.main() {
 
     AuthToken.test()
 
-    val matterlink = CurseClient.getAddon(287323)
-    val matterlinkFiles = CurseClient.getAddonFiles(287323)
-    log.info(matterlink.toString())
-    log.info(matterlinkFiles.toString())
-    val jei = CurseClient.getAddon(238222)
-    val jeiFiles = CurseClient.getAddonFiles(238222)
-    log.info(jei.toString())
-    log.info(jeiFiles.toString())
 
-    LOG.info("loading IDs")
+//    val matterlink = CurseClient.getAddon(287323)
+//    val matterlinkFiles = CurseClient.getAddonFiles(287323)
+//    log.info(matterlink.toString())
+//    log.info(matterlinkFiles.toString())
+//    val jei = CurseClient.getAddon(238222)
+//    val jeiFiles = CurseClient.getAddonFiles(238222)
+//    log.info(jei.toString())
+//    log.info(jeiFiles.toString())
 
+//    var addons: List<Addon>? = null
+//    val duration = measureTimeMillis {
+//        addons = CurseClient.getAllAddonsByCriteria(432)
+//    }
+//    LOG.info("took $duration ms")
+//    log.info(addons?.size.toString())
+//    val firstGameName = addons?.firstOrNull()?.gameName
+//    log.info(firstGameName)
+
+//    LOG.info("loading IDs")
+//
 //    LOG.info("loaded ${idMap.size} IDs")
 //    LOG.info("loaded addon test complete")
+
+    importData()
 
 
     log.info("Application setup complete")

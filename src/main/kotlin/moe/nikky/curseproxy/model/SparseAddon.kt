@@ -1,36 +1,15 @@
 package moe.nikky.curseproxy.model
 
+import java.time.LocalDate
+
 data class SparseAddon(
         val id: Int? = null,
-//        val attachments: List<Attachment>? = emptyList(),
-//        val authors: List<Author> = emptyList(),
-//        val avatarUrl: String? = "",
-//        val categories: List<Category> = emptyList(),
-//        val categorySection: CategorySection,
-//        val commentCount: Int,
-//        val defaultFileId: Int,
-//        val downloadCount: Float,
-//        val gameId: Int,
-//        val gamePopularityRank: Int,
-//        val gameVersionLatestFiles: List<GameVersionLatestFile>,
-//        val iconId: Int,
         val addonId: Int,
-//        val installCount: Int,
-//        val isFeatured: Int,
-//        val latestFiles: List<AddonFile>,
-//        val likes: Int,
-        val name: String
-//        val packageType: PackageType,
-//        val popularityScore: Float,
-//        val primaryAuthorName: String?,
-//        val primaryCategoryAvatarUrl: String?,
-//        val primaryCategoryId: Int?,
-//        val primaryCategoryName: String?,
-//        val rating: Int,
-//        val stage: ProjectStage,
-//        val status: ProjectStatus,
-//        val summary: String,
-//        val webSiteURL: String,
-//        val donationUrl: String?,
-//        val externalUrl: String?
+        val name: String,
+        val primaryAuthorName: String?,
+        val primaryCategoryName: String?,
+        val sectionName: String,
+        val dateModified: LocalDate,
+        val dateCreated: LocalDate,
+        val dateReleased: LocalDate
 )

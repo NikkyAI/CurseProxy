@@ -1,5 +1,6 @@
 package moe.nikky.curseproxy
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import com.google.gson.Gson
@@ -34,12 +35,12 @@ fun Application.routes() {
 
     routing {
         val appSchema: AppSchema by inject()
-        val gson: Gson by inject()
+        val mapper: ObjectMapper by inject()
 
-        graphql(log, gson, appSchema.schema)
+        graphql(log, mapper, appSchema.schema)
         curse()
 
-        static("/database") {
+        static("/") {
             default("database.html")
         }
 
