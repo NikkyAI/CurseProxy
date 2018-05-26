@@ -9,7 +9,10 @@ import org.jetbrains.squash.dialects.h2.H2Connection
 import org.jetbrains.squash.expressions.eq
 import org.jetbrains.squash.expressions.like
 import org.jetbrains.squash.expressions.or
-import org.jetbrains.squash.query.*
+import org.jetbrains.squash.query.from
+import org.jetbrains.squash.query.limit
+import org.jetbrains.squash.query.select
+import org.jetbrains.squash.query.where
 import org.jetbrains.squash.results.ResultRow
 import org.jetbrains.squash.results.get
 import org.jetbrains.squash.schema.create
@@ -39,7 +42,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
         }
     }
 
-    override fun getSparseAddon(id: Int) = db.transaction {
+    override fun getAddon(id: Int) = db.transaction {
         val row = from(Addons).where { Addons.id eq id }.execute().singleOrNull()
         row?.toSparseAddon()
     }
@@ -50,19 +53,19 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                 .apply {
                     name?.let {
                         LOG.debug("added name filter '$it'")
-                        where { Addons.name like it}
+                        where { Addons.name like it }
                     }
                     author?.let {
                         LOG.debug("added author filter '$it'")
-                        where { Addons.primaryAuthorName like it}
+                        where { Addons.primaryAuthorName like it }
                     }
                     category?.let {
                         LOG.debug("added category filter '$it'")
-                        where { (Addons.primaryCategoryName like it) or (Addons.categoryList like "%$category%")}
+                        where { (Addons.primaryCategoryName like it) or (Addons.categoryList like "%$category%") }
                     }
                     section?.let {
                         LOG.debug("added section filter '$it'")
-                        where { Addons.sectionName eq it.toString()}
+                        where { Addons.sectionName eq it.toString() }
                     }
                     size?.let {
                         LOG.debug("added size limit '$it'")
@@ -75,20 +78,22 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                 .toList()
     }
 
-    override fun createSparseAddon(addon: Addon) = db.transaction {
-        insertInto(Addons).values {
-            it[id] = addon.id
-            it[name] = addon.name
-            it[primaryAuthorName] = addon.primaryAuthorName
-            it[primaryCategoryName] = addon.primaryCategoryName
-            it[sectionName] = addon.sectionName.toString()
-            it[dateModified] = addon.dateModified
-            it[dateCreated] = addon.dateCreated
-            it[dateReleased] = addon.dateReleased
-            it[categoryList] = addon.categoryList
-        }.fetch(Addons.id).execute()
+    override fun createAddon(addon: Addon) {
+        db.transaction {
+            insertInto(Addons).values {
+                it[id] = addon.id
+                it[name] = addon.name
+                it[primaryAuthorName] = addon.primaryAuthorName
+                it[primaryCategoryName] = addon.primaryCategoryName
+                it[sectionName] = addon.sectionName.toString()
+                it[dateModified] = addon.dateModified
+                it[dateCreated] = addon.dateCreated
+                it[dateReleased] = addon.dateReleased
+                it[categoryList] = addon.categoryList
+            }.execute()
+        }
     }
 
-    override fun close() { }
+    override fun close() {}
 
 }

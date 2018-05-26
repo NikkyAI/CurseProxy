@@ -42,14 +42,6 @@ fun Application.routes() {
             throw AddonFileNotFoundException(1234,  5678)
         }
 
-        get("/api/addon/{id}") {
-            val id = call.parameters["id"]?.toInt()
-                    ?: throw NumberFormatException("id")
-            val addon = CurseClient.getAddon(id)
-                    ?: call.respond(status = HttpStatusCode.NotFound, message = "addon with id $id does not exist")
-            call.respond(addon)
-        }
-
         get("/api/widget/{id}") {
             val id = call.parameters["id"]?.toInt()
                     ?: throw NumberFormatException("id")

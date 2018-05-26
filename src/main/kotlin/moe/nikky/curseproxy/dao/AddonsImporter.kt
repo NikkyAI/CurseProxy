@@ -26,7 +26,6 @@ open class AddonsImporter : KoinComponent {
             addons = CurseClient.getAllAddonsByCriteria(432)
         }
         LOG.info("loaded ${addons?.size ?: 0} addons in $duration ms")
-//        val addons = CurseClient.getAllAddonsByCriteria(432)
         addons?.forEach { addon ->
             val sparse = Addon(
                     id = addon.id,
@@ -39,7 +38,7 @@ open class AddonsImporter : KoinComponent {
                     dateReleased = addon.dateReleased.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                     categoryList = addon.categoryList
             )
-            addonDatabase.createSparseAddon(sparse)
+            addonDatabase.createAddon(sparse)
         }
         log.info("import complete")
     }

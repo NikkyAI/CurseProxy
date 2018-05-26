@@ -17,6 +17,7 @@ import io.ktor.jackson.jackson
 import io.ktor.locations.Locations
 import io.ktor.response.respond
 import kotlinx.coroutines.experimental.Job
+import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.curse.auth.AuthToken
 import moe.nikky.curseproxy.dao.importData
 import moe.nikky.curseproxy.di.mainModule
@@ -135,8 +136,9 @@ fun Application.main() {
 //    LOG.info("loaded ${idMap.size} IDs")
 //    LOG.info("loaded addon test complete")
 
-    val queue = WeakTimeoutQueue(100)
-    queue.register(Job())
+//    val categories = CurseClient.getCategories()
+//    LOG.info("$categories")
+
     importData()
 
 

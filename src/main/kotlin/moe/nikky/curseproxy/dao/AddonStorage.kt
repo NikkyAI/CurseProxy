@@ -6,9 +6,9 @@ import java.io.Closeable
 
 interface AddonStorage : Closeable {
 
-    fun createSparseAddon(sighting: Addon): Int
+    fun createAddon(sighting: Addon)
 
-    fun getSparseAddon(id: Int): Addon?
+    fun getAddon(id: Int): Addon?
 
     fun getAll(size: Long?, name: String?, author: String?, category: String?, section: Section?): List<Addon>
 
