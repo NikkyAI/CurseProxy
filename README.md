@@ -1,18 +1,27 @@
-m bug ?# CurseProxy
+# CurseProxy
 
 ## About
 
-CurseProxy is a tool to proxy the `cursemeta API` to add some useful data https://cursemeta.dries007.net/
+CurseProxy is a api used to access curseforge project and file info
+currently minecraft only
 
 ## api enpoints
 
 Example URLs using MatterLink for the project and file ids
 the example host is `https://curse.nikky.moe`
 
-[GET `/api/ids/`](https://curse.nikky.moe/api/ids)  
+2530702
+
+[GET `/api/addon/{addonID}`](https://curse.nikky.moe/api/addon/287323)  
+[GET `/api/addon/{addonID}/description`](https://curse.nikky.moe/api/addon/287323/description)  
+[GET `/api/addon/{addonID}/files`](https://curse.nikky.moe/api/addon/287323/files)  
+[GET `/api/addon/{addonID}/file/2530702`](https://curse.nikky.moe/api/addon/287323/file/2530702)  
+[GET `/api/addon/{addonID}/file/2530702/changelog`](https://curse.nikky.moe/api/addon/287323/file/2530702/changelog)  
+[GET `/api/widget/{addonID}`](https://curse.nikky.moe/api/widget/287323)  
 [GET `/api/widget/{addonID}`](https://curse.nikky.moe/api/widget/287323)  
 [GET `/api/url/{addonID}`](https://curse.nikky.moe/api/url/287323)  
 [GET `/api/img/{addonID}`](https://curse.nikky.moe/api/img/287323)  
+
 
 ## Badge demo
 
