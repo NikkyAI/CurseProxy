@@ -6,18 +6,14 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.application.log
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.cio.internals.WeakTimeoutQueue
 import io.ktor.jackson.jackson
 import io.ktor.locations.Locations
 import io.ktor.response.respond
-import kotlinx.coroutines.experimental.Job
-import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.curse.auth.AuthToken
 import moe.nikky.curseproxy.dao.importData
 import moe.nikky.curseproxy.di.mainModule
@@ -119,8 +115,8 @@ fun Application.main() {
 //    log.info(matterlinkFiles.toString())
 //    val jei = CurseClient.getAddon(238222)
 //    val jeiFiles = CurseClient.getAddonFiles(238222)
-//    log.info(jei.toString())
-//    log.info(jeiFiles.toString())
+//    LOG.info(jei.toString())
+//    LOG.info(jeiFiles.toString())
 
 //    var addons: List<CurseAddon>? = null
 //    val duration = measureTimeMillis {
@@ -139,8 +135,11 @@ fun Application.main() {
 //    val categories = CurseClient.getCategories()
 //    LOG.info("$categories")
 
+//    CurseClient.getAddonChangelog(287323, 2565382)
+
+
     importData()
 
 
-    log.info("Application setup complete")
+    LOG.info("Application setup complete")
 }

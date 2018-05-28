@@ -140,7 +140,7 @@ object CurseClient : KoinComponent {
                 .responseString()
         return when (result) {
             is Result.Success -> {
-                mapper.readValue(result.value)
+                result.value
             }
             is Result.Failure -> {
                 LOG.error("failed $request $response ${result.error}")

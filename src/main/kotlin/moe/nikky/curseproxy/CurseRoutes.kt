@@ -1,12 +1,15 @@
 package moe.nikky.curseproxy
 
 import io.ktor.application.call
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
+import io.ktor.response.respondText
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
+import kotlinx.html.HTML
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.dao.Addons.id
 
@@ -50,17 +53,19 @@ fun Route.curse() {
                 ?: throw NumberFormatException("id")
         val fileID = call.parameters["file"]?.toInt()
                 ?: throw NumberFormatException("file")
-        val file = CurseClient.getAddonChangelog(id, fileID)
-                ?: call.respond(status = HttpStatusCode.NotFound, message = "addon file with id $id:$fileID does not exist")
-        call.respond(file)
+        val changelog = CurseClient.getAddonChangelog(id, fileID)
+        if(changelog == null)
+            call.respond(status = HttpStatusCode.NotFound, message = "addon file with id $id:$fileID does not exist")
+        else
+            call.respondText(changelog, ContentType.Text.Html)
     }
 
     get("/api/addon/{id}/files") {
         val id = call.parameters["id"]?.toInt()
                 ?: throw NumberFormatException("id")
-        val file = CurseClient.getAddonFiles(id)
+        val files = CurseClient.getAddonFiles(id)
                 ?: call.respond(status = HttpStatusCode.NotFound, message = "addon with id $id does not exist")
-        call.respond(file)
+        call.respond(files)
     }
 
 
