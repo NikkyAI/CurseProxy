@@ -1,16 +1,23 @@
 plugins {
     id "org.jetbrains.kotlin.jvm" version "1.2.41"
     id 'com.github.johnrengelman.shadow' version '2.0.2'
-    id 'application'
+    id "com.bmuschko.tomcat" version "2.5"
 }
 
 group 'moe.nikky'
 version '0.1-SNAPSHOT'
 
 apply plugin: 'kotlin'
+apply plugin: 'war'
+apply plugin: 'com.bmuschko.tomcat'
 
-mainClassName = 'io.ktor.server.netty.DevelopmentEngine'
-applicationName = "curseproxy"
+webAppDirName = 'webapp'
+
+tomcat {
+    contextPath = '/'
+    httpProtocol = 'org.apache.coyote.http11.Http11Nio2Protocol'
+    ajpProtocol  = 'org.apache.coyote.ajp.AjpNio2Protocol'
+}
 
 repositories {
     mavenCentral()
@@ -29,15 +36,17 @@ ext {
     kgraphql_version = '0.2.5'
     koin_version = '0.8.2'
     squash_version = '0.2.2'
+    tomcat_version = '9.0.4'
 }
 
-
 dependencies {
-//    compile group: 'com.github.aballano', name: 'MnemoniK', version: 'master-SNAPSHOT'
 
-    ['ktor', 'ktor-jackson', 'ktor-features', 'ktor-locations', 'ktor-html-builder', 'ktor-server-core', 'ktor-server-netty'].each {
+    ['ktor', 'ktor-jackson', 'ktor-features', 'ktor-locations', 'ktor-html-builder', 'ktor-server-core', 'ktor-server-servlet'].each {
         compile group: 'io.ktor', name: it, version: ktor_version
     }
+
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:$tomcat_version",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcat_version"
 
     // Logging
     compile "ch.qos.logback:logback-classic:$logback_version"
@@ -77,6 +86,4 @@ kotlin {
     }
 }
 
-shadowJar {
-    classifier = null
-}
+task run(dependsOn: tomcatRun)
