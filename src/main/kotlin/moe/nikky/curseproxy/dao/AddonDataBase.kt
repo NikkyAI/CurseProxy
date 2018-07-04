@@ -35,6 +35,7 @@ import org.jetbrains.squash.statements.values
 fun ResultRow.toSparseAddon() = Addon(
         id = this[Addons.id],
         name = this[Addons.name],
+        slug = this[Addons.slug],
         primaryAuthorName = this[Addons.primaryAuthorName],
         primaryCategoryName = this[Addons.primaryCategoryName],
         sectionName = Section.valueOf(this[Addons.sectionName]),
@@ -59,13 +60,17 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
         row?.toSparseAddon()
     }
 
-    override fun getAll(size: Long?, name: String?, author: String?, category: String?, section: Section?) = db.transaction {
+    override fun getAll(size: Long?, name: String?, slug: String?, author: String?, category: String?, section: Section?) = db.transaction {
         from(Addons)
                 .select()
                 .apply {
                     name?.let {
                         LOG.debug("added name filter '$it'")
                         where { Addons.name like it }
+                    }
+                    slug?.let {
+                        LOG.debug("added slug filter '$it'")
+                        where { Addons.slug like it }
                     }
                     author?.let {
                         LOG.debug("added author filter '$it'")
@@ -100,6 +105,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
             insertInto(Addons).values {
                 it[id] = addon.id
                 it[name] = addon.name
+                it[slug] = addon.slug
                 it[primaryAuthorName] = addon.primaryAuthorName
                 it[primaryCategoryName] = addon.primaryCategoryName
                 it[sectionName] = addon.sectionName.toString()

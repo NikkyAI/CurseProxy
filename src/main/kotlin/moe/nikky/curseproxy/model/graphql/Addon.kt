@@ -6,6 +6,7 @@ import java.time.LocalDate
 data class Addon(
         val id: Int,
         val name: String,
+        val slug: String,
         val primaryAuthorName: String?,
         val primaryCategoryName: String?,
         val sectionName: Section,

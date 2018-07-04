@@ -23,6 +23,7 @@ open class AddonsImporter : KoinComponent {
     private fun CurseAddon.toSparse() = Addon(
             id = this.id,
             name = this.name,
+            slug = this.slug,
             primaryAuthorName = this.primaryAuthorName,
             primaryCategoryName = this.primaryCategoryName,
             sectionName = this.sectionName,
