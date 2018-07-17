@@ -25,7 +25,7 @@ object Widget {
 //        val sorted = files.sortedWith(compareByDescending(VersionComparator) { it.gameVersion.sortedWith(VersionComparator).last() })
         fileMap.forEach { key, list ->
             LOG.info("version: $key")
-            LOG.info("list: $list")
+//            LOG.info("list: $list")
             list.forEach {
                 LOG.info("file: ${it.fileName}")
             }
