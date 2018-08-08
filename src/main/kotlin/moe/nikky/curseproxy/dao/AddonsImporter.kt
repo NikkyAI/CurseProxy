@@ -1,7 +1,5 @@
 package moe.nikky.curseproxy.dao
 
-import io.ktor.application.Application
-import io.ktor.application.log
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.model.CurseAddon
@@ -36,7 +34,9 @@ open class AddonsImporter : KoinComponent {
     val processedIDs = mutableSetOf<Int>()
     val processableIDs = mutableSetOf<Int>()
 
-    fun import(log: Logger) {
+    suspend fun import(log: Logger) {
+        processedIDs.clear()
+        processableIDs.clear()
         var addons: List<CurseAddon>? = null
         val duration = measureTimeMillis {
             addons = CurseClient.getAllAddonsByCriteria(432)
@@ -64,8 +64,4 @@ open class AddonsImporter : KoinComponent {
 
         log.info("import complete")
     }
-}
-
-fun Application.importData() {
-    AddonsImporter().import(log)
 }

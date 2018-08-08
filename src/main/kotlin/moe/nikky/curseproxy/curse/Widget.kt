@@ -7,7 +7,7 @@ import moe.nikky.curseproxy.exceptions.AddonNotFoundException
 
 object Widget {
 
-    fun HTML.widget(id: Int, versions: MutableList<String>) {
+    suspend fun HTML.widget(id: Int, versions: MutableList<String>) {
         val addon = CurseClient.getAddon(id) ?: throw AddonNotFoundException(id)
         val files = CurseClient.getAddonFiles(id) ?: emptyList()
 

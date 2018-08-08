@@ -7,6 +7,7 @@ import io.ktor.application.log
 import io.ktor.content.default
 import io.ktor.content.files
 import io.ktor.content.static
+import io.ktor.html.HtmlContent
 import io.ktor.html.respondHtml
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.header
@@ -14,6 +15,7 @@ import io.ktor.response.respond
 import io.ktor.response.respondRedirect
 import io.ktor.routing.get
 import io.ktor.routing.routing
+import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.html.*
 import moe.nikky.curseproxy.curse.*
 import moe.nikky.curseproxy.curse.Widget.widget
@@ -47,8 +49,11 @@ fun Application.routes() {
                     ?: throw NumberFormatException("id")
             val versions = call.parameters.getAll("version") ?: emptyList()
             call.respondHtml {
-                widget(id, versions.toMutableList())
+                runBlocking {
+                    widget(id, versions.toMutableList())
+                }
             }
+
         }
 
         get("/api/url/{id}") {

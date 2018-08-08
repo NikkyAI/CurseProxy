@@ -32,11 +32,11 @@ repositories {
 }
 
 ext {
-    ktor_version = '0.9.1'
+    ktor_version = '0.9.3'
     logback_version = '1.2.3'
-    fuel_version = '1.12.1'
+    fuel_version = '1.15.0'
     kgraphql_version = '0.2.5'
-    koin_version = '0.8.2'
+    koin_version = '0.9.3'
     squash_version = '0.2.2'
     tomcat_version = '9.0.4'
 }
@@ -54,7 +54,8 @@ dependencies {
     compile "ch.qos.logback:logback-classic:$logback_version"
 
     // Networking
-    compile "com.github.kittinunf.fuel:fuel:$fuel_version"
+    compile group: 'com.github.kittinunf.fuel', name: 'fuel', version: fuel_version
+    compile group: 'com.github.kittinunf.fuel', name: 'fuel-coroutines', version: fuel_version
 
     // GraphQL
     compile "com.github.pgutkowski:kgraphql:$kgraphql_version"
@@ -66,8 +67,8 @@ dependencies {
     compile "org.jetbrains.squash:squash-h2:$squash_version"
 
 
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '+'
-    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '+'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.5'
+    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.9.5'
 
     // Testing
     testCompile group: 'junit', name: 'junit', version: '4.12'

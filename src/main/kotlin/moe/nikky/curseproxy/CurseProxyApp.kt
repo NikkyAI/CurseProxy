@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.application.log
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
@@ -14,8 +15,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.locations.Locations
 import io.ktor.response.respond
+import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.launch
 import moe.nikky.curseproxy.curse.auth.AuthToken
-import moe.nikky.curseproxy.dao.importData
+import moe.nikky.curseproxy.dao.AddonsImporter
 import moe.nikky.curseproxy.di.mainModule
 import moe.nikky.curseproxy.exceptions.*
 import org.koin.Koin
@@ -23,6 +26,7 @@ import org.koin.log.PrintLogger
 import org.koin.standalone.StandAloneContext.startKoin
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.TimeUnit
 
 val LOG: Logger = LoggerFactory.getLogger("curseproxy")
 
@@ -138,8 +142,17 @@ fun Application.main() {
 //    CurseClient.getAddonChangelog(287323, 2565382)
 
 
-    importData()
+    log.info("Application setup complete")
 
 
-    LOG.info("Application setup complete")
+    launch {
+
+        val importer = AddonsImporter()
+        while(true) {
+            importer.import(log)
+            log.info("Addons imported")
+            delay(3, TimeUnit.HOURS)
+        }
+
+    }
 }

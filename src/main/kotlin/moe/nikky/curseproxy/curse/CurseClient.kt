@@ -1,5 +1,6 @@
 package moe.nikky.curseproxy.curse
 
+import awaitStringResponse
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -23,12 +24,12 @@ object CurseClient : KoinComponent {
     private val mapper: ObjectMapper by inject()
     private const val ADDON_API = "https://addons-v2.forgesvc.net/api"
 
-    fun getAddon(projectId: Int): CurseAddon? {
+    suspend fun getAddon(projectId: Int): CurseAddon? {
         val url = "$ADDON_API/addon/$projectId"
         val (request, response, result) = url
                 .httpGet()
                 .curseAuth()
-                .responseString()
+                .awaitStringResponse()
         return when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
@@ -40,13 +41,13 @@ object CurseClient : KoinComponent {
         }
     }
 
-    fun getAddons(projectIds: Array<Int>): List<CurseAddon>? {
+    suspend fun getAddons(projectIds: Array<Int>): List<CurseAddon>? {
         val url = "$ADDON_API/addon"
         val (request, response, result) = url
                 .httpPost()
                 .body(mapper.writeValueAsBytes(projectIds))
                 .curseAuth()
-                .responseString()
+                .awaitStringResponse()
         return when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
@@ -58,12 +59,12 @@ object CurseClient : KoinComponent {
         }
     }
 
-    fun getAddonDescription(projectId: Int): String? {
+    suspend fun getAddonDescription(projectId: Int): String? {
         val url = "$ADDON_API/addon/$projectId/description"
         val (request, response, result) = url
                 .httpGet()
                 .curseAuth()
-                .responseString()
+                .awaitStringResponse()
         return when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
@@ -75,12 +76,12 @@ object CurseClient : KoinComponent {
         }
     }
 
-    fun getAddonFile(projectId: Int, fileId: Int): AddonFile? {
+    suspend fun getAddonFile(projectId: Int, fileId: Int): AddonFile? {
         val url = "$ADDON_API/addon/$projectId/file/$fileId"
         val (request, response, result) = url
                 .httpGet()
                 .curseAuth()
-                .responseString()
+                .awaitStringResponse()
         return when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
@@ -92,12 +93,12 @@ object CurseClient : KoinComponent {
         }
     }
 
-    fun getAddonFiles(projectId: Int): List<AddonFile>? {
+    suspend fun getAddonFiles(projectId: Int): List<AddonFile>? {
         val url = "$ADDON_API/addon/$projectId/files"
         val (request, response, result) = url
                 .httpGet()
                 .curseAuth()
-                .responseString()
+                .awaitStringResponse()
         return when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
@@ -114,13 +115,13 @@ object CurseClient : KoinComponent {
             @JsonProperty("FileId") val fileId: Int
     )
 
-    fun getAddonFiles(keys: List<AddonFileKey>): Map<Int, List<AddonFile>>? {
+    suspend fun getAddonFiles(keys: List<AddonFileKey>): Map<Int, List<AddonFile>>? {
         val url = "$ADDON_API/addon/files"
         val (request, response, result) = url
                 .httpPost()
                 .body(mapper.writeValueAsBytes(keys))
                 .curseAuth()
-                .responseString()
+                .awaitStringResponse()
         return when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
@@ -132,12 +133,12 @@ object CurseClient : KoinComponent {
         }
     }
 
-    fun getAddonChangelog(projectId: Int, fileId: Int): String? {
+    suspend fun getAddonChangelog(projectId: Int, fileId: Int): String? {
         val url = "$ADDON_API/addon/$projectId/file/$fileId/changelog"
         val (request, response, result) = url
                 .httpGet()
                 .curseAuth()
-                .responseString()
+                .awaitStringResponse()
         return when (result) {
             is Result.Success -> {
                 result.value
@@ -160,7 +161,7 @@ object CurseClient : KoinComponent {
         GameVersion
     }
 
-    fun getAddonsByCriteria(
+    suspend fun getAddonsByCriteria(
             gameId: Int,
             sectionId: Int = -1,
             categoryId: Int = -1,
@@ -184,7 +185,7 @@ object CurseClient : KoinComponent {
                         "sortDescending" to isSortDescending
                 ))
                 .curseAuth()
-                .responseString()
+                .awaitStringResponse()
         return when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
@@ -196,7 +197,7 @@ object CurseClient : KoinComponent {
         }
     }
 
-    fun getAllAddonsByCriteria(
+    suspend fun getAllAddonsByCriteria(
             gameId: Int,
             sectionId: Int = -1,
             categoryId: Int = -1,
@@ -204,7 +205,7 @@ object CurseClient : KoinComponent {
             isSortDescending: Boolean = true,
             gameVersion: String? = null,
             pageSize: Int = 1000,
-            searchFilter: String? = null): List<CurseAddon>? {
+            searchFilter: String? = null): List<CurseAddon> {
         var index = 0
         val results = mutableListOf<CurseAddon>()
         while (true) {

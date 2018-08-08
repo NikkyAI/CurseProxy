@@ -1,11 +1,13 @@
 package moe.nikky.curseproxy.curse.auth
 
+import awaitStringResponse
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
+import kotlinx.coroutines.experimental.runBlocking
 import moe.nikky.curseproxy.LOG
 
 import org.koin.standalone.KoinComponent
@@ -16,7 +18,7 @@ object AuthToken : KoinComponent {
     private val mapper: ObjectMapper by inject()
     private const val AUTH_API = "https://logins-v1.curseapp.net"
 
-    private var session: Session = login()
+    private var session: Session = runBlocking { login() }
 
     fun test() {
         LOG.info("renewAfter: ${session.renewAfter}")
@@ -24,7 +26,7 @@ object AuthToken : KoinComponent {
         LOG.info("now:        ${System.currentTimeMillis()}")
     }
 
-    private fun login(): Session {
+    suspend private fun login(): Session {
         val url = "$AUTH_API/login"
 
         val body: LoginRequest = File("auth.json").bufferedReader().use {
@@ -32,9 +34,9 @@ object AuthToken : KoinComponent {
         }
 
         val (request, response, result) = url.httpPost()
-                .header("Content-Type" to "application/json")
-                .body(mapper.writeValueAsBytes(body))
-                .responseString()
+                .apply { headers["Content-Type"] = "application/json" }
+                .body(mapper.writeValueAsString(body))
+                .awaitStringResponse()
         val loginResponse: LoginResponse = when(result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
@@ -47,12 +49,13 @@ object AuthToken : KoinComponent {
         return loginResponse.session
     }
 
-    private fun renew(): Session {
+    private suspend fun renew(): Session {
         val url = "$AUTH_API/login/renew"
 
         val (request, response, result) = url.httpPost()
-                .header("Content-Type" to "application/json", "AuthenticationToken" to session.token)
-                .responseString()
+                .header("AuthenticationToken" to session.token)
+                .apply { headers["Content-Type"] = "application/json" }
+                .awaitStringResponse()
         val renewResponse: RenewTokenResponseContract = when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
@@ -68,7 +71,7 @@ object AuthToken : KoinComponent {
         return session
     }
 
-    fun authenticate(request: Request) {
+    suspend fun authenticate(request: Request) {
 
         val now = System.currentTimeMillis()
         if (session.renewAfter < now) {
@@ -78,13 +81,13 @@ object AuthToken : KoinComponent {
         }
 
         // add token to header
-        request.header("AuthenticationToken" to AuthToken.session.token)
+        request.headers["AuthenticationToken"] = AuthToken.session.token
     }
 
 }
 
 
-fun Request.curseAuth(): Request {
+suspend fun Request.curseAuth(): Request {
     AuthToken.authenticate(this)
     return this
 }
