@@ -56,7 +56,6 @@ object CurseClient : KoinComponent {
                 .awaitStringResponse()
         return when (result) {
             is Result.Success -> {
-                LOG.info("response: ${result.value}")
                 mapper.readValue(result.value)
             }
             is Result.Failure -> {
