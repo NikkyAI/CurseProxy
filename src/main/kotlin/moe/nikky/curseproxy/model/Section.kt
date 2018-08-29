@@ -9,8 +9,19 @@ import com.fasterxml.jackson.annotation.JsonProperty
  * @version 1.0
  */
 enum class Section {
+    @JsonProperty("addons") ADDONS,
+    @JsonProperty("mc-mods") MC_ADDONS,
+    @JsonProperty("texture-packs") TEXTURE_PACKS,
+    @JsonProperty("worlds") WORLDS,
     @JsonProperty("modpacks") MODPACKS,
-    @JsonProperty("mc-mods") MCMODS,
-    @JsonProperty("texture-packs") TEXTUREPACKS,
-    @JsonProperty("worlds") WORLDS;
+    @JsonProperty("ws-addons") WS_ADDONS,
+    @JsonProperty("ksp-mods") KSP_MODS,
+    @JsonProperty("tsw-mods") TSW_MODS,
+    @JsonProperty("wot-skins") WOT_SKINS,
+    @JsonProperty("wot-mods") WOT_MODS,
+    @JsonProperty("teso-addons") TESO_ADDONS,
+    @JsonProperty("mods") MODS,
+    @JsonProperty("tswl-mods") TSWL_MODS,
+    @JsonProperty("missions") MISSIONS,
+    @JsonProperty("dd-mods") DD_MODS
 }

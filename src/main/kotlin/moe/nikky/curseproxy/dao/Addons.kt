@@ -4,6 +4,7 @@ import org.jetbrains.squash.definition.*
 
 object Addons : TableDefinition() {
     val id = integer("id").primaryKey()
+    val gameId = integer("gameID")
     val name = varchar("name", 300)
     val slug = varchar("slug", 300)
     val primaryAuthorName = varchar("primaryAuthorName", 60)

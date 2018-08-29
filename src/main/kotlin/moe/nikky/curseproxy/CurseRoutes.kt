@@ -9,9 +9,7 @@ import io.ktor.response.respondText
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
-import kotlinx.html.HTML
 import moe.nikky.curseproxy.curse.CurseClient
-import moe.nikky.curseproxy.dao.Addons.id
 
 fun Route.curse() {
 
@@ -25,7 +23,7 @@ fun Route.curse() {
 
     post("/api/addon") {
         val ids = call.receive<Array<Int>>()
-        val addons = CurseClient.getAddons(ids)
+        val addons = CurseClient.getAddons(ids, true)
                 ?: call.respond(status = HttpStatusCode.NotFound, message = "error")
         call.respond(addons)
     }

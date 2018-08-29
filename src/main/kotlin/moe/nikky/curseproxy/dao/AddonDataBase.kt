@@ -1,16 +1,6 @@
 package moe.nikky.curseproxy.dao
 
-import io.ktor.html.insert
 import moe.nikky.curseproxy.LOG
-import moe.nikky.curseproxy.dao.Addons.categoryList
-import moe.nikky.curseproxy.dao.Addons.dateCreated
-import moe.nikky.curseproxy.dao.Addons.dateModified
-import moe.nikky.curseproxy.dao.Addons.dateReleased
-import moe.nikky.curseproxy.dao.Addons.id
-import moe.nikky.curseproxy.dao.Addons.name
-import moe.nikky.curseproxy.dao.Addons.primaryAuthorName
-import moe.nikky.curseproxy.dao.Addons.primaryCategoryName
-import moe.nikky.curseproxy.dao.Addons.sectionName
 import moe.nikky.curseproxy.model.Section
 import moe.nikky.curseproxy.model.graphql.Addon
 import org.jetbrains.squash.connection.DatabaseConnection
@@ -18,22 +8,20 @@ import org.jetbrains.squash.connection.transaction
 import org.jetbrains.squash.dialects.h2.H2Connection
 import org.jetbrains.squash.expressions.eq
 import org.jetbrains.squash.expressions.like
-import org.jetbrains.squash.expressions.literal
 import org.jetbrains.squash.expressions.or
 import org.jetbrains.squash.query.from
-import org.jetbrains.squash.query.limit
 import org.jetbrains.squash.query.select
 import org.jetbrains.squash.query.where
 import org.jetbrains.squash.results.ResultRow
 import org.jetbrains.squash.results.get
 import org.jetbrains.squash.schema.create
 import org.jetbrains.squash.statements.deleteFrom
-import org.jetbrains.squash.statements.fetch
 import org.jetbrains.squash.statements.insertInto
 import org.jetbrains.squash.statements.values
 
 fun ResultRow.toSparseAddon() = Addon(
         id = this[Addons.id],
+        gameID = this[Addons.gameId],
         name = this[Addons.name],
         slug = this[Addons.slug],
         primaryAuthorName = this[Addons.primaryAuthorName],
@@ -60,10 +48,14 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
         row?.toSparseAddon()
     }
 
-    override fun getAll(size: Long?, name: String?, slug: String?, author: String?, category: String?, section: Section?) = db.transaction {
+    override fun getAll(gameId: Int?, name: String?, slug: String?, author: String?, category: String?, section: Section?) = db.transaction {
         from(Addons)
                 .select()
                 .apply {
+                    gameId?.let {
+                        LOG.debug("added gameID filter '$it'")
+                        where { Addons.gameId eq it }
+                    }
                     name?.let {
                         LOG.debug("added name filter '$it'")
                         where { Addons.name like it }
@@ -84,10 +76,6 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                         LOG.debug("added section filter '$it'")
                         where { Addons.sectionName eq it.toString() }
                     }
-                    size?.let {
-                        LOG.debug("added size limit '$it'")
-                        limit(size)
-                    }
                 }
 //                .orderBy(Addons.date, ascending = false)
                 .execute()
@@ -104,6 +92,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
 
             insertInto(Addons).values {
                 it[id] = addon.id
+                it[gameId] = addon.gameID
                 it[name] = addon.name
                 it[slug] = addon.slug
                 it[primaryAuthorName] = addon.primaryAuthorName

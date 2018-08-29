@@ -5,6 +5,7 @@ import java.time.LocalDate
 
 data class Addon(
         val id: Int,
+        val gameID: Int,
         val name: String,
         val slug: String,
         val primaryAuthorName: String?,

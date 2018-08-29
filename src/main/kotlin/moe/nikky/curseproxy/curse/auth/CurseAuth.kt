@@ -26,7 +26,7 @@ object AuthToken : KoinComponent {
         LOG.info("now:        ${System.currentTimeMillis()}")
     }
 
-    suspend private fun login(): Session {
+    private suspend fun login(): Session {
         val url = "$AUTH_API/login"
 
         val body: LoginRequest = File("auth.json").bufferedReader().use {

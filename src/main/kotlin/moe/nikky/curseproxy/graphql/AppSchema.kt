@@ -21,12 +21,12 @@ class AppSchema(private val storage: AddonStorage) {
         }
 
         query("addons") {
-            resolver { size: Long?, name: String?, slug: String?, author: String?, category: String?, section: Section? ->
-                storage.getAll(size, name, slug, author, category, section)
+            resolver { gameID: Int?, name: String?, slug: String?, author: String?, category: String?, section: Section? ->
+                storage.getAll(gameID, name, slug, author, category, section)
             }.withArgs {
-                arg<Long> { name = "size"; defaultValue = null; description = "The number of records to return" }
+                arg<Int> { name = "gameID"; defaultValue = null; description = "The game id to filter for" }
                 arg<String> { name = "name"; defaultValue = null; description = "The name of the addon to return" }
-                arg<String> { name = "slug"; defaultValue = null; description = "The slug of the addon toreturn" }
+                arg<String> { name = "slug"; defaultValue = null; description = "The slug of the addon to return" }
                 arg<String> { name = "author"; defaultValue = null; description = "author name" }
                 arg<String> { name = "category"; defaultValue = null; description = "category string" }
                 arg<Section> { name = "section"; defaultValue = null; description = "section name" }
@@ -50,9 +50,8 @@ class AppSchema(private val storage: AddonStorage) {
         }
         type<Addon> {
             description = "A CurseAddon"
-
-            property(Addon::id) {
-                description = "project id"
+            property(Addon::gameID) {
+                description = "id of the game this addon is for"
             }
             property(Addon::name) {
                 description = "addon name"

@@ -24,7 +24,7 @@ object CurseClient : KoinComponent {
     private val mapper: ObjectMapper by inject()
     private const val ADDON_API = "https://addons-v2.forgesvc.net/api"
 
-    suspend fun getAddon(projectId: Int): CurseAddon? {
+    suspend fun getAddon(projectId: Int, ignoreError: Boolean = false): CurseAddon? {
         val url = "$ADDON_API/addon/$projectId"
         val (request, response, result) = url
                 .httpGet()
@@ -35,25 +35,34 @@ object CurseClient : KoinComponent {
                 mapper.readValue(result.value)
             }
             is Result.Failure -> {
-                LOG.error("failed $request $response ${result.error}")
+                if(!ignoreError) {
+                    LOG.error("failed $request $response ${result.error}")
+                }
                 null
             }
         }
     }
 
-    suspend fun getAddons(projectIds: Array<Int>): List<CurseAddon>? {
+    suspend fun getAddons(projectIds: Array<Int>, ignoreErrors: Boolean = false): List<CurseAddon>? {
         val url = "$ADDON_API/addon"
         val (request, response, result) = url
                 .httpPost()
                 .body(mapper.writeValueAsBytes(projectIds))
                 .curseAuth()
+                .apply {
+                    this.headers["Content-Type"] = "application/json"
+//                    LOG.info(this.cUrlString())
+                }
                 .awaitStringResponse()
         return when (result) {
             is Result.Success -> {
+                LOG.info("response: ${result.value}")
                 mapper.readValue(result.value)
             }
             is Result.Failure -> {
-                LOG.error("failed $request $response ${result.error}")
+                if(!ignoreErrors) {
+                    LOG.error("failed $request $response ${result.error}")
+                }
                 null
             }
         }
@@ -174,7 +183,7 @@ object CurseClient : KoinComponent {
         val url = "$ADDON_API/addon/search"
         val (request, response, result) = url
                 .httpGet(parameters = listOf(
-                        "gameId" to gameId,
+                        "gameID" to gameId,
                         "sectionId" to sectionId,
                         "categoryId" to categoryId,
                         "gameVersion" to gameVersion,

@@ -10,5 +10,5 @@ interface AddonStorage : Closeable {
 
     fun getAddon(id: Int): Addon?
 
-    fun getAll(size: Long?, name: String?, slug: String?, author: String?, category: String?, section: Section?): List<Addon>
+    fun getAll(gameId: Int?, name: String?, slug: String?, author: String?, category: String?, section: Section?): List<Addon>
 }
