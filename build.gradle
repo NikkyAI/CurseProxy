@@ -38,7 +38,7 @@ ext {
     kgraphql_version = '0.2.6'
     koin_version = '0.9.3'
     squash_version = '0.2.2'
-    tomcat_version = '9.0.4'
+    tomcat_version = '9.0.11'
 }
 
 dependencies {
@@ -50,8 +50,8 @@ dependencies {
         compile group: 'io.ktor', name: it, version: ktor_version
     }
 
-//    tomcat "org.apache.tomcat.embed:tomcat-embed-core:$tomcat_version",
-//            "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcat_version"
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:$tomcat_version",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcat_version"
 
     // Logging
     compile "ch.qos.logback:logback-classic:$logback_version"

@@ -41,19 +41,18 @@ fun Application.routes() {
         }
 
         get("/test/exception") {
-            throw AddonFileNotFoundException(1234,  5678)
+            throw AddonFileNotFoundException(1234, 5678)
         }
 
         get("/api/widget/{id}") {
             val id = call.parameters["id"]?.toInt()
                     ?: throw NumberFormatException("id")
             val versions = call.parameters.getAll("version") ?: emptyList()
-            call.respondHtml {
-                runBlocking {
-                    widget(id, versions.toMutableList())
-                }
-            }
 
+            call.respondHtml {
+                widget(id, versions.toMutableList())
+                LOG.info("response: $this")
+            }
         }
 
         get("/api/url/{id}") {
