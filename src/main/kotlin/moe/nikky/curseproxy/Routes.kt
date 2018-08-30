@@ -17,6 +17,7 @@ import io.ktor.routing.get
 import io.ktor.routing.routing
 import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.html.*
+import kotlinx.html.stream.appendHTML
 import moe.nikky.curseproxy.curse.*
 import moe.nikky.curseproxy.curse.Widget.widget
 import moe.nikky.curseproxy.exceptions.AddonFileNotFoundException
@@ -25,6 +26,7 @@ import moe.nikky.curseproxy.graphql.AppSchema
 import moe.nikky.encodeBase64
 import org.koin.ktor.ext.inject
 import java.io.File
+import java.io.StringWriter
 
 @Suppress("unused")
 fun Application.routes() {
@@ -50,8 +52,10 @@ fun Application.routes() {
             val versions = call.parameters.getAll("version") ?: emptyList()
 
             call.respondHtml {
+                val sw = StringWriter()
+                sw.appendHTML().apply { widget(id, versions.toMutableList()) }
+                LOG.info("response: ${sw}")
                 widget(id, versions.toMutableList())
-                LOG.info("response: $this")
             }
         }
 
