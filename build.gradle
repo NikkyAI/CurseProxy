@@ -32,7 +32,7 @@ repositories {
 }
 
 ext {
-    ktor_version = '0.9.3'
+    ktor_version = '0.9.4'
     logback_version = '1.2.3'
     fuel_version = '1.15.0'
     kgraphql_version = '0.2.6'

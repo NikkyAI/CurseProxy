@@ -112,39 +112,6 @@ fun Application.main() {
 
     AuthToken.test()
 
-
-//    val matterlink = CurseClient.getAddon(287323)
-//    val matterlinkFiles = CurseClient.getAddonFiles(287323)
-//    log.info(matterlink.toString())
-//    log.info(matterlinkFiles.toString())
-//    val jei = CurseClient.getAddon(238222)
-//    val jeiFiles = CurseClient.getAddonFiles(238222)
-//    LOG.info(jei.toString())
-//    LOG.info(jeiFiles.toString())
-
-//    var addons: List<CurseAddon>? = null
-//    val duration = measureTimeMillis {
-//        addons = CurseClient.getAllAddonsByCriteria(432)
-//    }
-//    LOG.info("took $duration ms")
-//    log.info(addons?.size.toString())
-//    val firstGameName = addons?.firstOrNull()?.gameName
-//    log.info(firstGameName)
-
-//    LOG.info("loading IDs")
-//
-//    LOG.info("loaded ${idMap.size} IDs")
-//    LOG.info("loaded addon test complete")
-
-//    val categories = CurseClient.getCategories()
-//    LOG.info("$categories")
-
-//    CurseClient.getAddonChangelog(287323, 2565382)
-
-
-    log.info("Application setup complete")
-
-
     launch {
 
         val importer = AddonsImporter()
@@ -155,4 +122,6 @@ fun Application.main() {
         }
 
     }
+
+    log.info("Application setup complete")
 }

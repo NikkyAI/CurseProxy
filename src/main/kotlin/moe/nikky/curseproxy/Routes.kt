@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.log
-import io.ktor.content.default
-import io.ktor.content.files
-import io.ktor.content.static
 import io.ktor.html.HtmlContent
 import io.ktor.html.respondHtml
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.default
+import io.ktor.http.content.files
+import io.ktor.http.content.static
 import io.ktor.request.header
 import io.ktor.response.respond
 import io.ktor.response.respondRedirect
