@@ -7,6 +7,7 @@ import io.ktor.application.log
 import io.ktor.html.HtmlContent
 import io.ktor.html.respondHtml
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.URLProtocol
 import io.ktor.http.content.default
 import io.ktor.http.content.files
 import io.ktor.http.content.static
@@ -26,7 +27,6 @@ import moe.nikky.curseproxy.graphql.AppSchema
 import moe.nikky.encodeBase64
 import org.koin.ktor.ext.inject
 import java.io.File
-import java.io.StringWriter
 
 @Suppress("unused")
 fun Application.routes() {
@@ -48,7 +48,7 @@ fun Application.routes() {
 
         get("/api/widget/{id}") {
             val id = call.parameters["id"]?.toInt()
-                    ?: throw NumberFormatException("id")
+                ?: throw NumberFormatException("id")
             val versions: MutableList<String> = call.parameters.getAll("version")?.toMutableList() ?: mutableListOf()
 
             call.respondHtml {
@@ -56,15 +56,16 @@ fun Application.routes() {
                 val files = runBlocking { CurseClient.getAddonFiles(id) } ?: emptyList()
 
                 if (versions.isEmpty()) {
-                    val sorted = files.map { it.gameVersion.sortedWith(VersionComparator.reversed()).first() }.sortedWith(VersionComparator.reversed())
+                    val sorted = files.map { it.gameVersion.sortedWith(VersionComparator.reversed()).first() }
+                        .sortedWith(VersionComparator.reversed())
                     LOG.info("sorted: $sorted")
                     versions.add(sorted.first())
                 }
 
                 val fileMap = files.groupBy { it.gameVersion.sortedWith(VersionComparator.reversed()).first() }
-                        .mapValues {
-                            it.value.sortedByDescending { it.fileDate }
-                        }.toSortedMap(VersionComparator.reversed())
+                    .mapValues {
+                        it.value.sortedByDescending { it.fileDate }
+                    }.toSortedMap(VersionComparator.reversed())
 
 //        val sorted = files.sortedWith(compareByDescending(VersionComparator) { it.gameVersion.sortedWith(VersionComparator).last() })
                 fileMap.forEach { key, list ->
@@ -134,7 +135,7 @@ fun Application.routes() {
 
         get("/api/url/{id}") {
             val id = call.parameters["id"]?.toInt()
-                    ?: throw NumberFormatException("id")
+                ?: throw NumberFormatException("id")
             val addon = CurseClient.getAddon(id) ?: throw AddonNotFoundException(id)
             val versions = call.parameters.getAll("version") ?: emptyList()
             val file = addon.latestFile(versions)
@@ -143,17 +144,20 @@ fun Application.routes() {
 
         get("/api/url/{id}/{fileid}") {
             val id = call.parameters["id"]?.toInt()
-                    ?: throw NumberFormatException("id")
+                ?: throw NumberFormatException("id")
             val fileid = call.parameters["fileid"]?.toInt()
-                    ?: throw NumberFormatException("fileid")
+                ?: throw NumberFormatException("fileid")
             val file = CurseClient.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
             call.respondRedirect(url = file.downloadURL, permanent = false)
         }
 
         get("/api/img/{id}") {
             val id = call.parameters["id"]?.toInt()
-                    ?: throw NumberFormatException("id")
+                ?: throw NumberFormatException("id")
+            log.info(call.parameters.entries().joinToString())
             val style = call.parameters["style"]
+            val colorA = call.parameters["colorA"]
+            val colorB = call.parameters["colorB"]
             val link = call.parameters.contains("link")
             val logo = call.parameters.contains("logo")
 
@@ -162,34 +166,48 @@ fun Application.routes() {
             val file = addon.latestFile(versions)
 
             val name = addon.name
-                    .replace("-", "--")
-                    .replace("_", "__")
+                .replace("-", "--")
+                .replace("_", "__")
             val fileName = file.fileName.replace(addon.name, "")
-                    .replace(Regex("^[\\s-._]+"), "")
-                    .replace("-", "--")
-                    .replace("_", "__")
+                .replace(Regex("^[\\s-._]+"), "")
+                .replace("-", "--")
+                .replace("_", "__")
 
-            var url = "https://img.shields.io/badge/$name-$fileName-orange.svg?maxAge=3600"
-            if (logo) {
-                val logoData = "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
-                url += "&logo=$logoData"
-            }
-            if (link) {
-                val left = "https://minecraft.curseforge.com/projects/$id"
-                val right = file.downloadURL
-                url += "&link=$left&link=$right"
-            }
-            if (style != null) {
-                url += "&style=$style"
-            }
+            call.respondRedirect(permanent = false) {
+                protocol = URLProtocol.HTTPS
+                host = "img.shields.io"
+                path("badge", "$name-$fileName-orange.svg")
+                parameters["maxAge"] = "3600"
 
-            call.respondRedirect(url = url, permanent = false)
+                if (logo) {
+                    val logoData =
+                        "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
+                    parameters["logo"] = logoData
+                }
+                if (link) {
+                    val left = "https://minecraft.curseforge.com/projects/$id"
+                    val right = file.downloadURL
+                    parameters["link"] = left
+                    parameters["link"] = right
+                }
+                style?.let { value ->
+                    parameters["style"] = value
+                }
+                colorA?.let { value ->
+                    parameters["colorA"] = value
+                }
+                colorB?.let { value ->
+                    parameters["colorB"] = value
+                }
+            }
         }
 
         get("/api/img/{id}/files") {
             val id = call.parameters["id"]?.toInt()
-                    ?: throw NumberFormatException("id")
+                ?: throw NumberFormatException("id")
             val style = call.parameters["style"]
+            val colorA = call.parameters["colorA"]
+            val colorB = call.parameters["colorB"]
             val link = call.parameters.contains("link")
             val logo = call.parameters.contains("logo")
 
@@ -199,32 +217,46 @@ fun Application.routes() {
             val count = files.count()
 
             val name = addon.name
-                    .replace("-", "--")
-                    .replace("_", "__")
+                .replace("-", "--")
+                .replace("_", "__")
             val label = "$count Files"
-            var url = "https://img.shields.io/badge/$name-$label-orange.svg?maxAge=3600"
-            if (logo) {
-                val logoData = "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
-                url += "&logo=$logoData"
-            }
-            if (link) {
-                val left = "https://minecraft.curseforge.com/projects/$id"
-                val right = "https://minecraft.curseforge.com/projects/$id/files"
-                url += "&link=$left&link=$right"
-            }
-            if (style != null) {
-                url += "&style=$style"
-            }
+            call.respondRedirect(permanent = false) {
+                protocol = URLProtocol.HTTPS
+                host = "img.shields.io"
+                path("badge", "$name-$label-orange.svg")
+                parameters["maxAge"] = "3600"
 
-            call.respondRedirect(url = url, permanent = false)
+                if (logo) {
+                    val logoData =
+                        "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
+                    parameters["logo"] = logoData
+                }
+                if (link) {
+                    val left = "https://minecraft.curseforge.com/projects/$id"
+                    val right = "https://minecraft.curseforge.com/projects/$id/files"
+                    parameters["link"] = left
+                    parameters["link"] = right
+                }
+                style?.let { value ->
+                    parameters["style"] = value
+                }
+                colorA?.let { value ->
+                    parameters["colorA"] = value
+                }
+                colorB?.let { value ->
+                    parameters["colorB"] = value
+                }
+            }
         }
 
         get("/api/img/{id}/{fileid}") {
             val id = call.parameters["id"]?.toInt()
-                    ?: throw NumberFormatException("id")
+                ?: throw NumberFormatException("id")
             val fileid = call.parameters["fileid"]?.toInt()
-                    ?: throw NumberFormatException("fileid")
+                ?: throw NumberFormatException("fileid")
             val style = call.parameters["style"]
+            val colorA = call.parameters["colorA"]
+            val colorB = call.parameters["colorB"]
             val link = call.parameters.contains("link")
             val logo = call.parameters.contains("logo")
 
@@ -232,34 +264,46 @@ fun Application.routes() {
             val file = CurseClient.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
 
             val name = addon.name
-                    .replace("-", "--")
-                    .replace("_", "__")
+                .replace("-", "--")
+                .replace("_", "__")
             val fileName = file.fileName.replace(addon.name, "")
-                    .replace(Regex("^[\\s-._]+"), "")
-                    .replace("-", "--")
-                    .replace("_", "__")
+                .replace(Regex("^[\\s-._]+"), "")
+                .replace("-", "--")
+                .replace("_", "__")
 
-            var url = "https://img.shields.io/badge/$name-$fileName-orange.svg?maxAge=3600"
-            if (logo) {
-                val logoData = "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
-                url += "&logo=$logoData"
-            }
-            if (link) {
-                val left = "https://minecraft.curseforge.com/projects/$id"
-                val right = file.downloadURL
-                url += "&link=$left&link=$right"
-            }
-            if (style != null) {
-                url += "&style=$style"
-            }
+            call.respondRedirect(permanent = false) {
+                protocol = URLProtocol.HTTPS
+                host = "img.shields.io"
+                path("badge", "$name-$fileName-orange.svg")
+                parameters["maxAge"] = "3600"
 
-            call.respondRedirect(url = url, permanent = false)
+                if (logo) {
+                    val logoData =
+                        "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
+                    parameters["logo"] = logoData
+                }
+                if (link) {
+                    val left = "https://minecraft.curseforge.com/projects/$id"
+                    val right = file.downloadURL
+                    parameters["link"] = left
+                    parameters["link"] = right
+                }
+                style?.let { value ->
+                    parameters["style"] = value
+                }
+                colorA?.let { value ->
+                    parameters["colorA"] = value
+                }
+                colorB?.let { value ->
+                    parameters["colorB"] = value
+                }
+            }
         }
 
 
         get("/api/demo/{id}") {
             val id = call.parameters["id"]?.toInt()
-                    ?: throw NumberFormatException("id")
+                ?: throw NumberFormatException("id")
             call.respondHtml {
                 body {
                     a(href = "/api/url/$id") {
@@ -306,12 +350,12 @@ fun Application.routes() {
                     }
                     h2 { +"call.request.local" }
                     listOf(
-                            "scheme = ${call.request.local.scheme}",
-                            "version = ${call.request.local.version}",
-                            "port = ${call.request.local.port}",
-                            "host = ${call.request.local.host}",
-                            "uri = ${call.request.local.uri}",
-                            "method = ${call.request.local.method}"
+                        "scheme = ${call.request.local.scheme}",
+                        "version = ${call.request.local.version}",
+                        "port = ${call.request.local.port}",
+                        "host = ${call.request.local.host}",
+                        "uri = ${call.request.local.uri}",
+                        "method = ${call.request.local.method}"
                     ).forEach { p { +it } }
 
                     h2 { +"Headers" }
