@@ -34,15 +34,20 @@ object AuthToken : KoinComponent {
         }
 
         val (request, response, result) = url.httpPost()
-                .apply { headers["Content-Type"] = "application/json" }
-                .body(mapper.writeValueAsString(body))
-                .awaitStringResponse()
-        val loginResponse: LoginResponse = when(result) {
+            .apply {
+                headers.clear()
+                headers["Content-Type"] = "application/json"
+                headers["User-Agent"] = "curl/7.29.0"
+            }
+            .body(mapper.writeValueAsString(body))
+            .awaitStringResponse()
+        val loginResponse: LoginResponse = when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
             }
             is Result.Failure -> {
                 LOG.error("failed $request $response ${result.error}")
+                LOG.error(request.cUrlString())
                 throw RuntimeException("login failure")
             }
         }
@@ -53,9 +58,9 @@ object AuthToken : KoinComponent {
         val url = "$AUTH_API/login/renew"
 
         val (request, response, result) = url.httpPost()
-                .header("AuthenticationToken" to session.token)
-                .apply { headers["Content-Type"] = "application/json" }
-                .awaitStringResponse()
+            .header("AuthenticationToken" to session.token)
+            .apply { headers["Content-Type"] = "application/json" }
+            .awaitStringResponse()
         val renewResponse: RenewTokenResponseContract = when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
@@ -83,9 +88,7 @@ object AuthToken : KoinComponent {
         // add token to header
         request.headers["AuthenticationToken"] = AuthToken.session.token
     }
-
 }
-
 
 suspend fun Request.curseAuth(): Request {
     AuthToken.authenticate(this)
@@ -98,37 +101,37 @@ suspend fun Request.curseAuth(): Request {
 //}
 
 data class LoginRequest(
-        @JsonProperty("Username") val username: String,
-        @JsonProperty("Password") val password: String
+    @JsonProperty("Username") val username: String,
+    @JsonProperty("Password") val password: String
 )
 
 data class LoginResponse(
-        @JsonProperty("Status") val status: Int,
-        @JsonProperty("StatusMessage") val statusMessage: String?,
-        @JsonProperty("Session") val session: Session,
-        @JsonProperty("Timestamp") val timestamp: Long,
-        @JsonProperty("TwitchUsernameReservationToken") val twitchUsernameReservationToken: String
+    @JsonProperty("Status") val status: Int,
+    @JsonProperty("StatusMessage") val statusMessage: String?,
+    @JsonProperty("Session") val session: Session,
+    @JsonProperty("Timestamp") val timestamp: Long,
+    @JsonProperty("TwitchUsernameReservationToken") val twitchUsernameReservationToken: String
 )
 
 data class Session(
-        @JsonProperty("UserID") val userID: Int,
-        @JsonProperty("Username") val username: String,
-        @JsonProperty("DisplayName") val displayName: String?,
-        @JsonProperty("SessionID") val sessionID: String,
-        @JsonProperty("Token") var token: String,
-        @JsonProperty("EmailAddress") val emailAddress: String,
-        @JsonProperty("EffectivePremiumStatus") val effectivePremiumStatus: Boolean,
-        @JsonProperty("ActualPremiumStatus") val actualPremiumStatus: Boolean,
-        @JsonProperty("SubscriptionToken") val subscriptionToken: Int,
-        @JsonProperty("Expires") var expires: Long,
-        @JsonProperty("RenewAfter") var renewAfter: Long,
-        @JsonProperty("IsTemporaryAccount") val isTemporaryAccount: Boolean,
-        @JsonProperty("IsMerged") val isMerged: Boolean,
-        @JsonProperty("Bans") val bans: Int
+    @JsonProperty("UserID") val userID: Int,
+    @JsonProperty("Username") val username: String,
+    @JsonProperty("DisplayName") val displayName: String?,
+    @JsonProperty("SessionID") val sessionID: String,
+    @JsonProperty("Token") var token: String,
+    @JsonProperty("EmailAddress") val emailAddress: String,
+    @JsonProperty("EffectivePremiumStatus") val effectivePremiumStatus: Boolean,
+    @JsonProperty("ActualPremiumStatus") val actualPremiumStatus: Boolean,
+    @JsonProperty("SubscriptionToken") val subscriptionToken: Int,
+    @JsonProperty("Expires") var expires: Long,
+    @JsonProperty("RenewAfter") var renewAfter: Long,
+    @JsonProperty("IsTemporaryAccount") val isTemporaryAccount: Boolean,
+    @JsonProperty("IsMerged") val isMerged: Boolean,
+    @JsonProperty("Bans") val bans: Int
 )
 
 data class RenewTokenResponseContract(
-        @JsonProperty("Token") val token: String,
-        @JsonProperty("Expires") val expires: Long,
-        @JsonProperty("RenewAfter") val renewAfter: Long
+    @JsonProperty("Token") val token: String,
+    @JsonProperty("Expires") val expires: Long,
+    @JsonProperty("RenewAfter") val renewAfter: Long
 )
