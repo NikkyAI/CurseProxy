@@ -7,15 +7,16 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import moe.nikky.curseproxy.dao.AddonDatabase
 import moe.nikky.curseproxy.dao.AddonStorage
 import moe.nikky.curseproxy.graphql.AppSchema
-import org.koin.dsl.module.applicationContext
+import org.koin.dsl.definition.Kind
+import org.koin.dsl.module.module
 
-val mainModule = applicationContext {
-    provide {
+val mainModule = module(definition = {
+    provide(kind = Kind.Single) {
         jacksonObjectMapper() // Enable JSON parsing
-                .registerModule(KotlinModule()) // Enable Kotlin support
-                .enable(SerializationFeature.INDENT_OUTPUT)
-                .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
+            .registerModule(KotlinModule()) // Enable Kotlin support
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
     }
-    provide { AppSchema(get()) }
-    provide { AddonDatabase() as AddonStorage }
-}
+    provide(kind = Kind.Single) { AppSchema(get()) }
+    provide(kind = Kind.Single) { AddonDatabase() as AddonStorage }
+})

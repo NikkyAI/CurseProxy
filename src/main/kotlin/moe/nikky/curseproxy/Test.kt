@@ -1,11 +1,11 @@
 package moe.nikky.curseproxy
 
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.curse.auth.AuthToken
 import moe.nikky.curseproxy.dao.AddonsImporter
 import moe.nikky.curseproxy.di.mainModule
-import org.koin.Koin
+import org.koin.core.Koin
 import org.koin.log.PrintLogger
 import org.koin.standalone.StandAloneContext
 

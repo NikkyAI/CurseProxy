@@ -1,6 +1,6 @@
 package moe.nikky.curseproxy.curse
 
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import kotlinx.html.*
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.VersionComparator

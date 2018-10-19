@@ -15,13 +15,14 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.locations.Locations
 import io.ktor.response.respond
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import moe.nikky.curseproxy.curse.auth.AuthToken
 import moe.nikky.curseproxy.dao.AddonsImporter
 import moe.nikky.curseproxy.di.mainModule
 import moe.nikky.curseproxy.exceptions.*
-import org.koin.Koin
+import org.koin.core.Koin
 import org.koin.log.PrintLogger
 import org.koin.standalone.StandAloneContext.startKoin
 import org.slf4j.Logger
@@ -112,16 +113,16 @@ fun Application.main() {
 
     AuthToken.test()
 
-    launch {
+    GlobalScope.launch(Dispatchers.Default, CoroutineStart.DEFAULT, null, {
 
         val importer = AddonsImporter()
         while(true) {
             importer.import(log)
             log.info("Addons imported")
-            delay(3, TimeUnit.HOURS)
+            delay(TimeUnit.HOURS.toMillis(3))
         }
 
-    }
+    })
 
     log.info("Application setup complete")
 }

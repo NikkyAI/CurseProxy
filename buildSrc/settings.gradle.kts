@@ -1,7 +1,6 @@
 pluginManagement {
     repositories {
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
-        maven(url = "https://kotlin.bintray.com/kotlinx")
         gradlePluginPortal()
     }
     resolutionStrategy {
@@ -9,10 +8,7 @@ pluginManagement {
             if (requested.id.id == "org.jetbrains.kotlin.jvm") {
                 useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
             }
-            if (requested.id.id == "kotlinx-serialization") {
-                useModule("org.jetbrains.kotlin:kotlin-serialization:${requested.version}")
-            }
         }
     }
 }
-rootProject.name = "CurseProxy"
+rootProject.name = "buildSrc"

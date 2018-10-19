@@ -1,7 +1,7 @@
-package moe.nikky.curseproxy.model;
+package moe.nikky.curseproxy.model
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import kotlin.jvm.JvmStatic;
+import com.fasterxml.jackson.annotation.JsonCreator
+import kotlin.jvm.JvmStatic
 
 enum class PackageType {
     FOLDER,
