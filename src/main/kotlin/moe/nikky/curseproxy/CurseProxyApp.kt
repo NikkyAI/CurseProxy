@@ -15,6 +15,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.locations.Locations
 import io.ktor.response.respond
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -113,7 +114,8 @@ fun Application.main() {
 
     AuthToken.test()
 
-    GlobalScope.launch(Dispatchers.Default, CoroutineStart.DEFAULT, null, {
+
+    GlobalScope.launch(Dispatchers.IO) {
 
         val importer = AddonsImporter()
         while(true) {
@@ -122,7 +124,7 @@ fun Application.main() {
             delay(TimeUnit.HOURS.toMillis(3))
         }
 
-    })
+    }
 
     log.info("Application setup complete")
 }
