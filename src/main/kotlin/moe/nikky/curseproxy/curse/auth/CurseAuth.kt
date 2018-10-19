@@ -59,7 +59,11 @@ object AuthToken : KoinComponent {
 
         val (request, response, result) = url.httpPost()
             .header("AuthenticationToken" to session.token)
-            .apply { headers["Content-Type"] = "application/json" }
+            .apply {
+                headers.clear()
+                headers["Content-Type"] = "application/json"
+                headers["User-Agent"] = "curl/7.29.0"
+            }
             .awaitStringResponse()
         val renewResponse: RenewTokenResponseContract = when (result) {
             is Result.Success -> {
