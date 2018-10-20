@@ -66,7 +66,7 @@ dependencies {
     compile(group = "com.github.kittinunf.fuel", name = "fuel-coroutines", version = Fuel.version)
 
     // GraphQL
-    compile(group = "com.github.NikkyAi", name = "KGraphQL", version = "0.3.0-ALPHA-SNAPSHOT")
+    compile(group = "com.github.NikkyAi", name = "KGraphQL", version = "master-SNAPSHOT")
 //    compile("com.github.pgutkowski:kgraphql:${KGraphQL.version}")
 
     // Dependency Injection

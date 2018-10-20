@@ -24,6 +24,14 @@ object AuthToken : KoinComponent {
         LOG.info("renewAfter: ${session.renewAfter}")
         LOG.info("expires:    ${session.expires}")
         LOG.info("now:        ${System.currentTimeMillis()}")
+
+        runBlocking {
+            renew()
+        }
+
+        LOG.info("renewAfter: ${session.renewAfter}")
+        LOG.info("expires:    ${session.expires}")
+        LOG.info("now:        ${System.currentTimeMillis()}")
     }
 
     private suspend fun login(): Session {
@@ -34,12 +42,14 @@ object AuthToken : KoinComponent {
         }
 
         val (request, response, result) = url.httpPost()
+            .jsonBody(mapper.writeValueAsString(body))
             .apply {
                 headers.clear()
-                headers["Content-Type"] = "application/json"
-                headers["User-Agent"] = "curl/7.29.0"
             }
-            .body(mapper.writeValueAsString(body))
+            .header(
+                "Content-Type" to "application/json",
+                "User-Agent" to "curl/7.29.0"
+            )
             .awaitStringResponse()
         val loginResponse: LoginResponse = when (result) {
             is Result.Success -> {
@@ -58,12 +68,14 @@ object AuthToken : KoinComponent {
         val url = "$AUTH_API/login/renew"
 
         val (request, response, result) = url.httpPost()
-            .header("AuthenticationToken" to session.token)
             .apply {
                 headers.clear()
-                headers["Content-Type"] = "application/json"
-                headers["User-Agent"] = "curl/7.29.0"
             }
+            .header(
+                "AuthenticationToken" to session.token,
+                "Content-Type" to "application/json",
+                "User-Agent" to "curl/7.29.0"
+            )
             .awaitStringResponse()
         val renewResponse: RenewTokenResponseContract = when (result) {
             is Result.Success -> {

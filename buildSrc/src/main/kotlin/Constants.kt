@@ -24,9 +24,7 @@ object Fuel {
 }
 
 object KGraphQL {
-//    const val version = "0.2.8"
-    const val version = "0.3.0-breta"
-//    const val version = "0.3.0-alpha"
+    const val version = "0.3.0-beta"
 }
 
 object Koin {

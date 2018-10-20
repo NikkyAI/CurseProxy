@@ -16,12 +16,12 @@ fun main(args: Array<String>) {
 
     AuthToken.test()
 
-    runBlocking {
-        val finds =  CurseClient.getAddonsByCriteria(432, searchFilter = "Entity")
-        LOG.info("found " + finds?.map { it.name })
-
-        val importer = AddonsImporter()
-        importer.import(LOG)
-    }
-    LOG.info("Addons imported")
+//    runBlocking {
+//        val finds =  CurseClient.getAddonsByCriteria(432, searchFilter = "Entity")
+//        LOG.info("found " + finds?.map { it.name })
+//
+//        val importer = AddonsImporter()
+//        importer.import(LOG)
+//    }
+//    LOG.info("Addons imported")
 }
