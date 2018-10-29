@@ -16,5 +16,7 @@ data class AddonFile(
         val isAvailable: Boolean,
         var modules: List<AddOnModule>?,
         val packageFingerprint: Long,
-        val gameVersion: List<String>
+        val gameVersion: List<String>,
+        val installMetadata: String?,
+        val fileLength: Long
 )

@@ -1,7 +1,5 @@
 package moe.nikky.curseproxy.model.manifest
 
-import moe.nikky.curseproxy.model.CurseFile
-
 data class CurseManifest(
         val name: String,
         val version: String,
@@ -9,7 +7,7 @@ data class CurseManifest(
         val minecraft: CurseMinecraft = CurseMinecraft(),
         val manifestType: String,
         val manifestVersion: Int = 1,
-        val files: List<CurseFile> = emptyList(),
+        val files: List<ManifestFile> = emptyList(),
         val overrides: String = "overrides",
         val projectID: Int = -1
 )

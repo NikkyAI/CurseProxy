@@ -66,7 +66,7 @@ dependencies {
     compile(group = "com.github.kittinunf.fuel", name = "fuel-coroutines", version = Fuel.version)
 
     // GraphQL
-    compile(group = "com.github.NikkyAi", name = "KGraphQL", version = "master-SNAPSHOT")
+    compile(group = "com.github.NikkyAi", name = "KGraphQL", version = "772afa793f718f9643b58f486a0e49bf10799c9a")
 //    compile("com.github.pgutkowski:kgraphql:${KGraphQL.version}")
 
     // Dependency Injection
@@ -85,6 +85,7 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
+        apiVersion = "1.3"
         languageVersion = "1.3"
         jvmTarget = "1.8"
     }

@@ -1,5 +1,6 @@
 package moe.nikky.curseproxy.dao
 
+import kotlinx.coroutines.CoroutineScope
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.model.CurseAddon
@@ -35,10 +36,11 @@ open class AddonsImporter : KoinComponent {
     val processedIDs = mutableSetOf<Int>()
     val processableIDs = mutableSetOf<Int>()
 
-    suspend fun import(log: Logger) {
+    suspend fun CoroutineScope.import(log: Logger) {
         processedIDs.clear()
         processableIDs.clear()
         var addons: List<CurseAddon>? = null
+        LOG.info("get addons from search")
         val duration = measureTimeMillis {
             addons = CurseClient.getAddonsByCriteria(432, sort = CurseClient.AddonSortMethod.LastUpdated)
         }
@@ -55,6 +57,7 @@ open class AddonsImporter : KoinComponent {
         }
 
         val idRange = (0..processedIDs.max()!!+10000)
+//        val idRange = (0..305914+10000)
         val chunkedRange = idRange.chunked(1000).shuffled()
         LOG.info("scanning ids ${idRange.start}..${idRange.endInclusive}")
         val startTime = System.currentTimeMillis()
@@ -62,7 +65,7 @@ open class AddonsImporter : KoinComponent {
         chunkedRange.forEachIndexed { i, it ->
             val timeElapsed = measureTimeMillis {
                 LOG.info("processing ${it.first()} .. ${it.last()}")
-                val result = CurseClient.getAddons(it.toTypedArray(), ignoreErrors = true)
+                val result = with(CurseClient) { getAddons(it.toTypedArray(), ignoreErrors = true) }
                 result?.forEach { addon ->
                     addonDatabase.createAddon(addon.toSparse())
                 }

@@ -15,10 +15,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.locations.Locations
 import io.ktor.response.respond
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import moe.nikky.curseproxy.curse.auth.AuthToken
 import moe.nikky.curseproxy.dao.AddonsImporter
 import moe.nikky.curseproxy.di.mainModule
@@ -115,11 +112,11 @@ fun Application.main() {
     AuthToken.test()
 
 
-    GlobalScope.launch(Dispatchers.IO) {
+    GlobalScope.launch(Dispatchers.IO + CoroutineName("import")) {
 
         val importer = AddonsImporter()
-        while(true) {
-            importer.import(log)
+        while (true) {
+            with(importer) { import(log) }
             log.info("Addons imported")
             delay(TimeUnit.HOURS.toMillis(3))
         }

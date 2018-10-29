@@ -17,6 +17,6 @@ val mainModule = module(definition = {
             .enable(SerializationFeature.INDENT_OUTPUT)
             .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
     }
-    provide(kind = Kind.Single) { AppSchema(get()) }
     provide(kind = Kind.Single) { AddonDatabase() as AddonStorage }
+    provide(kind = Kind.Single) { AppSchema(get()) }
 })

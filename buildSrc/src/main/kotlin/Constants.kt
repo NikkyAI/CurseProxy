@@ -7,12 +7,11 @@ object Gradle {
 }
 
 object Kotlin {
-    const val version = "1.3.0-rc-116"
-//    const val version = "1.3.0-rc-190"
+    const val version = "1.3.0"
 }
 
 object Ktor {
-    const val version = "1.0.0-beta-1" //""0.9.4"
+    const val version = "1.0.0-beta-3" //""0.9.4"
 }
 
 object Logback {
@@ -24,7 +23,7 @@ object Fuel {
 }
 
 object KGraphQL {
-    const val version = "0.3.0-beta"
+    const val version = "772afa793f718f9643b58f486a0e49bf10799c9a" //"0.3.0-beta"
 }
 
 object Koin {

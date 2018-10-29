@@ -22,7 +22,7 @@ import org.koin.standalone.inject
 
 object CurseClient : KoinComponent {
     private val mapper: ObjectMapper by inject()
-    private const val ADDON_API = "https://addons-v2.forgesvc.net/api"
+    private const val ADDON_API = "https://addons-ecs.forgesvc.net/api"
 
     suspend fun getAddon(projectId: Int, ignoreError: Boolean = false): CurseAddon? {
         val url = "$ADDON_API/addon/$projectId"
@@ -35,7 +35,7 @@ object CurseClient : KoinComponent {
                 mapper.readValue(result.value)
             }
             is Result.Failure -> {
-                if(!ignoreError) {
+                if (!ignoreError) {
                     LOG.error("failed $request $response ${result.error}")
                 }
                 null
@@ -51,7 +51,7 @@ object CurseClient : KoinComponent {
                 .curseAuth()
                 .apply {
                     this.headers["Content-Type"] = "application/json"
-//                    LOG.info(this.cUrlString())
+//                    LOG.debug(this.cUrlString())
                 }
                 .awaitStringResponse()
         return when (result) {
@@ -59,7 +59,7 @@ object CurseClient : KoinComponent {
                 mapper.readValue(result.value)
             }
             is Result.Failure -> {
-                if(!ignoreErrors) {
+                if (!ignoreErrors) {
                     LOG.error("failed $request $response ${result.error}")
                 }
                 null
@@ -224,7 +224,7 @@ object CurseClient : KoinComponent {
             if (page.size < pageSize) {
                 break
             }
-            index += pageSize -1
+            index += pageSize - 1
         }
         return results
 //        return results.distinctBy { it.id }

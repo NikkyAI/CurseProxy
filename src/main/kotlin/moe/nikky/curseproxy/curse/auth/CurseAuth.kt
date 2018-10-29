@@ -95,11 +95,12 @@ object AuthToken : KoinComponent {
     suspend fun authenticate(request: Request) {
 
         val now = System.currentTimeMillis()
-        if (session.renewAfter < now) {
-            session = AuthToken.renew()
-        } else if (AuthToken.session.expires < now) {
-            session = AuthToken.login()
+        when {
+            session.renewAfter < now -> session = AuthToken.renew()
+            AuthToken.session.expires < now -> session = AuthToken.login()
         }
+
+            // add token to header
 
         // add token to header
         request.headers["AuthenticationToken"] = AuthToken.session.token

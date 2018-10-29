@@ -1,6 +1,6 @@
-package moe.nikky.curseproxy.model
+package moe.nikky.curseproxy.model.manifest
 
-data class CurseFile(
+data class ManifestFile(
         val projectID: Int,
         val fileID: Int,
         val required: Boolean

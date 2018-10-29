@@ -25,7 +25,7 @@ fun Route.graphql(log: Logger, mapper: ObjectMapper, schema: Schema) {
 
         val query = request.query
         log.info("the graphql query: $query")
-        log.info("the graphql query: ${request.variables}")
+        log.info("request.variables: ${request.variables}")
 
         val variables = mapper.writeValueAsString(request.variables ?: emptyMap<String, Any>())
         log.info("the graphql variables: $variables")
