@@ -2,7 +2,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.tasks.wrapper.Wrapper
 
 object Gradle {
-    const val version = "5.0-milestone-1"
+    const val version = "4.10.2"
     val distributionType = Wrapper.DistributionType.ALL
 }
 

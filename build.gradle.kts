@@ -31,7 +31,6 @@ tomcat {
 //}
 
 repositories {
-    maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
     maven(url = "http://dl.bintray.com/kotlin/ktor")
     maven(url = "https://dl.bintray.com/kotlin/kotlinx")
     mavenCentral()
