@@ -176,6 +176,7 @@ fun Application.routes() {
             call.respondRedirect(permanent = false) {
                 protocol = URLProtocol.HTTPS
                 host = "img.shields.io"
+                port = 443
                 path("badge", "$name-$fileName-orange.svg")
                 parameters["maxAge"] = "3600"
 
