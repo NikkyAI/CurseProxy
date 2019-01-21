@@ -2,8 +2,8 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.tasks.wrapper.Wrapper
 
 object Gradle {
-    const val version = "4.10.2"
-    val distributionType = Wrapper.DistributionType.ALL
+    const val version = "5.1.1"
+    val distributionType = Wrapper.DistributionType.BIN
 }
 
 object Kotlin {

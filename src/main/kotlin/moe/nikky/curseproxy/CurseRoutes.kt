@@ -15,56 +15,52 @@ fun Route.curse() {
 
     get("/api/addon/{id}") {
         val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
-        val addon = CurseClient.getAddon(id)
-                ?: call.respond(status = HttpStatusCode.NotFound, message = "addon with id $id does not exist")
-        call.respond(addon)
+            ?: throw NumberFormatException("id")
+        CurseClient.getAddon(id)?.let { addon ->
+            call.respond(addon)
+        } ?: call.respond(status = HttpStatusCode.NotFound, message = "addon with id $id does not exist")
     }
 
     post("/api/addon") {
         val ids = call.receive<Array<Int>>()
-        val addons = CurseClient.getAddons(ids, true)
-                ?: call.respond(status = HttpStatusCode.NotFound, message = "error")
-        call.respond(addons)
+        CurseClient.getAddons(ids, true)?.let { addons ->
+            call.respond(addons)
+        } ?: call.respond(status = HttpStatusCode.NotFound, message = "error")
     }
 
     get("/api/addon/{id}/description") {
         val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
-        val addon = CurseClient.getAddonDescription(id)
-                ?: call.respond(status = HttpStatusCode.NotFound, message = "addon with id $id does not exist")
-        call.respond(addon)
+            ?: throw NumberFormatException("id")
+        CurseClient.getAddonDescription(id)?.let { description ->
+            call.respondText(description, ContentType.Text.Html)
+        } ?: call.respond(status = HttpStatusCode.NotFound, message = "description of addon with id $id does not exist")
     }
 
     get("/api/addon/{id}/file/{file}") {
         val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+            ?: throw NumberFormatException("id")
         val fileID = call.parameters["file"]?.toInt()
-                ?: throw NumberFormatException("file")
-        val file = CurseClient.getAddonFile(id, fileID)
-                ?: call.respond(status = HttpStatusCode.NotFound, message = "addon file with id $id:$fileID does not exist")
-        call.respond(file)
+            ?: throw NumberFormatException("file")
+        CurseClient.getAddonFile(id, fileID)?.let { file ->
+            call.respond(file)
+        } ?: call.respond(status = HttpStatusCode.NotFound, message = "addon file with id $id:$fileID does not exist")
     }
 
     get("/api/addon/{id}/file/{file}/changelog") {
         val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+            ?: throw NumberFormatException("id")
         val fileID = call.parameters["file"]?.toInt()
-                ?: throw NumberFormatException("file")
-        val changelog = CurseClient.getAddonChangelog(id, fileID)
-        if(changelog == null)
-            call.respond(status = HttpStatusCode.NotFound, message = "addon file with id $id:$fileID does not exist")
-        else
+            ?: throw NumberFormatException("file")
+        CurseClient.getAddonChangelog(id, fileID)?.let { changelog ->
             call.respondText(changelog, ContentType.Text.Html)
+        } ?: call.respond(status = HttpStatusCode.NotFound, message = "addon file with id $id:$fileID does not exist")
     }
 
     get("/api/addon/{id}/files") {
         val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
-        val files = CurseClient.getAddonFiles(id)
-                ?: call.respond(status = HttpStatusCode.NotFound, message = "addon with id $id does not exist")
-        call.respond(files)
+            ?: throw NumberFormatException("id")
+        CurseClient.getAddonFiles(id)?.let { files ->
+            call.respond(files)
+        } ?: call.respond(status = HttpStatusCode.NotFound, message = "addon with id $id does not exist")
     }
-
-
 }
