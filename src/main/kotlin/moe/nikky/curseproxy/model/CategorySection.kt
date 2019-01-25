@@ -1,5 +1,8 @@
 package moe.nikky.curseproxy.model
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class CategorySection(
         val id: Int,
         val gameID: Int,

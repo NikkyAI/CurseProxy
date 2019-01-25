@@ -1,7 +1,9 @@
 package moe.nikky.curseproxy.model
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import java.util.*
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class AddonFile(
         val id: Int,
         val fileName: String,

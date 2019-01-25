@@ -1,5 +1,8 @@
 package moe.nikky.curseproxy.model
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Attachment(
         val id: Int,
         val projectId: Int,
