@@ -42,5 +42,6 @@ data class CurseAddon(
         val dateCreated: Date,
         val dateReleased: Date,
         val isAvailable: Boolean,
-        val categoryList: String
+        val categoryList: String,
+        val primaryLanguage: String
 )
