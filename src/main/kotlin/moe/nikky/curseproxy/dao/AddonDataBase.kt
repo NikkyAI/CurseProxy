@@ -26,7 +26,7 @@ fun ResultRow.toSparseAddon() = Addon(
         slug = this[Addons.slug],
         primaryAuthorName = this[Addons.primaryAuthorName],
         primaryCategoryName = this[Addons.primaryCategoryName],
-        sectionName = this[Addons.sectionName],
+        section = Section.fromId(this[Addons.sectionId]),
         dateModified = this[Addons.dateModified],
         dateCreated = this[Addons.dateCreated],
         dateReleased = this[Addons.dateReleased],
@@ -74,7 +74,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                     }
                     section?.let {
                         LOG.debug("added section filter '$it'")
-                        where { Addons.sectionName eq it.toString() }
+                        where { Addons.sectionId eq it.id }
                     }
                 }
 //                .orderBy(Addons.date, ascending = false)
@@ -97,7 +97,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                 it[slug] = addon.slug
                 it[primaryAuthorName] = addon.primaryAuthorName
                 it[primaryCategoryName] = addon.primaryCategoryName
-                it[sectionName] = addon.sectionName.toString()
+                it[sectionId] = addon.section?.id ?: -1
                 it[dateModified] = addon.dateModified
                 it[dateCreated] = addon.dateCreated
                 it[dateReleased] = addon.dateReleased
