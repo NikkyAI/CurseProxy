@@ -2,7 +2,22 @@ package moe.nikky.curseproxy.graphql
 
 import com.github.pgutkowski.kgraphql.KGraphQL
 import moe.nikky.curseproxy.LOG
+import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.dao.AddonStorage
+import moe.nikky.curseproxy.model.AddOnModule
+import moe.nikky.curseproxy.model.AddonFile
+import moe.nikky.curseproxy.model.Attachment
+import moe.nikky.curseproxy.model.Author
+import moe.nikky.curseproxy.model.Category
+import moe.nikky.curseproxy.model.CategorySection
+import moe.nikky.curseproxy.model.CurseAddon
+import moe.nikky.curseproxy.model.DependencyType
+import moe.nikky.curseproxy.model.FileStatus
+import moe.nikky.curseproxy.model.FileType
+import moe.nikky.curseproxy.model.GameVersionLatestFile
+import moe.nikky.curseproxy.model.PackageType
+import moe.nikky.curseproxy.model.ProjectStage
+import moe.nikky.curseproxy.model.ProjectStatus
 import moe.nikky.curseproxy.model.Section
 import moe.nikky.curseproxy.model.graphql.Addon
 import java.time.LocalDate
@@ -33,6 +48,27 @@ class AppSchema(private val storage: AddonStorage) {
             }
         }
 
+        query("addonSearch") {
+            description = "search for addons, passes the request through to the curse api"
+            suspendResolver { searchFilter: String?, gameId: Int?, gameVersions: List<String>?, categoryId: Int?, sectionId: Int? ->
+                CurseClient.getAllAddonsByCriteria(
+                    gameId = gameId ?: 432,
+                    sectionId = sectionId ?: -1,
+                    gameVersions = gameVersions ?: listOf(),
+                    searchFilter = searchFilter,
+                    categoryId = categoryId ?: -1
+                ).map {
+                    Addon.from(it)
+                }
+            }.withArgs {
+                arg<String> { name = "searchFilter"; defaultValue = null; description = "search filter" }
+                arg<String> { name = "gameId"; defaultValue = null; description = "Game id" }
+                arg<String> { name = "gameVersions"; defaultValue = null; description = "Game Versions" }
+                arg<String> { name = "categoryId"; defaultValue = null; description = "category id" }
+                arg<Section> { name = "sectionId"; defaultValue = null; description = "section id" }
+            }
+        }
+
         mutation("doNothing") {
             description = "Does nothing"
             resolver { a: String ->
@@ -49,7 +85,7 @@ class AppSchema(private val storage: AddonStorage) {
             }
         }
         type<Addon> {
-            description = "A CurseAddon"
+            description = "A Sparse CurseAddon"
             property(Addon::gameID) {
                 description = "id of the game this addon is for"
             }
@@ -70,8 +106,66 @@ class AppSchema(private val storage: AddonStorage) {
             }
         }
 
-        enum<Section>()
+        type<CurseAddon> {
+            description = "A CurseAddon"
+//            property(CurseAddon::categories) {
+//
+//            }
+        }
+        type<GameVersionLatestFile> {
+            description = "Curse Latest File"
+        }
 
+        type<Author> {
+            description = "Curse Mod Author"
+        }
+
+        type<Attachment> {
+            description = "Curse Project/File attachment"
+        }
+
+        type<Category> {
+            description = "Curse Project category"
+        }
+
+        type<CategorySection> {
+            description = "Curse Project category section"
+        }
+
+        enum<ProjectStatus> {
+            description = "Curse Project status"
+        }
+
+        enum<ProjectStage> {
+            description = "Curse Project stage"
+        }
+
+        enum<PackageType> {
+            description = "Curse package Type"
+        }
+
+        enum<Section> {
+            description = "Curse Project Section"
+        }
+
+        enum<DependencyType> {
+            description = "Curse dependency type"
+        }
+
+        type<AddonFile> {
+            description = "Curse File"
+        }
+
+        enum<FileType> {
+            description = "Curse File type"
+        }
+
+        enum<FileStatus> {
+            description = "Curse File status"
+        }
+
+        type<AddOnModule> {
+            description = "Curse addon module"
+        }
     }
-
 }

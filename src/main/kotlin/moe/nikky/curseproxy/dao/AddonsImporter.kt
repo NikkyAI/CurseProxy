@@ -19,20 +19,6 @@ import kotlin.system.measureTimeMillis
 open class AddonsImporter : KoinComponent {
     private val addonDatabase by inject<AddonStorage>()
 
-    private fun CurseAddon.toSparse() = Addon(
-            id = this.id,
-            gameID = this.gameId,
-            name = this.name,
-            slug = this.slug,
-            primaryAuthorName = this.primaryAuthorName,
-            primaryCategoryName = this.primaryCategoryName,
-            sectionName = this.sectionName,
-            dateModified = this.dateModified.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-            dateCreated = this.dateCreated.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-            dateReleased = this.dateReleased.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-            categoryList = this.categoryList
-    )
-
     val processedIDs = mutableSetOf<Int>()
     val processableIDs = mutableSetOf<Int>()
 
@@ -67,7 +53,7 @@ open class AddonsImporter : KoinComponent {
                 LOG.info("processing ${it.first()} .. ${it.last()}")
                 val result = with(CurseClient) { getAddons(it.toTypedArray(), ignoreErrors = true) }
                 result?.forEach { addon ->
-                    addonDatabase.createAddon(addon.toSparse())
+                    addonDatabase.createAddon(Addon.from(addon))
                 }
                 LOG.info("added ${result?.count()} addons")
             }

@@ -170,30 +170,30 @@ object CurseClient : KoinComponent {
     }
 
     suspend fun getAddonsByCriteria(
-            gameId: Int,
-            sectionId: Int = -1,
-            categoryId: Int = -1,
-            sort: AddonSortMethod = AddonSortMethod.Featured,
-            isSortDescending: Boolean = true,
-            gameVersion: String? = null,
-            index: Int = 0,
-            pageSize: Int = 1000,
-            searchFilter: String? = null): List<CurseAddon>? {
+        gameId: Int,
+        sectionId: Int = -1,
+        categoryId: Int = -1,
+        sort: AddonSortMethod = AddonSortMethod.Featured,
+        isSortDescending: Boolean = true,
+        gameVersions: List<String> = listOf(),
+        index: Int = 0,
+        pageSize: Int = 1000,
+        searchFilter: String? = null): List<CurseAddon>? {
         val url = "$ADDON_API/addon/search"
         val (request, response, result) = url
-                .httpGet(parameters = listOf(
-                        "gameID" to gameId,
-                        "sectionId" to sectionId,
-                        "categoryId" to categoryId,
-                        "gameVersion" to gameVersion,
-                        "index" to index,
-                        "pageSize" to pageSize,
-                        "searchFilter" to searchFilter,
-                        "sort" to sort,
-                        "sortDescending" to isSortDescending
-                ))
-                .curseAuth()
-                .awaitStringResponse()
+            .httpGet(parameters = listOf(
+                "gameID" to gameId,
+                "sectionId" to sectionId,
+                "categoryId" to categoryId,
+                "gameVersion" to gameVersions,
+                "index" to index,
+                "pageSize" to pageSize,
+                "searchFilter" to searchFilter,
+                "sort" to sort,
+                "sortDescending" to isSortDescending
+            ))
+            .curseAuth()
+            .awaitStringResponse()
         return when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
@@ -211,13 +211,13 @@ object CurseClient : KoinComponent {
             categoryId: Int = -1,
             sort: AddonSortMethod = AddonSortMethod.Featured,
             isSortDescending: Boolean = true,
-            gameVersion: String? = null,
+            gameVersions: List<String> = listOf(),
             pageSize: Int = 1000,
             searchFilter: String? = null): List<CurseAddon> {
         var index = 0
         val results = mutableListOf<CurseAddon>()
         while (true) {
-            val page = getAddonsByCriteria(gameId, sectionId, categoryId, sort, isSortDescending, gameVersion, index, pageSize, searchFilter)
+            val page = getAddonsByCriteria(gameId, sectionId, categoryId, sort, isSortDescending, gameVersions, index, pageSize, searchFilter)
                     ?: emptyList()
             results += page
 
