@@ -8,13 +8,9 @@ import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.toList
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.newFixedThreadPoolContext
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.auth.curseAuth
 import moe.nikky.curseproxy.model.AddonFile
@@ -243,87 +239,38 @@ object CurseClient : KoinComponent {
     ): List<CurseAddon> {
         require(pageSize <= 1000) { "curse api limits pagesize to 1000" }
 
+        val n = 4
         var index = 0
-        val results = mutableListOf<CurseAddon>()
-
-        val pool = newFixedThreadPoolContext(4, "pool")
-        val resultChannel = Channel<CurseAddon>(Channel.UNLIMITED)
-        coroutineScope {
-            // one job at a time
-            var limit: Int = -1
-            val channel = Channel<Int>(Channel.UNLIMITED)
-            channel.send(0)
-            (0..3).forEach {
-                launch(pool + CoroutineName("worker_$it")) {
-                    while (true) {
-                        LOG.debug("waiting for index")
-                        if (limit > 0) return@launch
-                        val index = channel.receiveOrNull()
-                        if (index == null) {
-                            delay(100)
-                            continue
-                        }
-                        LOG.debug("starting processing of index $index")
-                        if (limit in 1..index) {
-                            LOG.debug("page: $index will not contain any results")
-                            break
-                        }
-                        channel.send(index + pageSize)
+        val results: MutableList<CurseAddon> = mutableListOf()
+        var done = false
+        while (!done) {
+            results += coroutineScope {
+                (0 until n).map {
+                    async {
                         val page = getAddonsByCriteria(
-                            gameId = gameId,
-                            sectionId = sectionId,
-                            categoryIds = categoryIds,
-                            sort = sort,
-                            isSortDescending = isSortDescending,
-                            gameVersions = gameVersions,
-                            index = index,
-                            pageSize = pageSize,
-                            searchFilter = searchFilter
+                            gameId,
+                            sectionId,
+                            categoryIds,
+                            sort,
+                            isSortDescending,
+                            gameVersions,
+                            index,
+                            pageSize,
+                            searchFilter
                         )
                             ?: emptyList()
 
-                        LOG.debug("results: ${page.size}")
-
                         if (page.size < pageSize) {
-                            if (limit == -1 || limit > index)
-                                limit = index
-                            return@launch
+                            done = true
                         }
-
-
-                        page.forEach {
-                            resultChannel.send(it)
-                        }
+                        index += pageSize - 1
+                        page
                     }
                 }
-                LOG.debug("finished worker_$it")
-            }
-            //TODO: process
 
+            }.awaitAll().flatten()
         }
-
-//        while (true) {
-//            val page = getAddonsByCriteria(
-//                gameId,
-//                sectionId,
-//                categoryId,
-//                sort,
-//                isSortDescending,
-//                gameVersions,
-//                index,
-//                pageSize,
-//                searchFilter
-//            )
-//                ?: emptyList()
-//            results += page
-//
-//            if (page.size < pageSize) {
-//                break
-//            }
-//            index += pageSize - 1
-//        }
-        pool.close()
-        return resultChannel.toList()
+        return results.toList()
 //        return results.distinctBy { it.id }
     }
 

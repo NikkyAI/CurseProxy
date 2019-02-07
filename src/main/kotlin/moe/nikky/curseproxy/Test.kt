@@ -60,16 +60,16 @@ fun main() {
 //
 //        exitProcess(0)
 
-//        val categories = listOf(423, 421)
-        val section = Section.TEXTURE_PACKS.id
-        val versions = listOf("1.12.2", "1.7.10")
-        val addons = CurseClient.getAddonsByCriteria(
+        val categories = listOf(423)
+        val section = Section.MODS.id
+        val versions = listOf("1.13.2")
+        val addons = CurseClient.getAllAddonsByCriteria(
 //            searchFilter = "neat",
+//            pageSize = 20,
             gameId = 432,
             sectionId = section,
-//            categoryIds = categories,
-            gameVersions = versions,
-            pageSize = 20
+            categoryIds = categories,
+            gameVersions = versions
         )
 
         val contains1710 = addons!!.map {
@@ -82,9 +82,9 @@ fun main() {
             require(section == it.categorySection.id) {
                 "does not match section: $section"
             }
-//            require(it.categories.any { c -> categories.contains(c.id) }) {
-//                "does not contain any category: $categories"
-//            }
+            require(it.categories.any { c -> categories.contains(c.id) }) {
+                "does not contain any category: $categories"
+            }
             require(versions.any { gameVersions.contains(it) }) {
                 "does not contain all gameversions: $versions"
             }
