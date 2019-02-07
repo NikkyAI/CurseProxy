@@ -19,14 +19,14 @@ data class Addon(
     val categoryList: String
 ) {
     companion object {
-        fun from(curseAddon: CurseAddon) = Addon(
+        fun fromCurseAddon(curseAddon: CurseAddon) = Addon(
             id = curseAddon.id,
             gameID = curseAddon.gameId,
             name = curseAddon.name,
             slug = curseAddon.slug,
             primaryAuthorName = curseAddon.primaryAuthorName,
             primaryCategoryName = curseAddon.primaryCategoryName,
-            sectionName = curseAddon.sectionName,
+            sectionName = Section.fromCategory(curseAddon.categorySection)!!,
             dateModified = curseAddon.dateModified.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
             dateCreated = curseAddon.dateCreated.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
             dateReleased = curseAddon.dateReleased.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),

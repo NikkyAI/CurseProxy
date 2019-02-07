@@ -1,10 +1,12 @@
 package moe.nikky.curseproxy.curse.auth
 
-import awaitStringResponse
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.Request
+import com.github.kittinunf.fuel.core.extensions.cUrlString
+import com.github.kittinunf.fuel.core.extensions.jsonBody
+import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
 import kotlinx.coroutines.runBlocking
@@ -50,7 +52,7 @@ object AuthToken : KoinComponent {
                 "Content-Type" to "application/json",
                 "User-Agent" to "curl/7.29.0"
             )
-            .awaitStringResponse()
+            .awaitStringResponseResult()
         val loginResponse: LoginResponse = when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)
@@ -76,7 +78,7 @@ object AuthToken : KoinComponent {
                 "Content-Type" to "application/json",
                 "User-Agent" to "curl/7.29.0"
             )
-            .awaitStringResponse()
+            .awaitStringResponseResult()
         val renewResponse: RenewTokenResponseContract = when (result) {
             is Result.Success -> {
                 mapper.readValue(result.value)

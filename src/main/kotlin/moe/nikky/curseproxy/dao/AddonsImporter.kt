@@ -8,7 +8,6 @@ import moe.nikky.curseproxy.model.graphql.Addon
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import org.slf4j.Logger
-import java.time.ZoneId
 import kotlin.system.measureTimeMillis
 
 /**
@@ -26,7 +25,7 @@ open class AddonsImporter : KoinComponent {
         processedIDs.clear()
         processableIDs.clear()
         var addons: List<CurseAddon>? = null
-        LOG.info("get addons from search")
+        LOG.info("get addons fromCurseAddon search")
         val duration = measureTimeMillis {
             addons = CurseClient.getAddonsByCriteria(432, sort = CurseClient.AddonSortMethod.LastUpdated)
         }
@@ -53,7 +52,7 @@ open class AddonsImporter : KoinComponent {
                 LOG.info("processing ${it.first()} .. ${it.last()}")
                 val result = with(CurseClient) { getAddons(it.toTypedArray(), ignoreErrors = true) }
                 result?.forEach { addon ->
-                    addonDatabase.createAddon(Addon.from(addon))
+                    addonDatabase.createAddon(Addon.fromCurseAddon(addon))
                 }
                 LOG.info("added ${result?.count()} addons")
             }

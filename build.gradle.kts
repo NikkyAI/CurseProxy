@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version Kotlin.version
-    id("com.github.johnrengelman.shadow") version "2.0.2"
+    id("com.github.johnrengelman.shadow") version "4.0.0"
     id("com.bmuschko.tomcat") version "2.5"
     application
     war
@@ -35,9 +35,9 @@ repositories {
     maven(url = "https://dl.bintray.com/kotlin/kotlinx")
     mavenCentral()
     jcenter()
-//    maven(url = "https://dl.bintray.com/pgutkowski/Maven")
+    maven(url = "https://dl.bintray.com/pgutkowski/Maven")
     maven(url = "https://dl.bintray.com/kotlin/squash")
-    maven(url = "https://jitpack.io")
+//    maven(url = "https://jitpack.io")
 }
 
 dependencies {
@@ -54,28 +54,28 @@ dependencies {
     compile(ktor("server-netty"))
     compile(ktor("server-servlet"))
 
-    tomcat("org.apache.tomcat.embed:tomcat-embed-core:${Tomcat.version}",
-            "org.apache.tomcat.embed:tomcat-embed-jasper:${Tomcat.version}")
+//    tomcat("org.apache.tomcat.embed:tomcat-embed-core:${Tomcat.version}",
+//            "org.apache.tomcat.embed:tomcat-embed-jasper:${Tomcat.version}")
 
     // Logging
-    compile(group = "ch.qos.logback", name = "logback-classic", version = Logback.version)
+    api(group = "ch.qos.logback", name = "logback-classic", version = Logback.version)
 
     // Networking
-    compile(group = "com.github.kittinunf.fuel", name = "fuel", version = Fuel.version)
-    compile(group = "com.github.kittinunf.fuel", name = "fuel-coroutines", version = Fuel.version)
+    api(group = "com.github.kittinunf.fuel", name = "fuel", version = Fuel.version)
+    api(group = "com.github.kittinunf.fuel", name = "fuel-coroutines", version = Fuel.version)
 
     // GraphQL
-    compile(group = "com.github.NikkyAi", name = "KGraphQL", version = "772afa793f718f9643b58f486a0e49bf10799c9a")
-//    compile("com.github.pgutkowski:kgraphql:${KGraphQL.version}")
+//    api(group = "com.github.NikkyAi", name = "KGraphQL", version = "772afa793f718f9643b58f486a0e49bf10799c9a")
+    api("com.github.pgutkowski:kgraphql:${KGraphQL.version}")
 
     // Dependency Injection
-    compile(group = "org.koin", name = "koin-ktor", version = Koin.version)
+    api(group = "org.koin", name = "koin-ktor", version = Koin.version)
 
     // Database
-    compile(group = "org.jetbrains.squash", name = "squash-h2", version = Squash.version)
+    api(group = "org.jetbrains.squash", name = "squash-h2", version = Squash.version)
 
-    compile(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.9.5")
-    compile(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version = "2.9.5")
+    api(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.9.5")
+    api(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version = "2.9.5")
 
     // Testing
     testCompile(group = "junit", name = "junit", version = "4.12")

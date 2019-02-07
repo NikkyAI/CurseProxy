@@ -1,14 +1,16 @@
 package moe.nikky.curseproxy
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.curse.auth.AuthToken
 import moe.nikky.curseproxy.di.mainModule
+import moe.nikky.curseproxy.model.Section
 import org.koin.core.Koin
 import org.koin.log.PrintLogger
 import org.koin.standalone.StandAloneContext
 
-fun main(args: Array<String>) {
+fun main() {
 
     Koin.logger = PrintLogger()
     StandAloneContext.startKoin(listOf(mainModule))
@@ -24,18 +26,83 @@ fun main(args: Array<String>) {
 //    }
 //    LOG.info("Addons imported")
 
-    runBlocking {
-        val addons = CurseClient.getAllAddonsByCriteria(
+    runBlocking(Dispatchers.IO) {
+        //        (1..700).forEach { gameId ->
+//            val gameName = CurseClient.getAddonsByCriteria(
+//                gameId = gameId,
+//                pageSize = 1
+//            )?.firstOrNull()?.gameName
+//                ?: return@forEach
+//            val pool = newFixedThreadPoolContext(3, "pool")
+//            (0..6000).map { id ->
+//                async(pool) {
+//                    val addons = CurseClient.getAddonsByCriteria(
+//                        gameId = gameId,
+//                        sectionId = id,
+//                        pageSize = 1
+//                    )
+//                    addons?.firstOrNull()?.let { a ->
+//                        a.categorySection.id to "sectionName: ${a.sectionName} name: ${a.categorySection.name}"
+//                    }
+//                }
+//            }.also { deferredSections ->
+//                val sections =
+//                    deferredSections.awaitAll().filterNotNull().associate { it }
+//
+//                pool.close()
+//                LOG.info("sections for '$gameName' gameId: $gameId")
+//                sections.forEach { (k, v) ->
+//                    LOG.info("$k = $v")
+//                }
+//            }
+//        }
+//
+//
+//        exitProcess(0)
+
+//        val categories = listOf(423, 421)
+        val section = Section.TEXTURE_PACKS.id
+        val versions = listOf("1.12.2", "1.7.10")
+        val addons = CurseClient.getAddonsByCriteria(
+//            searchFilter = "neat",
             gameId = 432,
-            gameVersions = listOf("1.12", "1.12.1", "1.12.2")
+            sectionId = section,
+//            categoryIds = categories,
+            gameVersions = versions,
+            pageSize = 20
         )
 
-        addons!!.forEach {
-            LOG.info("addon: ${it.id}")
-            LOG.info("categories: ${it.categories.map { c -> c.id to c.name }}")
-//            val files = CurseClient.getAddonFiles(it.id)
-//            val gameVersions = files!!.flatMap { file -> file.gameVersion }.toSet()
-//            LOG.info("versions: $gameVersions")
+        val contains1710 = addons!!.map {
+            //            LOG.info("addon: ${it.id}")
+//            LOG.info("categories: ${it.categorySection.let { s -> s.id to s.name }}")
+            val files = CurseClient.getAddonFiles(it.id)
+            val gameVersions = files!!.flatMap { file -> file.gameVersion }.toSet()
+            LOG.info("versions: $gameVersions")
+            LOG.info("categories: ${it.categories}")
+            require(section == it.categorySection.id) {
+                "does not match section: $section"
+            }
+//            require(it.categories.any { c -> categories.contains(c.id) }) {
+//                "does not contain any category: $categories"
+//            }
+            require(versions.any { gameVersions.contains(it) }) {
+                "does not contain all gameversions: $versions"
+            }
+            gameVersions.contains("1.7.10")
+
         }
+
+        LOG.info("gameVersions.contains(\"1.7.10\"): ${contains1710.any { it }}")
+
+        val categoriesResult = addons.flatMap { it.categories.map { it.id } }.toSet()
+        val sectionsResult = addons.map { it.categorySection.id }.toSet()
+//        require(categories.all { categoriesResult.contains(it) }) {
+//            "$sectionsResult does not contains all $categories"
+//        }
+        require(sectionsResult.contains(section)) {
+            "$sectionsResult does not contains all $section"
+        }
+        LOG.info("sections: $sectionsResult")
+        LOG.info("categories: $categoriesResult")
     }
 }

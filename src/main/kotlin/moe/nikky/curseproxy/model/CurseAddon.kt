@@ -39,7 +39,7 @@ data class CurseAddon(
         val fullDescription: String,
         val gameName: String,
         val portalName: String,
-        val sectionName: Section,
+        val sectionName: String, // Section,
         val dateModified: Date,
         val dateCreated: Date,
         val dateReleased: Date,

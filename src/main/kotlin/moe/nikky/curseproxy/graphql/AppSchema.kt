@@ -50,13 +50,14 @@ class AppSchema(private val storage: AddonStorage) {
 
         query("addonSearch") {
             description = "search for addons, passes the request through to the curse api"
-            suspendResolver { searchFilter: String?, gameId: Int?, gameVersions: List<String>?, categoryId: Int?, sectionId: Int? ->
+            suspendResolver { searchFilter: String?, gameId: Int?, gameVersions: List<String>?, categoryId: Int?, section: Section? ->
                 CurseClient.getAllAddonsByCriteria(
                     gameId = gameId ?: 432,
-                    sectionId = sectionId ?: -1,
-                    gameVersions = gameVersions ?: listOf(),
+                    sectionId = section?.id,
+                    gameVersions = gameVersions,
                     searchFilter = searchFilter,
-                    categoryId = categoryId ?: -1
+                    categoryIds = listOf(categoryId ?: -1),
+                    sort = CurseClient.AddonSortMethod.LastUpdated
                 )
             }.withArgs {
                 arg<String> { name = "searchFilter"; defaultValue = null; description = "search filter" }
