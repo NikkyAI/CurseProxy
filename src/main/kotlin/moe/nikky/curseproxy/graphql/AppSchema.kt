@@ -64,7 +64,7 @@ class AppSchema(private val storage: AddonStorage) {
                 arg<String> { name = "gameId"; defaultValue = null; description = "Game id" }
                 arg<String> { name = "gameVersions"; defaultValue = null; description = "Game Versions" }
                 arg<String> { name = "categoryId"; defaultValue = null; description = "category id" }
-                arg<Section> { name = "sectionId"; defaultValue = null; description = "section id" }
+                arg<Section> { name = "section"; defaultValue = null; description = "section" }
             }
         }
 
