@@ -57,9 +57,7 @@ class AppSchema(private val storage: AddonStorage) {
                     gameVersions = gameVersions ?: listOf(),
                     searchFilter = searchFilter,
                     categoryId = categoryId ?: -1
-                ).map {
-                    Addon.from(it)
-                }
+                )
             }.withArgs {
                 arg<String> { name = "searchFilter"; defaultValue = null; description = "search filter" }
                 arg<String> { name = "gameId"; defaultValue = null; description = "Game id" }
