@@ -79,25 +79,20 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                     LOG.debug("added section filter '$it'")
                     where { Addons.sectionId eq it.id }
                 }
-                gameVersions?.let {
-                    LOG.debug("added gameVersion filters: $it")
-                    where {
-                        gameVersions.drop(1).fold(
-                            gameVersions.first().let { version ->
-                                LOG.debug( "like $version")
-                                Addons.gameVersions like version
-                            }
-                        ) { statement, version ->
-                                LOG.debug( "or like $version")
-                                statement or (Addons.gameVersions like version)
-                            }
-                    }
-                }
             }
 //                .orderBy(Addons.date, ascending = false)
             .execute()
             .map { it.toSparseAddon() }
+            .filter { addon ->
+                if(gameVersions == null)
+                    return@filter true
+
+                addon.gameVersions.any { version ->
+                    gameVersions.contains(version)
+                }
+            }
             .toList()
+
     }
 
     override fun createAddon(addon: Addon) {
