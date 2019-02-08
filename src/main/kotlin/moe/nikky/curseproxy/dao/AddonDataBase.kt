@@ -20,21 +20,21 @@ import org.jetbrains.squash.statements.insertInto
 import org.jetbrains.squash.statements.values
 
 fun ResultRow.toSparseAddon() = Addon(
-        id = this[Addons.id],
-        gameID = this[Addons.gameId],
-        name = this[Addons.name],
-        slug = this[Addons.slug],
-        primaryAuthorName = this[Addons.primaryAuthorName],
-        primaryCategoryName = this[Addons.primaryCategoryName],
-        section = Section.fromId(this[Addons.sectionId]),
-        dateModified = this[Addons.dateModified],
-        dateCreated = this[Addons.dateCreated],
-        dateReleased = this[Addons.dateReleased],
-        categoryList = this[Addons.categoryList]
+    id = this[Addons.id],
+    gameID = this[Addons.gameId],
+    name = this[Addons.name],
+    slug = this[Addons.slug],
+    primaryAuthorName = this[Addons.primaryAuthorName],
+    primaryCategoryName = this[Addons.primaryCategoryName],
+    section = Section.fromId(this[Addons.sectionId]),
+    dateModified = this[Addons.dateModified],
+    dateCreated = this[Addons.dateCreated],
+    dateReleased = this[Addons.dateReleased],
+    categoryList = this[Addons.categoryList],
+    gameVersions = this[Addons.gameVersions].split("|").toSet()
 )
 
 //TODO: add more database row conversions
-
 
 class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnection()) : AddonStorage {
     init {
@@ -48,47 +48,62 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
         row?.toSparseAddon()
     }
 
-    override fun getAll(gameId: Int?, name: String?, slug: String?, author: String?, category: String?, section: Section?) = db.transaction {
+    override fun getAll(
+        gameId: Int?,
+        name: String?,
+        slug: String?,
+        category: String?,
+        section: Section?,
+        gameVersions: List<String>?
+    ) = db.transaction {
         from(Addons)
-                .select()
-                .apply {
-                    gameId?.let {
-                        LOG.debug("added gameID filter '$it'")
-                        where { Addons.gameId eq it }
-                    }
-                    name?.let {
-                        LOG.debug("added name filter '$it'")
-                        where { Addons.name like it }
-                    }
-                    slug?.let {
-                        LOG.debug("added slug filter '$it'")
-                        where { Addons.slug like it }
-                    }
-                    author?.let {
-                        LOG.debug("added author filter '$it'")
-                        where { Addons.primaryAuthorName like it }
-                    }
-                    category?.let {
-                        LOG.debug("added category filter '$it'")
-                        where { (Addons.primaryCategoryName like it) or (Addons.categoryList like "%$category%") }
-                    }
-                    section?.let {
-                        LOG.debug("added section filter '$it'")
-                        where { Addons.sectionId eq it.id }
+            .select()
+            .apply {
+                gameId?.let {
+                    LOG.debug("added gameID filter '$it'")
+                    where { Addons.gameId eq it }
+                }
+                name?.let {
+                    LOG.debug("added name filter '$it'")
+                    where { Addons.name like it }
+                }
+                slug?.let {
+                    LOG.debug("added slug filter '$it'")
+                    where { Addons.slug like it }
+                }
+                category?.let {
+                    LOG.debug("added category filter '$it'")
+                    where { (Addons.primaryCategoryName like it) or (Addons.categoryList like "%$category%") }
+                }
+                section?.let {
+                    LOG.debug("added section filter '$it'")
+                    where { Addons.sectionId eq it.id }
+                }
+                gameVersions?.let {
+                    LOG.debug("added gameVersion filter '$it'")
+                    where {
+                        gameVersions.drop(1).fold(
+                            gameVersions.first().let { version ->
+                                Addons.gameVersions like "|$version|"
+                            }
+                        ) { statement, version ->
+                                statement or (Addons.gameVersions like "|$version|")
+                            }
                     }
                 }
+            }
 //                .orderBy(Addons.date, ascending = false)
-                .execute()
-                .map { it.toSparseAddon() }
-                .toList()
+            .execute()
+            .map { it.toSparseAddon() }
+            .toList()
     }
 
     override fun createAddon(addon: Addon) {
 
         db.transaction {
             deleteFrom(Addons)
-                    .where(Addons.id eq addon.id)
-                    .execute()
+                .where(Addons.id eq addon.id)
+                .execute()
 
             insertInto(Addons).values {
                 it[id] = addon.id
@@ -102,10 +117,10 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                 it[dateCreated] = addon.dateCreated
                 it[dateReleased] = addon.dateReleased
                 it[categoryList] = addon.categoryList
+                it[gameVersions] = addon.gameVersions.joinToString("|")
             }.execute()
         }
     }
 
     override fun close() {}
-
 }

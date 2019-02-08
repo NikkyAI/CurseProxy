@@ -36,15 +36,15 @@ class AppSchema(private val storage: AddonStorage) {
         }
 
         query("addons") {
-            resolver { gameID: Int?, name: String?, slug: String?, author: String?, category: String?, section: Section? ->
-                storage.getAll(gameID, name, slug, author, category, section)
+            resolver { gameID: Int?, name: String?, slug: String?, category: String?, section: Section?, gameVersions: List<String>? ->
+                storage.getAll(gameID, name, slug, category, section, gameVersions)
             }.withArgs {
                 arg<Int> { name = "gameID"; defaultValue = null; description = "The game id to filter for" }
                 arg<String> { name = "name"; defaultValue = null; description = "The name of the addon to return" }
                 arg<String> { name = "slug"; defaultValue = null; description = "The slug of the addon to return" }
-                arg<String> { name = "author"; defaultValue = null; description = "author name" }
                 arg<String> { name = "category"; defaultValue = null; description = "category string" }
                 arg<Section> { name = "section"; defaultValue = null; description = "section name" }
+                arg<List<String>> { name = "gameVersion"; defaultValue = null; description = "game version" }
             }
         }
 
@@ -61,9 +61,9 @@ class AppSchema(private val storage: AddonStorage) {
                 )
             }.withArgs {
                 arg<String> { name = "searchFilter"; defaultValue = null; description = "search filter" }
-                arg<String> { name = "gameID"; defaultValue = null; description = "Game id" }
-                arg<String> { name = "gameVersions"; defaultValue = null; description = "Game Versions" }
-                arg<String> { name = "categoryIds"; defaultValue = null; description = "category ids" }
+                arg<Int> { name = "gameID"; defaultValue = null; description = "Game id" }
+                arg<List<String>> { name = "gameVersions"; defaultValue = null; description = "Game Versions" }
+                arg<List<Int>> { name = "categoryIds"; defaultValue = null; description = "category ids" }
                 arg<Section> { name = "section"; defaultValue = null; description = "section" }
             }
         }

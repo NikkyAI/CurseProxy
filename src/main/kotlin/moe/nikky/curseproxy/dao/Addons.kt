@@ -14,4 +14,5 @@ object Addons : TableDefinition() {
     val dateCreated = date("dateCreated")
     val dateReleased = date("dateReleased")
     val categoryList = varchar("categoryList", 200)
+    val gameVersions = varchar("gameVersions", 300)
 }

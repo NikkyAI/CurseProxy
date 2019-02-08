@@ -16,22 +16,26 @@ data class Addon(
     val dateModified: LocalDate,
     val dateCreated: LocalDate,
     val dateReleased: LocalDate,
-    val categoryList: String
+    val categoryList: String,
+    val gameVersions: Set<String>
 ) {
     companion object {
-        fun fromCurseAddon(curseAddon: CurseAddon) = Addon(
-            id = curseAddon.id,
-            gameID = curseAddon.gameId,
-            name = curseAddon.name,
-            slug = curseAddon.slug,
-            primaryAuthorName = curseAddon.primaryAuthorName,
-            primaryCategoryName = curseAddon.primaryCategoryName,
-//            sectionName = Section.fromId(curseAddon.categorySection.id)?.sectionName ?: "unknown_${curseAddon.sectionName}_${curseAddon.categorySection.id}",
-            section = Section.fromId(curseAddon.categorySection.id),
-            dateModified = curseAddon.dateModified.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-            dateCreated = curseAddon.dateCreated.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-            dateReleased = curseAddon.dateReleased.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-            categoryList = curseAddon.categoryList
-        )
+        fun fromCurseAddon(curseAddon: CurseAddon): Addon {
+            return Addon(
+                id = curseAddon.id,
+                gameID = curseAddon.gameId,
+                name = curseAddon.name,
+                slug = curseAddon.slug,
+                primaryAuthorName = curseAddon.primaryAuthorName,
+                primaryCategoryName = curseAddon.primaryCategoryName,
+//                sectionName = Section.fromId(curseAddon.categorySection.id)?.sectionName ?: "unknown_${curseAddon.sectionName}_${curseAddon.categorySection.id}",
+                section = Section.fromId(curseAddon.categorySection.id),
+                dateModified = curseAddon.dateModified.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                dateCreated = curseAddon.dateCreated.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                dateReleased = curseAddon.dateReleased.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                categoryList = curseAddon.categoryList,
+                gameVersions = curseAddon.gameVersionLatestFiles.map { it.gameVersion }.toSet()
+            )
+        }
     }
 }
