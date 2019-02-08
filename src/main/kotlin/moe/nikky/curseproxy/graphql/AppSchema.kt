@@ -44,7 +44,7 @@ class AppSchema(private val storage: AddonStorage) {
                 arg<String> { name = "slug"; defaultValue = null; description = "The slug of the addon to return" }
                 arg<String> { name = "category"; defaultValue = null; description = "category string" }
                 arg<Section> { name = "section"; defaultValue = null; description = "section name" }
-                arg<List<String>> { name = "gameVersion"; defaultValue = null; description = "game version" }
+                arg<List<String>> { name = "gameVersions"; defaultValue = null; description = "game versions" }
             }
         }
 
