@@ -31,7 +31,7 @@ fun ResultRow.toSparseAddon() = Addon(
     dateCreated = this[Addons.dateCreated],
     dateReleased = this[Addons.dateReleased],
     categoryList = this[Addons.categoryList],
-    gameVersions = this[Addons.gameVersions].split("|").toSet()
+    gameVersions = this[Addons.gameVersions].split("|").filter { it.isNotBlank() }.toSet()
 )
 
 //TODO: add more database row conversions
@@ -80,14 +80,16 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                     where { Addons.sectionId eq it.id }
                 }
                 gameVersions?.let {
-                    LOG.debug("added gameVersion filter '$it'")
+                    LOG.debug("added gameVersion filters: $it")
                     where {
                         gameVersions.drop(1).fold(
                             gameVersions.first().let { version ->
-                                Addons.gameVersions like "|$version|"
+                                LOG.debug( "like $version")
+                                Addons.gameVersions like version
                             }
                         ) { statement, version ->
-                                statement or (Addons.gameVersions like "|$version|")
+                                LOG.debug( "or like $version")
+                                statement or (Addons.gameVersions like version)
                             }
                     }
                 }
