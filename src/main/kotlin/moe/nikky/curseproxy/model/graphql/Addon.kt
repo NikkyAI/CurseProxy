@@ -34,7 +34,7 @@ data class Addon(
                 dateCreated = curseAddon.dateCreated.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                 dateReleased = curseAddon.dateReleased.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                 categoryList = curseAddon.categoryList,
-                gameVersions = curseAddon.gameVersionLatestFiles.map { it.gameVersion }.toSet()
+                gameVersions = curseAddon.gameVersionLatestFiles.map { it.gameVersion }.toSet() + curseAddon.latestFiles.flatMap { it.gameVersion }.toSet()
             )
         }
     }
