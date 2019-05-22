@@ -107,10 +107,6 @@ fun Application.main() {
         }
     }
 
-    //TODO: startup / getting data
-
-    AuthToken.test()
-
 
     GlobalScope.launch(Dispatchers.IO + CoroutineName("import")) {
 
