@@ -20,92 +20,92 @@ object AuthToken : KoinComponent {
     private val mapper: ObjectMapper by inject()
     private const val AUTH_API = "https://logins-v1.curseapp.net"
 
-    private var session: Session = runBlocking { login() }
+    private var token: String = File("auth.json").bufferedReader().use {
+        mapper.readValue<LoginRequest>(it).token
+    }
 
     fun test() {
-        LOG.info("renewAfter: ${session.renewAfter}")
-        LOG.info("expires:    ${session.expires}")
-        LOG.info("now:        ${System.currentTimeMillis()}")
+//        LOG.info("renewAfter: ${session.renewAfter}")
+//        LOG.info("expires:    ${session.expires}")
+//        LOG.info("now:        ${System.currentTimeMillis()}")
 
-        runBlocking {
-            renew()
-        }
-
-        LOG.info("renewAfter: ${session.renewAfter}")
-        LOG.info("expires:    ${session.expires}")
-        LOG.info("now:        ${System.currentTimeMillis()}")
+//        runBlocking {
+//            renew()
+//        }
+//
+//        LOG.info("renewAfter: ${session.renewAfter}")
+//        LOG.info("expires:    ${session.expires}")
+//        LOG.info("now:        ${System.currentTimeMillis()}")
     }
 
-    private suspend fun login(): Session {
-        val url = "$AUTH_API/login"
+//    private suspend fun login(): Session {
+//        val url = "$AUTH_API/login"
+//
+//        val body: LoginRequest = File("auth.json").bufferedReader().use {
+//            mapper.readValue(it)
+//        }
+//
+//        val (request, response, result) = url.httpPost()
+//            .jsonBody(mapper.writeValueAsString(body))
+//            .apply {
+//                headers.clear()
+//            }
+//            .header(
+//                "Content-Type" to "application/json",
+//                "User-Agent" to "curl/7.29.0"
+//            )
+//            .awaitStringResponseResult()
+//        val loginResponse: LoginResponse = when (result) {
+//            is Result.Success -> {
+//                mapper.readValue(result.value)
+//            }
+//            is Result.Failure -> {
+//                LOG.error("failed $request $response ${result.error}")
+//                LOG.error(request.cUrlString())
+//                throw RuntimeException("login failure")
+//            }
+//        }
+//        return loginResponse.session
+//    }
 
-        val body: LoginRequest = File("auth.json").bufferedReader().use {
-            mapper.readValue(it)
-        }
-
-        val (request, response, result) = url.httpPost()
-            .jsonBody(mapper.writeValueAsString(body))
-            .apply {
-                headers.clear()
-            }
-            .header(
-                "Content-Type" to "application/json",
-                "User-Agent" to "curl/7.29.0"
-            )
-            .awaitStringResponseResult()
-        val loginResponse: LoginResponse = when (result) {
-            is Result.Success -> {
-                mapper.readValue(result.value)
-            }
-            is Result.Failure -> {
-                LOG.error("failed $request $response ${result.error}")
-                LOG.error(request.cUrlString())
-                throw RuntimeException("login failure")
-            }
-        }
-        return loginResponse.session
-    }
-
-    private suspend fun renew(): Session {
-        val url = "$AUTH_API/login/renew"
-
-        val (request, response, result) = url.httpPost()
-            .apply {
-                headers.clear()
-            }
-            .header(
-                "AuthenticationToken" to session.token,
-                "Content-Type" to "application/json",
-                "User-Agent" to "curl/7.29.0"
-            )
-            .awaitStringResponseResult()
-        val renewResponse: RenewTokenResponseContract = when (result) {
-            is Result.Success -> {
-                mapper.readValue(result.value)
-            }
-            is Result.Failure -> {
-                LOG.error("failed $request $response ${result.error}")
-                throw RuntimeException("login failure")
-            }
-        }
-        session.token = renewResponse.token
-        session.expires = renewResponse.expires
-        session.renewAfter = renewResponse.renewAfter
-        return session
-    }
+//    private suspend fun renew(): Session {
+//        val url = "$AUTH_API/login/renew"
+//
+//        val (request, response, result) = url.httpPost()
+//            .apply {
+//                headers.clear()
+//            }
+//            .header(
+//                "AuthenticationToken" to session.token,
+//                "Content-Type" to "application/json",
+//                "User-Agent" to "curl/7.29.0"
+//            )
+//            .awaitStringResponseResult()
+//        val renewResponse: RenewTokenResponseContract = when (result) {
+//            is Result.Success -> {
+//                mapper.readValue(result.value)
+//            }
+//            is Result.Failure -> {
+//                LOG.error("failed $request $response ${result.error}")
+//                throw RuntimeException("login failure")
+//            }
+//        }
+//        session.token = renewResponse.token
+//        session.expires = renewResponse.expires
+//        session.renewAfter = renewResponse.renewAfter
+//        return session
+//    }
 
     suspend fun authenticate(request: Request) {
 
-        val now = System.currentTimeMillis()
-        when {
-            session.renewAfter < now -> session = AuthToken.renew()
-            AuthToken.session.expires < now -> session = AuthToken.login()
-        }
-
-            // add token to header
+//        val now = System.currentTimeMillis()
+//        when {
+//            session.renewAfter < now -> session = AuthToken.renew()
+//            AuthToken.session.expires < now -> session = AuthToken.login()
+//        }
 
         // add token to header
-        request.headers["AuthenticationToken"] = AuthToken.session.token
+        request.headers["AuthenticationToken"] = token // AuthToken.session.token
     }
 }
 
@@ -120,8 +120,7 @@ suspend fun Request.curseAuth(): Request {
 //}
 
 data class LoginRequest(
-    @JsonProperty("Username") val username: String,
-    @JsonProperty("Password") val password: String
+    @JsonProperty("token") val token: String
 )
 
 data class LoginResponse(

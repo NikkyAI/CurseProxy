@@ -6,7 +6,8 @@ import kotlin.jvm.JvmStatic
 enum class DependencyType {
     REQUIRED,
     OPTIONAL,
-    EMBEDDED;
+    EMBEDDED,
+    UNKNOWN;
 
     companion object {
         @JsonCreator

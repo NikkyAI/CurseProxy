@@ -6,11 +6,11 @@ object Gradle {
 }
 
 object Kotlin {
-    const val version = "1.3.20"
+    const val version = "1.3.21"
 }
 
 object Ktor {
-    const val version = "1.1.2" //""0.9.4"
+    const val version = "1.1.3" //""0.9.4"
 }
 
 object Logback {

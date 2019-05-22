@@ -6,7 +6,11 @@ import kotlin.jvm.JvmStatic
 enum class ProjectStatus {
     NORMAL,
     HIDDEN,
-    DELETED;
+    DELETED,
+    UNKNOWN,
+    UNKNOWN_1,
+    UNKNOWN_2,
+    UNKNOWN_3;
 
     companion object {
         @JsonCreator

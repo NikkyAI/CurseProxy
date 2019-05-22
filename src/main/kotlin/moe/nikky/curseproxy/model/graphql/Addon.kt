@@ -16,7 +16,7 @@ data class Addon(
     val dateModified: LocalDate,
     val dateCreated: LocalDate,
     val dateReleased: LocalDate,
-    val categoryList: String,
+    val categoryList: List<String>,
     val gameVersions: Set<String>
 ) {
     companion object {
@@ -33,7 +33,7 @@ data class Addon(
                 dateModified = curseAddon.dateModified.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                 dateCreated = curseAddon.dateCreated.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                 dateReleased = curseAddon.dateReleased.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-                categoryList = curseAddon.categoryList,
+                categoryList = curseAddon.categories.map { it.name },
                 gameVersions = curseAddon.gameVersionLatestFiles.map { it.gameVersion }.toSet() + curseAddon.latestFiles.flatMap { it.gameVersion }.toSet()
             )
         }

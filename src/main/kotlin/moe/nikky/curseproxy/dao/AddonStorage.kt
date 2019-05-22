@@ -6,7 +6,7 @@ import java.io.Closeable
 
 interface AddonStorage : Closeable {
 
-    fun createAddon(addon: Addon)
+    fun replaceORCreate(addon: Addon)
 
     fun getAddon(id: Int): Addon?
 

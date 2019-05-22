@@ -26,7 +26,7 @@ import org.koin.standalone.inject
 
 object CurseClient : KoinComponent {
     private val mapper: ObjectMapper by inject()
-    private const val ADDON_API = "https://addons-ecs.forgesvc.net/api"
+    private const val ADDON_API = "https://addons-ecs.forgesvc.net/api/v2"
 
     suspend fun getAddon(projectId: Int, ignoreError: Boolean = false): CurseAddon? {
         val url = "$ADDON_API/addon/$projectId"

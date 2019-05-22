@@ -95,7 +95,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
 
     }
 
-    override fun createAddon(addon: Addon) {
+    override fun replaceORCreate(addon: Addon) {
 
         db.transaction {
             deleteFrom(Addons)
@@ -107,8 +107,8 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                 it[gameId] = addon.gameID
                 it[name] = addon.name
                 it[slug] = addon.slug
-                it[primaryAuthorName] = addon.primaryAuthorName
-                it[primaryCategoryName] = addon.primaryCategoryName
+                it[primaryAuthorName] = addon.primaryAuthorName ?: "" // TODO: fix non-nullable fields
+                it[primaryCategoryName] = addon.primaryCategoryName ?: ""
                 it[sectionId] = addon.section?.id ?: -1
                 it[dateModified] = addon.dateModified
                 it[dateCreated] = addon.dateCreated

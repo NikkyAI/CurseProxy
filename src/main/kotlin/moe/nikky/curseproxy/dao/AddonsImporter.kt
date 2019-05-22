@@ -52,7 +52,7 @@ open class AddonsImporter : KoinComponent {
                 LOG.info("processing ${it.first()} .. ${it.last()}")
                 val result = with(CurseClient) { getAddons(it.toTypedArray(), ignoreErrors = true) }
                 result?.forEach { addon ->
-                    addonDatabase.createAddon(Addon.fromCurseAddon(addon))
+                    addonDatabase.replaceORCreate(Addon.fromCurseAddon(addon))
                 }
                 LOG.info("added ${result?.count()} addons")
             }
@@ -70,7 +70,7 @@ open class AddonsImporter : KoinComponent {
 //                CurseClient.getAddons()
 //                val addon = CurseClient.getAddon(it, ignoreError = true)
 //                if(addon != null)
-//                    addonDatabase.createAddon(addon.toSparse())
+//                    addonDatabase.replaceORCreate(addon.toSparse())
 //            }
 //        }
 

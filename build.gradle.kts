@@ -65,7 +65,6 @@ dependencies {
     api(group = "com.github.kittinunf.fuel", name = "fuel-coroutines", version = Fuel.version)
 
     // GraphQL
-//    api(group = "com.github.NikkyAi", name = "KGraphQL", version = "772afa793f718f9643b58f486a0e49bf10799c9a")
     api("com.github.pgutkowski:kgraphql:${KGraphQL.version}")
 
     // Dependency Injection

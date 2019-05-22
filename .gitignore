@@ -11,3 +11,7 @@ wsdl
 \.floo
 init.py
 auth.json
+
+curse_debug\.json
+
+curse_debug_formatted\.json

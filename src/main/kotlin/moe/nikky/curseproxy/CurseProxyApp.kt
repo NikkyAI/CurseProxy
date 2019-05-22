@@ -116,6 +116,7 @@ fun Application.main() {
 
         val importer = AddonsImporter()
         while (true) {
+//            importer.import(log)
             with(importer) { import(log) }
             log.info("Addons imported")
             delay(TimeUnit.HOURS.toMillis(3))

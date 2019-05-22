@@ -7,7 +7,7 @@ import java.util.*
 data class AddonFile(
         val id: Int,
         val fileName: String,
-        val fileNameOnDisk: String,
+//        val fileNameOnDisk: String,
         val fileDate: Date,
         var releaseType: FileType,
         val fileStatus: FileStatus,
