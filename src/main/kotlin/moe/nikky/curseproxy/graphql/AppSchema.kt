@@ -17,7 +17,6 @@ import moe.nikky.curseproxy.model.FileType
 import moe.nikky.curseproxy.model.GameVersionLatestFile
 import moe.nikky.curseproxy.model.PackageType
 import moe.nikky.curseproxy.model.ProjectStatus
-import moe.nikky.curseproxy.model.Section
 import moe.nikky.curseproxy.model.graphql.Addon
 import java.time.LocalDate
 
@@ -35,24 +34,24 @@ class AppSchema(private val storage: AddonStorage) {
         }
 
         query("addons") {
-            resolver { gameID: Int?, name: String?, slug: String?, category: String?, section: Section?, gameVersions: List<String>? ->
+            resolver { gameID: Int?, name: String?, slug: String?, category: String?, section: String?, gameVersions: List<String>? ->
                 storage.getAll(gameID, name, slug, category, section, gameVersions)
             }.withArgs {
                 arg<Int> { name = "gameID"; defaultValue = null; description = "The game id to filter for" }
                 arg<String> { name = "name"; defaultValue = null; description = "The name of the addon to return" }
                 arg<String> { name = "slug"; defaultValue = null; description = "The slug of the addon to return" }
                 arg<String> { name = "category"; defaultValue = null; description = "category string" }
-                arg<Section> { name = "section"; defaultValue = null; description = "section name" }
+                arg<String> { name = "section"; defaultValue = null; description = "section name" }
                 arg<List<String>> { name = "gameVersions"; defaultValue = null; description = "game versions" }
             }
         }
 
         query("addonSearch") {
             description = "search for addons, passes the request through to the curse api"
-            suspendResolver { searchFilter: String?, gameID: Int?, gameVersions: List<String>?, categoryIds: List<Int>?, section: Section? ->
+            suspendResolver { searchFilter: String?, gameID: Int?, gameVersions: List<String>?, categoryIds: List<Int>?, section: Int? ->
                 CurseClient.getAllAddonsByCriteria(
                     gameId = gameID ?: 432,
-                    sectionId = section?.id,
+                    sectionId = section,
                     gameVersions = gameVersions,
                     searchFilter = searchFilter,
                     categoryIds = categoryIds,
@@ -63,7 +62,7 @@ class AppSchema(private val storage: AddonStorage) {
                 arg<Int> { name = "gameID"; defaultValue = null; description = "Game id" }
                 arg<List<String>> { name = "gameVersions"; defaultValue = null; description = "Game Versions" }
                 arg<List<Int>> { name = "categoryIds"; defaultValue = null; description = "category ids" }
-                arg<Section> { name = "section"; defaultValue = null; description = "section" }
+                arg<Int> { name = "section"; defaultValue = null; description = "section" }
             }
         }
 
@@ -136,10 +135,6 @@ class AppSchema(private val storage: AddonStorage) {
 
         enum<PackageType> {
             description = "Curse package Type"
-        }
-
-        enum<Section> {
-            description = "Curse Project Section"
         }
 
         enum<DependencyType> {

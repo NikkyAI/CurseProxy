@@ -41,6 +41,8 @@ open class AddonsImporter : KoinComponent {
             processableIDs.addAll(dependencies.map { it.addOnId })
         }
 
+        val sections: MutableSet<Triple<String, Int, Int>> = mutableSetOf()
+
         val idRange = (0..processedIDs.max()!!+10000)
 //        val idRange = (0..305914+10000)
         val chunkedRange = idRange.chunked(1000).shuffled()
@@ -53,6 +55,7 @@ open class AddonsImporter : KoinComponent {
                 val result = with(CurseClient) { getAddons(it.toTypedArray(), ignoreErrors = true) }
                 result?.forEach { addon ->
                     addonDatabase.replaceORCreate(Addon.fromCurseAddon(addon))
+                    sections += Triple(addon.categorySection.name, addon.categorySection.id, addon.categorySection.gameID)
                 }
                 LOG.info("added ${result?.count()} addons")
             }
@@ -76,5 +79,10 @@ open class AddonsImporter : KoinComponent {
 
 
         log.info("import complete")
+
+        log.info("sections:")
+        sections.forEach { (name, id, gameID) ->
+            log.info("name: $name, id: $id, gameID: $gameID)")
+        }
     }
 }

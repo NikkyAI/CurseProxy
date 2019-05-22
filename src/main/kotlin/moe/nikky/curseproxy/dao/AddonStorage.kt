@@ -1,6 +1,5 @@
 package moe.nikky.curseproxy.dao
 
-import moe.nikky.curseproxy.model.Section
 import moe.nikky.curseproxy.model.graphql.Addon
 import java.io.Closeable
 
@@ -15,7 +14,7 @@ interface AddonStorage : Closeable {
         name: String?,
         slug: String?,
         category: String?,
-        section: Section?,
+        section: String?,
         gameVersions: List<String>?
     ): List<Addon>
 }

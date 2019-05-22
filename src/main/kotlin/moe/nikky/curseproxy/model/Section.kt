@@ -1,43 +1,39 @@
-package moe.nikky.curseproxy.model
-
-/**
- * Created by nikky on 26/05/18.
- * @author Nikky
- * @version 1.0
- */
-enum class Section(val id: Int, val sectionName: String, val gameId: Int) {
-    // World of Warcraft
-    ADDONS(1, "addons", 1),
-    // The Secret World
-    TSW_MODS(14, "tws-mods", 64),
-    // Runes of magic
-    ROM_ADDONS(4571, "addons", 335),
-    // World of Tanks
-    WOT_MODS(8, "wot-mods", 423),
-    WOT_SKINS(9, "wot-skins", 423),
-    // Rift
-    RIFT_ADDONS(4564, "addons", 424),
-    // Minecraft
-    MODS(6, "mc-mods", 432),
-    TEXTURE_PACKS(12, "texture-packs", 432),
-    WORLDS(17, "worlds", 432),
-    MODPACKS(4471, "modpacks", 432),
-    // Wildstar
-    WS_ADDONS(18, "ws-addons", 454),
-    // The Elder Scrolls Online
-    TESO_ADDONS(19, "teso-addons", 455),
-    // Darkest Dungeon
-    DD_MODS(4613, "dd-mods", 608),
-    // Stardew Valley
-    STARDEW_VALLEY_MODS(4643, "mods", 669)
-    ;
-
-    companion object {
-        fun fromCategory(categorySection: CategorySection) = Section.values().find {
-            it.gameId == categorySection.gameID && it.id == categorySection.id
-        }
-        fun fromId(id: Int) = Section.values().find {
-            it.id == id
-        }
-    }
-}
+//package moe.nikky.curseproxy.model
+//
+///**
+// * Created by nikky on 26/05/18.
+// * @author Nikky
+// * @version 1.0
+// */
+//enum class Section(val id: Int, val gameId: Int) {
+//    Mods(id=8, gameId=432),
+//    Modpacks(id=11, gameId=432),
+//    Addons(id=1, gameId=1),
+//    TexturePacks(id=9, gameId=432),
+//    Mods(id=19, gameId=61489),
+//    Mods(id=17, gameId=4455),
+//    Worlds(id=10, gameId=432),
+//    Addons(id=13, gameId=454),
+//    Mods(id=16, gameId=4401),
+//    Addons(id=4, gameId=335),
+//    Mods(id=5, gameId=423),
+//    Skins(id=6, gameId=423),
+//    Addons(id=14, gameId=455),
+//    Mods(id=3, gameId=64),
+//    Addons(id=7, gameId=424),
+//    Mods(id=20, gameId=669),
+//    Mods(id=12, gameId=449),
+//    Addons(id=22, gameId=70667),
+//    Mods(id=21, gameId=18237),
+//    Mods(id=15, gameId=608)
+//    ;
+//
+//    companion object {
+//        fun fromCategory(categorySection: CategorySection) = Section.values().find {
+//            it.gameId == categorySection.gameID && it.id == categorySection.id
+//        }
+//        fun fromId(id: Int) = Section.values().find {
+//            it.id == id
+//        }
+//    }
+//}

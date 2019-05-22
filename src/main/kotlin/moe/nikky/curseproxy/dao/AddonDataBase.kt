@@ -1,7 +1,6 @@
 package moe.nikky.curseproxy.dao
 
 import moe.nikky.curseproxy.LOG
-import moe.nikky.curseproxy.model.Section
 import moe.nikky.curseproxy.model.graphql.Addon
 import org.jetbrains.squash.connection.DatabaseConnection
 import org.jetbrains.squash.connection.transaction
@@ -26,7 +25,7 @@ fun ResultRow.toSparseAddon() = Addon(
     slug = this[Addons.slug],
     primaryAuthorName = this[Addons.primaryAuthorName],
     primaryCategoryName = this[Addons.primaryCategoryName],
-    section = Section.fromId(this[Addons.sectionId]),
+    section = this[Addons.sectionId],
     dateModified = this[Addons.dateModified],
     dateCreated = this[Addons.dateCreated],
     dateReleased = this[Addons.dateReleased],
@@ -53,7 +52,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
         name: String?,
         slug: String?,
         category: String?,
-        section: Section?,
+        section: String?,
         gameVersions: List<String>?
     ) = db.transaction {
         from(Addons)
@@ -77,7 +76,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                 }
                 section?.let {
                     LOG.debug("added section filter '$it'")
-                    where { Addons.sectionId eq it.id }
+                    where { Addons.sectionId eq it }
                 }
             }
 //                .orderBy(Addons.date, ascending = false)
@@ -109,7 +108,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                 it[slug] = addon.slug
                 it[primaryAuthorName] = addon.primaryAuthorName ?: "" // TODO: fix non-nullable fields
                 it[primaryCategoryName] = addon.primaryCategoryName ?: ""
-                it[sectionId] = addon.section?.id ?: -1
+                it[sectionId] = addon.section
                 it[dateModified] = addon.dateModified
                 it[dateCreated] = addon.dateCreated
                 it[dateReleased] = addon.dateReleased

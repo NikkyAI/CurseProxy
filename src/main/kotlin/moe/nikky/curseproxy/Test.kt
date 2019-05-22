@@ -2,10 +2,7 @@ package moe.nikky.curseproxy
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import moe.nikky.curseproxy.curse.CurseClient
-import moe.nikky.curseproxy.curse.auth.AuthToken
 import moe.nikky.curseproxy.di.mainModule
-import moe.nikky.curseproxy.model.Section
 import org.koin.core.Koin
 import org.koin.log.PrintLogger
 import org.koin.standalone.StandAloneContext
@@ -58,49 +55,49 @@ fun main() {
 //
 //        exitProcess(0)
 
-        val categories = listOf(423)
-        val section = Section.MODS.id
-        val versions = listOf("1.13.2")
-        val addons = CurseClient.getAllAddonsByCriteria(
-//            searchFilter = "neat",
-//            pageSize = 20,
-            gameId = 432,
-            sectionId = section,
-            categoryIds = categories,
-            gameVersions = versions
-        )
+//        val categories = listOf(423)
+//        val sectionName = "Mods"
+//        val versions = listOf("1.13.2")
+//        val addons = CurseClient.getAllAddonsByCriteria(
+////            searchFilter = "neat",
+////            pageSize = 20,
+//            gameId = 432,
+//            sectionId = sectionName,
+//            categoryIds = categories,
+//            gameVersions = versions
+//        )
 
-        val contains1710 = addons!!.map {
-            //            LOG.info("addon: ${it.id}")
-//            LOG.info("categories: ${it.categorySection.let { s -> s.id to s.name }}")
-            val files = CurseClient.getAddonFiles(it.id)
-            val gameVersions = files!!.flatMap { file -> file.gameVersion }.toSet()
-            LOG.info("versions: $gameVersions")
-            LOG.info("categories: ${it.categories}")
-            require(section == it.categorySection.id) {
-                "does not match section: $section"
-            }
-            require(it.categories.any { c -> categories.contains(c.id) }) {
-                "does not contain any category: $categories"
-            }
-            require(versions.any { gameVersions.contains(it) }) {
-                "does not contain all gameversions: $versions"
-            }
-            gameVersions.contains("1.7.10")
-
-        }
-
-        LOG.info("gameVersions.contains(\"1.7.10\"): ${contains1710.any { it }}")
-
-        val categoriesResult = addons.flatMap { it.categories.map { it.id } }.toSet()
-        val sectionsResult = addons.map { it.categorySection.id }.toSet()
-//        require(categories.all { categoriesResult.contains(it) }) {
-//            "$sectionsResult does not contains all $categories"
+//        val contains1710 = addons!!.map {
+//            //            LOG.info("addon: ${it.id}")
+////            LOG.info("categories: ${it.categorySection.let { s -> s.id to s.name }}")
+//            val files = CurseClient.getAddonFiles(it.id)
+//            val gameVersions = files!!.flatMap { file -> file.gameVersion }.toSet()
+//            LOG.info("versions: $gameVersions")
+//            LOG.info("categories: ${it.categories}")
+//            require(section == it.categorySection.id) {
+//                "does not match section: $section"
+//            }
+//            require(it.categories.any { c -> categories.contains(c.id) }) {
+//                "does not contain any category: $categories"
+//            }
+//            require(versions.any { gameVersions.contains(it) }) {
+//                "does not contain all gameversions: $versions"
+//            }
+//            gameVersions.contains("1.7.10")
+//
 //        }
-        require(sectionsResult.contains(section)) {
-            "$sectionsResult does not contains all $section"
-        }
-        LOG.info("sections: $sectionsResult")
-        LOG.info("categories: $categoriesResult")
+//
+//        LOG.info("gameVersions.contains(\"1.7.10\"): ${contains1710.any { it }}")
+//
+//        val categoriesResult = addons.flatMap { it.categories.map { it.id } }.toSet()
+//        val sectionsResult = addons.map { it.categorySection.id }.toSet()
+////        require(categories.all { categoriesResult.contains(it) }) {
+////            "$sectionsResult does not contains all $categories"
+////        }
+//        require(sectionsResult.contains(section)) {
+//            "$sectionsResult does not contains all $section"
+//        }
+//        LOG.info("sections: $sectionsResult")
+//        LOG.info("categories: $categoriesResult")
     }
 }

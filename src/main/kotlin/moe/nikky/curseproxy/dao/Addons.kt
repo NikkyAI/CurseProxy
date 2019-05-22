@@ -9,7 +9,7 @@ object Addons : TableDefinition() {
     val slug = varchar("slug", 300)
     val primaryAuthorName = varchar("primaryAuthorName", 60)
     val primaryCategoryName = varchar("primaryCategoryName", 60)
-    val sectionId = integer("sectionId")
+    val sectionId = varchar("sectionId", 60)
     val dateModified = date("dateModified")
     val dateCreated = date("dateCreated")
     val dateReleased = date("dateReleased")

@@ -1,7 +1,6 @@
 package moe.nikky.curseproxy.model.graphql
 
 import moe.nikky.curseproxy.model.CurseAddon
-import moe.nikky.curseproxy.model.Section
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -12,7 +11,7 @@ data class Addon(
     val slug: String,
     val primaryAuthorName: String?,
     val primaryCategoryName: String?,
-    val section: Section?,
+    val section: String,
     val dateModified: LocalDate,
     val dateCreated: LocalDate,
     val dateReleased: LocalDate,
@@ -29,7 +28,7 @@ data class Addon(
                 primaryAuthorName = curseAddon.primaryAuthorName,
                 primaryCategoryName = curseAddon.primaryCategoryName,
 //                sectionName = Section.fromId(curseAddon.categorySection.id)?.sectionName ?: "unknown_${curseAddon.sectionName}_${curseAddon.categorySection.id}",
-                section = Section.fromId(curseAddon.categorySection.id),
+                section = curseAddon.categorySection.name,
                 dateModified = curseAddon.dateModified.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                 dateCreated = curseAddon.dateCreated.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                 dateReleased = curseAddon.dateReleased.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
