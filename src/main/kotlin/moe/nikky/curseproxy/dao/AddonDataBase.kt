@@ -30,7 +30,7 @@ fun ResultRow.toSparseAddon() = Addon(
     dateModified = this[Addons.dateModified],
     dateCreated = this[Addons.dateCreated],
     dateReleased = this[Addons.dateReleased],
-    categoryList = this[Addons.categoryList],
+    categoryList = this[Addons.categoryList].split("|").filter { it.isNotBlank() },
     gameVersions = this[Addons.gameVersions].split("|").filter { it.isNotBlank() }.toSet()
 )
 
@@ -113,7 +113,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                 it[dateModified] = addon.dateModified
                 it[dateCreated] = addon.dateCreated
                 it[dateReleased] = addon.dateReleased
-                it[categoryList] = addon.categoryList
+                it[categoryList] = addon.categoryList.joinToString("|")
                 it[gameVersions] = addon.gameVersions.joinToString("|")
             }.execute()
         }
