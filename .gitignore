@@ -11,6 +11,7 @@ wsdl
 \.floo
 init.py
 auth.json
+run/
 
 curse_debug\.json
 

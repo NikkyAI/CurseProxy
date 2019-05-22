@@ -16,7 +16,6 @@ import moe.nikky.curseproxy.model.FileStatus
 import moe.nikky.curseproxy.model.FileType
 import moe.nikky.curseproxy.model.GameVersionLatestFile
 import moe.nikky.curseproxy.model.PackageType
-import moe.nikky.curseproxy.model.ProjectStage
 import moe.nikky.curseproxy.model.ProjectStatus
 import moe.nikky.curseproxy.model.Section
 import moe.nikky.curseproxy.model.graphql.Addon
@@ -133,10 +132,6 @@ class AppSchema(private val storage: AddonStorage) {
 
         enum<ProjectStatus> {
             description = "Curse Project status"
-        }
-
-        enum<ProjectStage> {
-            description = "Curse Project stage"
         }
 
         enum<PackageType> {

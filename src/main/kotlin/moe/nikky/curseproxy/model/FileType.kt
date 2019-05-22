@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import kotlin.jvm.JvmStatic
 
 enum class FileType {
-    RELEASE,
-    BETA,
-    ALPHA;
+    Release,
+    Beta,
+    Alpha;
 
     companion object {
         @JsonCreator

@@ -15,8 +15,6 @@ fun main() {
     Koin.logger = PrintLogger()
     StandAloneContext.startKoin(listOf(mainModule))
 
-    AuthToken.test()
-
 //    runBlocking {
 //        val finds =  CurseClient.getAddonsByCriteria(432, searchFilter = "Entity")
 //        LOG.info("found " + finds?.map { it.name })
