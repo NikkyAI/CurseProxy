@@ -6,7 +6,7 @@ object Gradle {
 }
 
 object Kotlin {
-    const val version = "1.3.21"
+    const val version = "1.3.31"
 }
 
 object Ktor {
@@ -18,7 +18,7 @@ object Logback {
 }
 
 object Fuel {
-    const val version = "2.0.0"
+    const val version = "2.1.0"
 }
 
 object KGraphQL {
@@ -33,6 +33,6 @@ object Squash {
     const val version = "0.2.4"
 }
 
-object Tomcat {
-    const val version = "9.0.11"
+object SQDelight {
+    const val version = "1.1.3"
 }

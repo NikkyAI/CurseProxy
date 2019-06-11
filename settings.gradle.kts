@@ -2,6 +2,8 @@ pluginManagement {
     repositories {
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         maven(url = "https://kotlin.bintray.com/kotlinx")
+        google()
+        mavenCentral()
         gradlePluginPortal()
     }
     resolutionStrategy {
@@ -11,6 +13,9 @@ pluginManagement {
             }
             if (requested.id.id == "kotlinx-serialization") {
                 useModule("org.jetbrains.kotlin:kotlin-serialization:${requested.version}")
+            }
+            if (requested.id.id == "com.squareup.sqldelight") {
+                useModule("com.squareup.sqldelight:gradle-plugin:${requested.version}")
             }
         }
     }

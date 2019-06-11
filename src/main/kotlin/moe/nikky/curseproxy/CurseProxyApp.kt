@@ -16,7 +16,6 @@ import io.ktor.jackson.jackson
 import io.ktor.locations.Locations
 import io.ktor.response.respond
 import kotlinx.coroutines.*
-import moe.nikky.curseproxy.curse.auth.AuthToken
 import moe.nikky.curseproxy.dao.AddonsImporter
 import moe.nikky.curseproxy.di.mainModule
 import moe.nikky.curseproxy.exceptions.*
@@ -26,6 +25,8 @@ import org.koin.standalone.StandAloneContext.startKoin
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
+import com.squareup.sqldelight.db.SqlDriver
+import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 
 val LOG: Logger = LoggerFactory.getLogger("curseproxy")
 
@@ -42,11 +43,6 @@ fun Application.main() {
             enable(SerializationFeature.INDENT_OUTPUT)
             enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
         }
-
-//        gson {
-//            //            setup()
-//            setPrettyPrinting()
-//        }
     }
     //TODO: enable in production
 //    install(HttpsRedirect)
@@ -107,6 +103,8 @@ fun Application.main() {
         }
     }
 
+    val driver: SqlDriver = JdbcSqliteDriver()
+//    val db = moe.nikky.curseproxy.Database.Schema.create(driver)
 
     GlobalScope.launch(Dispatchers.IO + CoroutineName("import")) {
 

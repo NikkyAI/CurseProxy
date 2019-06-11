@@ -16,24 +16,24 @@ import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import java.io.File
 
-object AuthToken : KoinComponent {
-    private val mapper: ObjectMapper by inject()
-
-    private var token: String = File("auth.json").bufferedReader().use {
-        mapper.readValue<LoginRequest>(it).token
-    }
-
-    suspend fun authenticate(request: Request) {
-        // add token to header
-        request.headers["AuthenticationToken"] = token // AuthToken.session.token
-    }
-}
+//object AuthToken : KoinComponent {
+//    private val mapper: ObjectMapper by inject()
+//
+//    private var token: String = File("auth.json").bufferedReader().use {
+//        mapper.readValue<LoginRequest>(it).token
+//    }
+//
+//    suspend fun authenticate(request: Request) {
+//        // add token to header
+//        request.headers["AuthenticationToken"] = token // AuthToken.session.token
+//    }
+//}
 
 suspend fun Request.curseAuth(): Request {
-    AuthToken.authenticate(this)
+//    AuthToken.authenticate(this)
     return this
 }
 
-data class LoginRequest(
-    @JsonProperty("token") val token: String
-)
+//data class LoginRequest(
+//    @JsonProperty("token") val token: String
+//)

@@ -4,9 +4,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version Kotlin.version
     id("com.github.johnrengelman.shadow") version "4.0.0"
-    id("com.bmuschko.tomcat") version "2.5"
+    id("com.squareup.sqldelight") version SQDelight.version
     application
-    war
 }
 
 group = "moe.nikky"
@@ -17,17 +16,14 @@ application {
     mainClassName = "io.ktor.server.netty.DevelopmentEngine"
 }
 
-war {
-    webAppDirName = "webapp"
-}
-
-tomcat {
-    contextPath = "/"
-    httpProtocol = "org.apache.coyote.http11.Http11Nio2Protocol"
-    ajpProtocol = "org.apache.coyote.ajp.AjpNio2Protocol"
-}
+//war {
+//    webAppDirName = "webapp"
+//}
 
 //tomcat {
+//    contextPath = "/"
+//    httpProtocol = "org.apache.coyote.http11.Http11Nio2Protocol"
+//    ajpProtocol = "org.apache.coyote.ajp.AjpNio2Protocol"
 //}
 
 repositories {
@@ -71,6 +67,8 @@ dependencies {
     api(group = "org.koin", name = "koin-ktor", version = Koin.version)
 
     // Database
+    api(group = "com.squareup.sqldelight", name = "sqlite-driver", version = SQDelight.version)
+
     api(group = "org.jetbrains.squash", name = "squash-h2", version = Squash.version)
 
     api(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.9.5")

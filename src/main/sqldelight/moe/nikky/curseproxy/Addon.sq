@@ -1,0 +1,32 @@
+CREATE TABLE addon (
+  id INTEGER AS Int NOT NULL,
+  name TEXT NOT NULL,
+--   authors TEXT AS List<Author> NOT NULL,
+--   attachments TEXT AS List<Attachment> NOT NULL,
+  websiteUrl TEXT NOT NULL,
+  gameId INTEGER AS Int NOT NULL,
+  summary TEXT NOT NULL,
+  defaultFileId INTEGER AS Int NOT NULL,
+  downloadCount REAL as Float NOT NULL,
+--   latestFiles TEXT as List<AddonFile> NOT NULL,
+--   categories TEXT as List<Category> NOT NULL,
+  status TEXT as ProjectState NOT NULL,
+  -- relations
+  categorySection TEXT as CategorySection NOT NULL,
+  slug TEXT NOT NULL,
+--   gameVersionLatestFiles TEXT as List<GameVersionLatestFile> NOT NULL,
+  popularityScore REAL as Float NOT NULL,
+  gamePopularityRank INTEGER AS Int NOT NULL,
+  gameName TEXT NOT NULL,
+  portalName TEXT NOT NULL,
+  dateModified TEXT as LocalDateTime NOT NULL,
+  dateCreated TEXT as LocalDateTime NOT NULL,
+  dateReleased TEXT as LocalDateTime NOT NULL,
+  isAvailable INTEGER as Boolean NOT NULL,
+  primaryLanguage TEXT NOT NULL,
+  isFeatured INTEGER as Boolean NOT NULL
+);
+
+selectAll:
+SELECT *
+FROM addon;
