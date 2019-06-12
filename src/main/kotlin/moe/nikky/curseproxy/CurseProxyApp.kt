@@ -27,6 +27,8 @@ import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import moe.nikky.curseproxy.data.AddonEntry
 import moe.nikky.curseproxy.data.CategorySectionEntry
 import moe.nikky.curseproxy.data.CurseDatabase
+import moe.nikky.curseproxy.data.setupCurseDatabase
+import moe.nikky.curseproxy.model.Author
 import moe.nikky.curseproxy.model.CategorySection
 import java.io.File
 import java.time.LocalDateTime
@@ -107,83 +109,14 @@ fun Application.main() {
         }
     }
 
-    val dbFile = File("curse.db")
-    val dbFileExists = dbFile.exists()
-    val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:curse.db")
-    if(!dbFileExists) {
-        CurseDatabase.Schema.create(driver)
-    }
-
-    val listOfStringsAdapter = object : ColumnAdapter<List<String>, String> {
-        override fun decode(databaseValue: String) = databaseValue.split(",")
-        override fun encode(value: List<String>) = value.joinToString(separator = ",")
-    }
-    val listOfIntsAdapter = object : ColumnAdapter<List<Int>, String> {
-        override fun decode(databaseValue: String) = databaseValue.split(",").map { it.toInt() }
-        override fun encode(value: List<Int>) = value.joinToString(separator = ",")
-    }
-    val localDateTimeAdapter = object: ColumnAdapter<LocalDateTime, String> {
-        val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss")
-        override fun decode(databaseValue: String): LocalDateTime = LocalDateTime.from(formatter.parse(databaseValue))
-        override fun encode(value: LocalDateTime): String = formatter.format(value)
-    }
-    lateinit var database: CurseDatabase
-    database = CurseDatabase(
-        driver = driver,
-        categorySectionEntryAdapter = CategorySectionEntry.Adapter (
-            packageTypeAdapter = EnumColumnAdapter()
-        ),
-        addonEntryAdapter = AddonEntry.Adapter (
-//            authorsAdapter = listOfIntsAdapter,
-            statusAdapter = EnumColumnAdapter(),
-            categorySectionAdapter = object: ColumnAdapter<CategorySection, Long> {
-                override fun decode(databaseValue: Long): CategorySection {
-                    val query = database.categorySectionQueries.selectById(databaseValue.toInt())
-
-                    val result = query.executeAsOne()
-
-                    return CategorySection(
-                        id = result.id,
-                        name = result.name,
-                        gameId = result.gameId,
-                        packageType = result.packageType,
-                        path = result.path,
-                        initialInclusionPattern = result.initialInclusionPattern,
-                        extraIncludePattern = result.extraIncludePattern
-                    )
-                }
-
-                override fun encode(value: CategorySection): Long {
-                    database.categorySectionQueries.replace(
-                        id = value.id,
-                        name = value.name,
-                        gameId = value.gameId,
-                        packageType = value.packageType,
-                        path = value.path,
-                        initialInclusionPattern = value.initialInclusionPattern,
-                        extraIncludePattern = value.extraIncludePattern
-                    )
-                    return value.id.toLong()
-                }
-            },
-            dateCreatedAdapter = localDateTimeAdapter,
-            dateModifiedAdapter = localDateTimeAdapter,
-            dateReleasedAdapter = localDateTimeAdapter
-        )
-    )
-
-//    database.addonQueries.selectById()
-
     GlobalScope.launch(Dispatchers.IO + CoroutineName("import")) {
-
-        val importer = AddonsImporter(database)
+        val importer = AddonsImporter()
         while (true) {
 //            importer.import(log)
             with(importer) { import(log) }
             log.info("Addons imported")
             delay(TimeUnit.HOURS.toMillis(3))
         }
-
     }
 
     log.info("Application setup complete")

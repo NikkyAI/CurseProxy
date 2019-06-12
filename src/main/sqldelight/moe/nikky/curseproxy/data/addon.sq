@@ -1,7 +1,7 @@
 CREATE TABLE addonEntry (
   id INTEGER AS Int NOT NULL PRIMARY KEY,
   name TEXT NOT NULL,
---   authors TEXT AS List<moe.nikky.curseproxy.model.Author> NOT NULL, -- list of Author foreign key
+  authors TEXT AS List<moe.nikky.curseproxy.model.Author> NOT NULL, -- list of Author foreign key
 --   attachments TEXT AS List<Int> NOT NULL, -- list of foreign key
   websiteUrl TEXT NOT NULL,
   gameId INTEGER AS Int NOT NULL,
@@ -29,22 +29,31 @@ CREATE TABLE addonEntry (
 
 selectAll:
 SELECT *
-FROM addonEntry AS a
-  INNER JOIN categorySectionEntry AS c
-  ON a.categorySection = c.id
-ORDER BY a.id;
+FROM addonEntry
+ORDER BY addonEntry.id;
 
 selectById:
 SELECT *
-FROM addonEntry AS a
-  INNER JOIN categorySectionEntry AS c
-  ON a.categorySection = c.id
-WHERE a.id == ?
-ORDER BY a.id;
+FROM addonEntry
+ORDER BY addonEntry.id;
+
+-- selectAll:
+-- SELECT *
+-- FROM addonEntry AS a
+--   INNER JOIN categorySectionEntry AS c
+--   ON a.categorySection = c.id
+-- ORDER BY a.id;
+--
+-- selectById:
+-- SELECT *
+-- FROM addonEntry AS a
+--   INNER JOIN categorySectionEntry AS c
+--   ON a.categorySection = c.id
+-- WHERE a.id == ?
+-- ORDER BY a.id;
 
 replace:
-REPLACE INTO addonEntry (id, name,
--- authors,
+REPLACE INTO addonEntry (id, name, authors,
 -- attachments,
 websiteUrl, gameId, summary, defaultFileId, downloadCount,
 -- latestFiles,
@@ -54,5 +63,5 @@ status, categorySection, slug,
 popularityScore, gamePopularityRank, gameName, portalName,
 dateModified, dateCreated, dateReleased, isAvailable, primaryLanguage, isFeatured
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 

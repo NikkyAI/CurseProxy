@@ -6,21 +6,22 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.CurseClient
-import moe.nikky.curseproxy.curse.util.measureTimeMillis
 import moe.nikky.curseproxy.data.CurseDatabase
 import moe.nikky.curseproxy.model.Addon
-import moe.nikky.curseproxy.model.graphql.SimpleAddon
+import moe.nikky.curseproxy.util.measureTimeMillis1
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import org.slf4j.Logger
+import voodoo.data.curse.ProjectID
+import kotlin.system.measureTimeMillis
 
 /**
  * Created by nikky on 25/05/18.
  * @author Nikky
  * @version 1.0
  */
-open class AddonsImporter(val database: CurseDatabase) : KoinComponent {
-    private val addonDatabase by inject<AddonStorage>()
+open class AddonsImporter() : KoinComponent {
+    private val database by inject<CurseDatabase>()
 
     val processedIDs = mutableSetOf<Int>()
     val processableIDs = mutableSetOf<Int>()
@@ -28,26 +29,25 @@ open class AddonsImporter(val database: CurseDatabase) : KoinComponent {
     suspend fun import(log: Logger) = coroutineScope {
         processedIDs.clear()
         processableIDs.clear()
-        var addons: List<moe.nikky.curseproxy.model.Addon>? = null
         LOG.info("get addons fromCurseAddon search")
-        val duration = measureTimeMillis {
-            addons = CurseClient.getAddonsByCriteria(432, sort = CurseClient.AddonSortMethod.LastUpdated)
+        val (addons, duration) = measureTimeMillis1 {
+            CurseClient.getAddonsByCriteria(432, sort = CurseClient.AddonSortMethod.LastUpdated)
         }
-        LOG.info("loaded ${addons?.size ?: 0} addons in $duration ms")
+        LOG.info("loaded ${addons?.size ?: "null"} addons in $duration ms")
         addons?.forEach { addon ->
             LOG.info("${addon.name}: ${addon.dateModified}")
             processedIDs += addon.id.value
 
             val dependencies = addon
-                    .latestFiles
-                    .flatMap { it.dependencies ?: emptyList() }
-                    .distinctBy { it.addonId }
+                .latestFiles
+                .flatMap { it.dependencies }
+                .distinctBy { it.addonId }
             processableIDs.addAll(dependencies.map { it.addonId.value })
             Unit
         }
 
-        val idRange = (0..processedIDs.max()!!+10000)
-//        val idRange = (0..305914+10000)
+        val idRange = (0..processedIDs.max()!! + 10000)
+//        val idRange = (0..324142+10000)
         val chunkedRange = idRange.chunked(1000).shuffled()
         LOG.info("scanning ids ${idRange.start}..${idRange.endInclusive}")
         val startTime = System.currentTimeMillis()
@@ -59,7 +59,7 @@ open class AddonsImporter(val database: CurseDatabase) : KoinComponent {
                 database.addonQueries.replace(
                     id = addon.id.value,
                     name = addon.name,
-//                        authors = addon.authors
+                    authors = addon.authors,
 //                        attachments = addon.attachments
                     websiteUrl = addon.websiteUrl,
                     gameId = addon.gameId,
@@ -100,7 +100,7 @@ open class AddonsImporter(val database: CurseDatabase) : KoinComponent {
                     LOG.info("added ${result?.count()} addons")
                 }
             }
-            val step = i+1.toDouble()
+            val step = i + 1.toDouble()
             val timeSinceStart = System.currentTimeMillis() - startTime
             val averageTimeElapsed = timeSinceStart / step
             LOG.info("current:    ${timeElapsed / 1000.0}s")
@@ -118,7 +118,6 @@ open class AddonsImporter(val database: CurseDatabase) : KoinComponent {
 //                    addonDatabase.replaceORCreate(addon.toSparse())
 //            }
 //        }
-
 
         log.info("import complete")
     }

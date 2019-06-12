@@ -55,7 +55,7 @@ object CurseClient : KoinComponent {
         }
     }
 
-    suspend fun getAddons(projectIds: List<Int>, ignoreErrors: Boolean = false): List<Addon>? {
+    suspend fun getAddons(projectIds: List<Int>, ignoreErrors: Boolean = false, fail: Boolean = true): List<Addon>? {
         val url = "$ADDON_API/addon"
         val (request, response, result) = url
             .httpPost()
@@ -73,6 +73,9 @@ object CurseClient : KoinComponent {
             is Result.Failure -> {
                 if (!ignoreErrors) {
                     LOG.error("failed $request $response ${result.error}")
+                }
+                if (fail) {
+                    throw result.error
                 }
                 null
             }
@@ -226,16 +229,17 @@ object CurseClient : KoinComponent {
 //                .also { LOG.debug("parameters: $it") }
             )
             .curseAuth()
-            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer().list))
+            .awaitStringResponseResult()
+//            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer().list))
 
         LOG.debug("curl: ${request.cUrlString()}")
 
         return when (result) {
             is Result.Success -> {
-                result.value
+                json.parse(Addon.serializer().list, result.value)
             }
             is Result.Failure -> {
-//                LOG.error("failed $request $response ${result.error}")
+                LOG.error("failed $request $response ${result.error}")
                 null
             }
         }

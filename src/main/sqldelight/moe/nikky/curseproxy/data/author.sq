@@ -1,5 +1,26 @@
 CREATE TABLE authorEntry (
-  id INTEGER as Int NOT NULL PRIMARY KEY,
+  id INTEGER AS Int NOT NULL PRIMARY KEY,
   name TEXT NOT NULL,
-  url TEXT NOT NULL
+  url TEXT NOT NULL,
+  projectId INTEGER AS Int NOT NULL,
+  projectTitleId INTEGER AS Int,
+  projectTitleTitle TEXT,
+  userId INTEGER AS Int NOT NULL,
+  twitchId INTEGER AS Int
 );
+
+selectAll:
+SELECT *
+FROM authorEntry;
+
+selectById:
+SELECT *
+FROM authorEntry
+WHERE id = ?;
+
+replace:
+REPLACE INTO authorEntry(id, name, url, projectId,
+projectTitleId,
+projectTitleTitle,
+userId, twitchId)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);

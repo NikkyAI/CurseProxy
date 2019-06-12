@@ -8,6 +8,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import moe.nikky.curseproxy.dao.AddonDatabase
 import moe.nikky.curseproxy.dao.AddonStorage
+import moe.nikky.curseproxy.data.setupCurseDatabase
 import moe.nikky.curseproxy.graphql.AppSchema
 import org.koin.dsl.definition.Kind
 import org.koin.dsl.module.module
@@ -22,6 +23,7 @@ val mainModule = module(definition = {
     provide(kind = Kind.Single) {
         Json(JsonConfiguration(strictMode = false))
     }
+    provide(kind = Kind.Single) { setupCurseDatabase("curse.db") }
     provide(kind = Kind.Single) { AddonDatabase() as AddonStorage }
     provide(kind = Kind.Single) { AppSchema(get()) }
 })
