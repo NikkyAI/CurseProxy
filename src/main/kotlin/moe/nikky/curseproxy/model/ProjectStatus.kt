@@ -1,7 +1,10 @@
 package moe.nikky.curseproxy.model
 
-import com.fasterxml.jackson.annotation.JsonCreator
-import kotlin.jvm.JvmStatic
+import kotlinx.serialization.Decoder
+import kotlinx.serialization.Encoder
+import kotlinx.serialization.SerialDescriptor
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.internal.IntDescriptor
 
 enum class ProjectStatus {
     // Token: 0x04000074 RID: 116
@@ -25,16 +28,16 @@ enum class ProjectStatus {
     // Token: 0x0400007D RID: 125
     UnderReview;
 
+    @Serializer(forClass = ProjectStatus::class)
     companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(key: String?): ProjectStatus? {
-            return if (key == null)
-                null
-            else {
-                val index = key.toIntOrNull() ?: return valueOf(key.toUpperCase())
-                return values()[index - 1]
-            }
+        override val descriptor: SerialDescriptor = IntDescriptor
+
+        override fun deserialize(decoder: Decoder): ProjectStatus {
+            return values()[decoder.decodeInt()-1]
+        }
+
+        override fun serialize(encoder: Encoder, obj: ProjectStatus) {
+            encoder.encodeInt(obj.ordinal + 1)
         }
     }
 }

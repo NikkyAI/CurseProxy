@@ -1,13 +1,13 @@
 package moe.nikky.curseproxy.dao
 
-import moe.nikky.curseproxy.model.graphql.Addon
+import moe.nikky.curseproxy.model.graphql.SimpleAddon
 import java.io.Closeable
 
 interface AddonStorage : Closeable {
 
-    fun replaceORCreate(addon: Addon)
+    fun replaceORCreate(addon: SimpleAddon)
 
-    fun getAddon(id: Int): Addon?
+    fun getAddon(id: Int): SimpleAddon?
 
     fun getAll(
         gameId: Int?,
@@ -16,5 +16,5 @@ interface AddonStorage : Closeable {
         category: String?,
         section: String?,
         gameVersions: List<String>?
-    ): List<Addon>
+    ): List<SimpleAddon>
 }

@@ -1,0 +1,24 @@
+CREATE TABLE categorySectionEntry (
+  id INTEGER AS Int PRIMARY KEY NOT NULL, -- primaryKey
+  gameId INTEGER AS Int NOT NULL, -- primaryKey ?
+  name TEXT NOT NULL,
+  packageType TEXT as moe.nikky.curseproxy.model.PackageType NOT NULL, -- enum
+  path TEXT NOT NULL,
+  initialInclusionPattern TEXT DEFAULT ".",
+  extraIncludePattern TEXT DEFAULT  ""
+);
+
+
+selectAll:
+SELECT *
+FROM categorySectionEntry;
+
+selectById:
+SELECT *
+FROM categorySectionEntry
+WHERE id == ?;
+
+replace:
+REPLACE INTO categorySectionEntry(id, gameId, name, packageType, path, initialInclusionPattern, extraIncludePattern)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+

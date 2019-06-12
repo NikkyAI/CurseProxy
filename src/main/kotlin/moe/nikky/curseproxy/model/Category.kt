@@ -1,10 +1,10 @@
 package moe.nikky.curseproxy.model
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import kotlinx.serialization.Serializable
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Serializable
 data class Category(
-        val id: Int,
+        val categoryId: Int,
         val name: String,
         val url: String,
         val avatarUrl: String

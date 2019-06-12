@@ -1,8 +1,8 @@
 package moe.nikky.curseproxy.model
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import kotlinx.serialization.Serializable
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Serializable
 data class Attachment(
         val id: Int,
         val projectId: Int,

@@ -1,6 +1,11 @@
 package moe.nikky.curseproxy.model
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import kotlinx.serialization.Decoder
+import kotlinx.serialization.Encoder
+import kotlinx.serialization.SerialDescriptor
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.internal.IntDescriptor
 import kotlin.jvm.JvmStatic
 
 enum class PackageType {
@@ -12,16 +17,16 @@ enum class PackageType {
     MOD,
     ANY;
 
+    @Serializer(forClass = PackageType::class)
     companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(key: String?): PackageType? {
-            return if (key == null)
-                null
-            else {
-                val index = key.toIntOrNull() ?: return valueOf(key.toUpperCase())
-                return values()[index - 1]
-            }
+        override val descriptor: SerialDescriptor = IntDescriptor
+
+        override fun deserialize(decoder: Decoder): PackageType {
+            return values()[decoder.decodeInt()-1]
+        }
+
+        override fun serialize(encoder: Encoder, obj: PackageType) {
+            encoder.encodeInt(obj.ordinal + 1)
         }
     }
 }

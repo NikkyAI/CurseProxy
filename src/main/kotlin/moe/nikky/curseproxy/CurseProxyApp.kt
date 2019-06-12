@@ -1,18 +1,15 @@
 package moe.nikky.curseproxy
 
-import com.fasterxml.jackson.databind.MapperFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.squareup.sqldelight.ColumnAdapter
+import com.squareup.sqldelight.EnumColumnAdapter
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.application.log
 import io.ktor.features.CallLogging
-import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
 import io.ktor.locations.Locations
 import io.ktor.response.respond
 import kotlinx.coroutines.*
@@ -27,6 +24,13 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
+import moe.nikky.curseproxy.data.AddonEntry
+import moe.nikky.curseproxy.data.CategorySectionEntry
+import moe.nikky.curseproxy.data.CurseDatabase
+import moe.nikky.curseproxy.model.CategorySection
+import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 val LOG: Logger = LoggerFactory.getLogger("curseproxy")
 
@@ -37,13 +41,13 @@ fun Application.main() {
     install(DefaultHeaders)
     install(CallLogging)
     install(Locations)
-    install(ContentNegotiation) {
-        jackson {
-            registerModule(KotlinModule()) // Enable Kotlin support
-            enable(SerializationFeature.INDENT_OUTPUT)
-            enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
-        }
-    }
+//    install(ContentNegotiation) {
+//        jackson {
+//            registerModule(KotlinModule()) // Enable Kotlin support
+//            enable(SerializationFeature.INDENT_OUTPUT)
+//            enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+//        }
+//    }
     //TODO: enable in production
 //    install(HttpsRedirect)
 //    install(HSTS)
@@ -103,12 +107,76 @@ fun Application.main() {
         }
     }
 
-    val driver: SqlDriver = JdbcSqliteDriver()
-//    val db = moe.nikky.curseproxy.Database.Schema.create(driver)
+    val dbFile = File("curse.db")
+    val dbFileExists = dbFile.exists()
+    val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:curse.db")
+    if(!dbFileExists) {
+        CurseDatabase.Schema.create(driver)
+    }
+
+    val listOfStringsAdapter = object : ColumnAdapter<List<String>, String> {
+        override fun decode(databaseValue: String) = databaseValue.split(",")
+        override fun encode(value: List<String>) = value.joinToString(separator = ",")
+    }
+    val listOfIntsAdapter = object : ColumnAdapter<List<Int>, String> {
+        override fun decode(databaseValue: String) = databaseValue.split(",").map { it.toInt() }
+        override fun encode(value: List<Int>) = value.joinToString(separator = ",")
+    }
+    val localDateTimeAdapter = object: ColumnAdapter<LocalDateTime, String> {
+        val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss")
+        override fun decode(databaseValue: String): LocalDateTime = LocalDateTime.from(formatter.parse(databaseValue))
+        override fun encode(value: LocalDateTime): String = formatter.format(value)
+    }
+    lateinit var database: CurseDatabase
+    database = CurseDatabase(
+        driver = driver,
+        categorySectionEntryAdapter = CategorySectionEntry.Adapter (
+            packageTypeAdapter = EnumColumnAdapter()
+        ),
+        addonEntryAdapter = AddonEntry.Adapter (
+//            authorsAdapter = listOfIntsAdapter,
+            statusAdapter = EnumColumnAdapter(),
+            categorySectionAdapter = object: ColumnAdapter<CategorySection, Long> {
+                override fun decode(databaseValue: Long): CategorySection {
+                    val query = database.categorySectionQueries.selectById(databaseValue.toInt())
+
+                    val result = query.executeAsOne()
+
+                    return CategorySection(
+                        id = result.id,
+                        name = result.name,
+                        gameId = result.gameId,
+                        packageType = result.packageType,
+                        path = result.path,
+                        initialInclusionPattern = result.initialInclusionPattern,
+                        extraIncludePattern = result.extraIncludePattern
+                    )
+                }
+
+                override fun encode(value: CategorySection): Long {
+                    database.categorySectionQueries.replace(
+                        id = value.id,
+                        name = value.name,
+                        gameId = value.gameId,
+                        packageType = value.packageType,
+                        path = value.path,
+                        initialInclusionPattern = value.initialInclusionPattern,
+                        extraIncludePattern = value.extraIncludePattern
+                    )
+                    return value.id.toLong()
+                }
+            },
+            dateCreatedAdapter = localDateTimeAdapter,
+            dateModifiedAdapter = localDateTimeAdapter,
+            dateReleasedAdapter = localDateTimeAdapter
+        )
+    )
+
+//    database.addonQueries.selectById()
 
     GlobalScope.launch(Dispatchers.IO + CoroutineName("import")) {
 
-        val importer = AddonsImporter()
+        val importer = AddonsImporter(database)
         while (true) {
 //            importer.import(log)
             with(importer) { import(log) }

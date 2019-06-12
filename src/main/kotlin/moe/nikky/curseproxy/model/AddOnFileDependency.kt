@@ -1,10 +1,11 @@
 package moe.nikky.curseproxy.model
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import kotlinx.serialization.Serializable
+import voodoo.data.curse.ProjectID
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-
+@Serializable
 data class AddOnFileDependency(
-        val addOnId: Int,
+        val addonId: ProjectID,
+        @Serializable(with = DependencyType.Companion::class)
         val type: DependencyType
 )

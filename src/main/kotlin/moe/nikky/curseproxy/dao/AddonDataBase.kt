@@ -1,13 +1,12 @@
 package moe.nikky.curseproxy.dao
 
 import moe.nikky.curseproxy.LOG
-import moe.nikky.curseproxy.model.graphql.Addon
+import moe.nikky.curseproxy.model.graphql.SimpleAddon
 import org.jetbrains.squash.connection.DatabaseConnection
 import org.jetbrains.squash.connection.transaction
 import org.jetbrains.squash.dialects.h2.H2Connection
 import org.jetbrains.squash.expressions.eq
 import org.jetbrains.squash.expressions.like
-import org.jetbrains.squash.expressions.or
 import org.jetbrains.squash.query.from
 import org.jetbrains.squash.query.select
 import org.jetbrains.squash.query.where
@@ -18,13 +17,11 @@ import org.jetbrains.squash.statements.deleteFrom
 import org.jetbrains.squash.statements.insertInto
 import org.jetbrains.squash.statements.values
 
-fun ResultRow.toSparseAddon() = Addon(
+fun ResultRow.toSparseAddon() = SimpleAddon(
     id = this[Addons.id],
     gameID = this[Addons.gameId],
     name = this[Addons.name],
     slug = this[Addons.slug],
-    primaryAuthorName = this[Addons.primaryAuthorName],
-    primaryCategoryName = this[Addons.primaryCategoryName],
     section = this[Addons.sectionId],
     dateModified = this[Addons.dateModified],
     dateCreated = this[Addons.dateCreated],
@@ -70,10 +67,6 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                     LOG.debug("added slug filter '$it'")
                     where { Addons.slug like it }
                 }
-                category?.let {
-                    LOG.debug("added category filter '$it'")
-                    where { (Addons.primaryCategoryName like it) or (Addons.categoryList like "%$category%") }
-                }
                 section?.let {
                     LOG.debug("added section filter '$it'")
                     where { Addons.sectionId eq it }
@@ -94,7 +87,7 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
 
     }
 
-    override fun replaceORCreate(addon: Addon) {
+    override fun replaceORCreate(addon: SimpleAddon) {
 
         db.transaction {
             deleteFrom(Addons)
@@ -106,8 +99,6 @@ class AddonDatabase(val db: DatabaseConnection = H2Connection.createMemoryConnec
                 it[gameId] = addon.gameID
                 it[name] = addon.name
                 it[slug] = addon.slug
-                it[primaryAuthorName] = addon.primaryAuthorName ?: "" // TODO: fix non-nullable fields
-                it[primaryCategoryName] = addon.primaryCategoryName ?: ""
                 it[sectionId] = addon.section
                 it[dateModified] = addon.dateModified
                 it[dateCreated] = addon.dateCreated

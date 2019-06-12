@@ -1,10 +1,9 @@
 package moe.nikky.curseproxy.model
 
-import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import kotlinx.serialization.Serializable
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Serializable
 data class AddOnModule(
-        @JsonAlias("fimgerprint") val fingerprint: Long,
+        val fingerprint: Long,
         val foldername: String
 )

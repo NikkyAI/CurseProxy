@@ -1,11 +1,13 @@
 package moe.nikky.curseproxy.model
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import kotlinx.serialization.Serializable
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Serializable
 data class GameVersionLatestFile(
         val gameVersion: String,
-        val projectFileID: Int,
+        val projectFileId: Int,
         val projectFileName: String,
+        @Serializable(with = FileType.Companion::class)
         val fileType: FileType
 )
+

@@ -1,22 +1,30 @@
 package moe.nikky.curseproxy.curse
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.extensions.cUrlString
+import com.github.kittinunf.fuel.core.extensions.jsonBody
+import com.github.kittinunf.fuel.coroutines.awaitObjectResponseResult
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
+import com.github.kittinunf.fuel.serialization.kotlinxDeserializerOf
 import com.github.kittinunf.result.Result
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.list
+import kotlinx.serialization.map
+import kotlinx.serialization.serializer
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.auth.curseAuth
 import moe.nikky.curseproxy.model.AddonFile
-import moe.nikky.curseproxy.model.CurseAddon
+import moe.nikky.curseproxy.model.Addon
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
+import voodoo.data.curse.FileID
+import voodoo.data.curse.ProjectID
 
 /**
  * Created by nikky on 25/05/18.
@@ -25,18 +33,18 @@ import org.koin.standalone.inject
  */
 
 object CurseClient : KoinComponent {
-    private val mapper: ObjectMapper by inject()
+    private val json: Json by inject()
     private const val ADDON_API = "https://addons-ecs.forgesvc.net/api/v2"
 
-    suspend fun getAddon(projectId: Int, ignoreError: Boolean = false): CurseAddon? {
+    suspend fun getAddon(projectId: ProjectID, ignoreError: Boolean = false): Addon? {
         val url = "$ADDON_API/addon/$projectId"
         val (request, response, result) = url
             .httpGet()
             .curseAuth()
-            .awaitStringResponseResult()
+            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer()))
         return when (result) {
             is Result.Success -> {
-                mapper.readValue(result.value)
+                result.value
             }
             is Result.Failure -> {
                 if (!ignoreError) {
@@ -47,20 +55,20 @@ object CurseClient : KoinComponent {
         }
     }
 
-    suspend fun getAddons(projectIds: Array<Int>, ignoreErrors: Boolean = false): List<CurseAddon>? {
+    suspend fun getAddons(projectIds: List<Int>, ignoreErrors: Boolean = false): List<Addon>? {
         val url = "$ADDON_API/addon"
         val (request, response, result) = url
             .httpPost()
-            .body(mapper.writeValueAsBytes(projectIds))
+            .jsonBody(json.stringify(Int.serializer().list, projectIds))
             .curseAuth()
             .apply {
                 this.headers["Content-Type"] = "application/json"
 //                    LOG.debug(this.cUrlString())
             }
-            .awaitStringResponseResult()
+            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer().list))
         return when (result) {
             is Result.Success -> {
-                mapper.readValue(result.value)
+                result.value
             }
             is Result.Failure -> {
                 if (!ignoreErrors) {
@@ -88,15 +96,15 @@ object CurseClient : KoinComponent {
         }
     }
 
-    suspend fun getAddonFile(projectId: Int, fileId: Int): AddonFile? {
+    suspend fun getAddonFile(projectId: ProjectID, fileId: FileID): AddonFile? {
         val url = "$ADDON_API/addon/$projectId/file/$fileId"
         val (request, response, result) = url
             .httpGet()
             .curseAuth()
-            .awaitStringResponseResult()
+            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = AddonFile.serializer()))
         return when (result) {
             is Result.Success -> {
-                mapper.readValue(result.value)
+                result.value
             }
             is Result.Failure -> {
                 LOG.error("failed $request $response ${result.error}")
@@ -105,15 +113,15 @@ object CurseClient : KoinComponent {
         }
     }
 
-    suspend fun getAddonFiles(projectId: Int): List<AddonFile>? {
+    suspend fun getAddonFiles(projectId: ProjectID): List<AddonFile>? {
         val url = "$ADDON_API/addon/$projectId/files"
         val (request, response, result) = url
             .httpGet()
             .curseAuth()
-            .awaitStringResponseResult()
+            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = AddonFile.serializer().list))
         return when (result) {
             is Result.Success -> {
-                mapper.readValue(result.value)
+                result.value
             }
             is Result.Failure -> {
                 LOG.error("failed $request $response ${result.error}")
@@ -122,21 +130,27 @@ object CurseClient : KoinComponent {
         }
     }
 
+    @Serializable
     data class AddonFileKey(
-        @JsonProperty("AddonId") val addonId: Int,
-        @JsonProperty("FileId") val fileId: Int
+        @SerialName("AddonId") val addonId: Int,
+        @SerialName("FileId") val fileId: Int
     )
 
     suspend fun getAddonFiles(keys: List<AddonFileKey>): Map<Int, List<AddonFile>>? {
         val url = "$ADDON_API/addon/files"
         val (request, response, result) = url
             .httpPost()
-            .body(mapper.writeValueAsBytes(keys))
+            .body(json.stringify(AddonFileKey.serializer().list, keys))
             .curseAuth()
-            .awaitStringResponseResult()
+            .awaitObjectResponseResult(
+                kotlinxDeserializerOf(
+                    json = json, loader = (Int.serializer() to AddonFile.serializer().list).map
+                )
+            )
+
         return when (result) {
             is Result.Success -> {
-                mapper.readValue(result.value)
+                result.value
             }
             is Result.Failure -> {
                 LOG.error("failed $request $response ${result.error}")
@@ -145,7 +159,7 @@ object CurseClient : KoinComponent {
         }
     }
 
-    suspend fun getAddonChangelog(projectId: Int, fileId: Int): String? {
+    suspend fun getAddonChangelog(projectId: ProjectID, fileId: FileID): String? {
         val url = "$ADDON_API/addon/$projectId/file/$fileId/changelog"
         val (request, response, result) = url
             .httpGet()
@@ -183,7 +197,7 @@ object CurseClient : KoinComponent {
         index: Int = 0,
         pageSize: Int = 1000,
         searchFilter: String? = null
-    ): List<CurseAddon>? {
+    ): List<Addon>? {
         val url = "$ADDON_API/addon/search"
         val parameters = mutableListOf(
             "gameID" to gameId,
@@ -212,13 +226,13 @@ object CurseClient : KoinComponent {
 //                .also { LOG.debug("parameters: $it") }
             )
             .curseAuth()
-            .awaitStringResponseResult()
+            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer().list))
 
         LOG.debug("curl: ${request.cUrlString()}")
 
         return when (result) {
             is Result.Success -> {
-                mapper.readValue(result.value)
+                result.value
             }
             is Result.Failure -> {
 //                LOG.error("failed $request $response ${result.error}")
@@ -236,12 +250,12 @@ object CurseClient : KoinComponent {
         gameVersions: List<String>? = null,
         pageSize: Int = 1000,
         searchFilter: String? = null
-    ): List<CurseAddon> {
+    ): List<Addon> {
         require(pageSize <= 1000) { "curse api limits pagesize to 1000" }
 
         val n = 4
         var index = 0
-        val results: MutableList<CurseAddon> = mutableListOf()
+        val results: MutableList<Addon> = mutableListOf()
         var done = false
         while (!done) {
             results += coroutineScope {

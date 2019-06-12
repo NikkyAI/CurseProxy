@@ -1,12 +1,16 @@
 import org.gradle.api.tasks.wrapper.Wrapper
 
 object Gradle {
-    const val version = "5.2"
+    const val version = "5.4.1"
     val distributionType = Wrapper.DistributionType.BIN
 }
 
 object Kotlin {
     const val version = "1.3.31"
+}
+
+object Serialization {
+    const val version = "0.11.0"
 }
 
 object Ktor {
@@ -22,7 +26,7 @@ object Fuel {
 }
 
 object KGraphQL {
-    const val version = "0.3.0"//""772afa793f718f9643b58f486a0e49bf10799c9a" //"0.3.0-beta"
+    const val version = "0.5.1"
 }
 
 object Koin {

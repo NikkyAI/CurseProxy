@@ -1,6 +1,7 @@
 # ToDo List
 
-- figure out headless oauth or alternative ways of obtaining oauth tokens
+- replace jackson with kotlinx-serialization
+- MAYBE replace Fuel with ktor-client
 
 - caching to reduce api requests
   - use database for concurrent access

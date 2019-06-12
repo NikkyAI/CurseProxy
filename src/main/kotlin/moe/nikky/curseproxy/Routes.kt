@@ -1,6 +1,5 @@
 package moe.nikky.curseproxy
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.log
@@ -28,6 +27,7 @@ import kotlinx.html.small
 import kotlinx.html.span
 import kotlinx.html.styleLink
 import kotlinx.html.title
+import kotlinx.serialization.json.Json
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.curse.Widget
 import moe.nikky.curseproxy.curse.files
@@ -37,6 +37,8 @@ import moe.nikky.curseproxy.exceptions.AddonNotFoundException
 import moe.nikky.curseproxy.graphql.AppSchema
 import moe.nikky.encodeBase64
 import org.koin.ktor.ext.inject
+import voodoo.data.curse.FileID
+import voodoo.data.curse.ProjectID
 import java.io.File
 
 @Suppress("unused")
@@ -44,8 +46,8 @@ fun Application.routes() {
 
     routing {
         val appSchema: AppSchema by inject()
-        val mapper: ObjectMapper by inject()
-        graphql(log, mapper, appSchema.schema)
+        val json: Json by inject()
+        graphql(log, json, appSchema.schema)
         curse()
 
         static("/") {
@@ -54,12 +56,12 @@ fun Application.routes() {
         }
 
         get("/test/exception") {
-            throw AddonFileNotFoundException(1234, 5678)
+            throw AddonFileNotFoundException(ProjectID(1234), FileID(5678))
         }
 
         get("/api/widget/{id}") {
-            val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+            val id = ProjectID(call.parameters["id"]?.toInt()
+                ?: throw NumberFormatException("id"))
             val versions: MutableList<String> = call.parameters.getAll("version")?.toMutableList() ?: mutableListOf()
 
             call.respondHtml {
@@ -110,10 +112,10 @@ fun Application.routes() {
                                         title = addon.name
                                         target = "_blank"
                                         attributes["id"] = "title-link"
-                                        href = addon.webSiteURL
+                                        href = addon.websiteUrl
                                         +addon.name
                                     }
-                                    small { +" by ${addon.primaryAuthorName}" }
+                                    small { +" by ${addon.authors.joinToString { it.name }}" }
                                 }
                                 span("line smaller") {
                                     +"${addon.downloadCount.toInt()} Downloads"
@@ -129,7 +131,7 @@ fun Application.routes() {
                                         val file = fileMap[version]?.first()
                                         if (file != null) {
                                             a(classes = "files-button") {
-                                                href = file.downloadURL
+                                                href = file.downloadUrl
                                                 target = "_blank"
                                                 attributes["id"] = "download-button"
                                                 +"Download ${file.fileName}"
@@ -145,26 +147,26 @@ fun Application.routes() {
         }
 
         get("/api/url/{id}") {
-            val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+            val id = ProjectID(call.parameters["id"]?.toInt()
+                ?: throw NumberFormatException("id"))
             val addon = CurseClient.getAddon(id) ?: throw AddonNotFoundException(id)
             val versions = call.parameters.getAll("version") ?: emptyList()
             val file = addon.latestFile(versions)
-            call.respondRedirect(url = file.downloadURL, permanent = false)
+            call.respondRedirect(url = file.downloadUrl, permanent = false)
         }
 
         get("/api/url/{id}/{fileid}") {
-            val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
-            val fileid = call.parameters["fileid"]?.toInt()
-                ?: throw NumberFormatException("fileid")
+            val id = ProjectID(call.parameters["id"]?.toInt()
+                ?: throw NumberFormatException("id"))
+            val fileid = FileID(call.parameters["fileid"]?.toInt()
+                ?: throw NumberFormatException("fileid"))
             val file = CurseClient.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
-            call.respondRedirect(url = file.downloadURL, permanent = false)
+            call.respondRedirect(url = file.downloadUrl, permanent = false)
         }
 
         get("/api/img/{id}") {
-            val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+            val id = ProjectID(call.parameters["id"]?.toInt()
+                ?: throw NumberFormatException("id"))
             log.info(call.parameters.entries().joinToString())
             val style = call.parameters["style"]
             val colorA = call.parameters["colorA"]
@@ -198,7 +200,7 @@ fun Application.routes() {
                 }
                 if (link) {
                     val left = "https://minecraft.curseforge.com/projects/$id"
-                    val right = file.downloadURL
+                    val right = file.downloadUrl
                     parameters["link"] = left
                     parameters["link"] = right
                 }
@@ -215,8 +217,8 @@ fun Application.routes() {
         }
 
         get("/api/img/{id}/files") {
-            val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+            val id = ProjectID(call.parameters["id"]?.toInt()
+                ?: throw NumberFormatException("id"))
             val style = call.parameters["style"]
             val colorA = call.parameters["colorA"]
             val colorB = call.parameters["colorB"]
@@ -263,10 +265,10 @@ fun Application.routes() {
         }
 
         get("/api/img/{id}/{fileid}") {
-            val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
-            val fileid = call.parameters["fileid"]?.toInt()
-                ?: throw NumberFormatException("fileid")
+            val id = ProjectID(call.parameters["id"]?.toInt()
+                ?: throw NumberFormatException("id"))
+            val fileid = FileID(call.parameters["fileid"]?.toInt()
+                ?: throw NumberFormatException("fileid"))
             val style = call.parameters["style"]
             val colorA = call.parameters["colorA"]
             val colorB = call.parameters["colorB"]
@@ -298,7 +300,7 @@ fun Application.routes() {
                 }
                 if (link) {
                     val left = "https://minecraft.curseforge.com/projects/$id"
-                    val right = file.downloadURL
+                    val right = file.downloadUrl
                     parameters["link"] = left
                     parameters["link"] = right
                 }

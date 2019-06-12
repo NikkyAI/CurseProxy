@@ -1,24 +1,26 @@
 package moe.nikky.curseproxy.graphql
 
-import com.github.pgutkowski.kgraphql.KGraphQL
+import com.apurebase.kgraphql.KGraphQL
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.dao.AddonStorage
 import moe.nikky.curseproxy.model.AddOnModule
+import moe.nikky.curseproxy.model.Addon
 import moe.nikky.curseproxy.model.AddonFile
 import moe.nikky.curseproxy.model.Attachment
 import moe.nikky.curseproxy.model.Author
 import moe.nikky.curseproxy.model.Category
 import moe.nikky.curseproxy.model.CategorySection
-import moe.nikky.curseproxy.model.CurseAddon
 import moe.nikky.curseproxy.model.DependencyType
 import moe.nikky.curseproxy.model.FileStatus
 import moe.nikky.curseproxy.model.FileType
 import moe.nikky.curseproxy.model.GameVersionLatestFile
 import moe.nikky.curseproxy.model.PackageType
 import moe.nikky.curseproxy.model.ProjectStatus
-import moe.nikky.curseproxy.model.graphql.Addon
+import moe.nikky.curseproxy.model.graphql.SimpleAddon
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class AppSchema(private val storage: AddonStorage) {
 
@@ -31,6 +33,11 @@ class AppSchema(private val storage: AddonStorage) {
         stringScalar<LocalDate> {
             serialize = { date -> date.toString() }
             deserialize = { dateString -> LocalDate.parse(dateString) }
+        }
+        stringScalar<LocalDateTime> {
+            val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss")
+            serialize = { date -> formatter.format(date) }
+            deserialize = { dateString -> LocalDateTime.from(formatter.parse(dateString)) }
         }
 
         query("addons") {
@@ -81,29 +88,23 @@ class AppSchema(private val storage: AddonStorage) {
                 description = "placeholder field"
             }
         }
-        type<Addon> {
+        type<SimpleAddon> {
             description = "A Sparse CurseAddon"
-            property(Addon::gameID) {
+            property(SimpleAddon::gameID) {
                 description = "id of the game this addon is for"
             }
-            property(Addon::name) {
+            property(SimpleAddon::name) {
                 description = "addon name"
             }
-            property(Addon::slug) {
+            property(SimpleAddon::slug) {
                 description = "addon url slug"
             }
-            property(Addon::primaryAuthorName) {
-                description = "primary project author"
-            }
-            property(Addon::primaryCategoryName) {
-                description = "primary project category"
-            }
-            property(Addon::categoryList) {
+            property(SimpleAddon::categoryList) {
                 description = "list of project categories"
             }
         }
 
-        type<CurseAddon> {
+        type<Addon> {
             description = "A CurseAddon"
 //            property(CurseAddon::categories) {
 //

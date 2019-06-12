@@ -1,8 +1,14 @@
+import com.squareup.sqldelight.gradle.SqlDelightDatabase
 import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+buildscript {
+
+}
+
 plugins {
     kotlin("jvm") version Kotlin.version
+    id("kotlinx-serialization") version Kotlin.version
     id("com.github.johnrengelman.shadow") version "4.0.0"
     id("com.squareup.sqldelight") version SQDelight.version
     application
@@ -15,6 +21,20 @@ application {
 //    mainClassName = "io.ktor.server.netty.DevelopmentEngine"
     mainClassName = "io.ktor.server.netty.DevelopmentEngine"
 }
+
+sqldelight {
+    methodMissing("CurseDatabase",
+        arrayOf(
+            closureOf<SqlDelightDatabase> {
+//                className = "CurseDatabase"
+                packageName = "moe.nikky.curseproxy.data"
+                sourceFolders = listOf("sqldelight")
+                schemaOutputDirectory = file("src/main/sqldelight/migrations")
+            }
+        )
+    )
+}
+
 
 //war {
 //    webAppDirName = "webapp"
@@ -59,9 +79,10 @@ dependencies {
     // Networking
     api(group = "com.github.kittinunf.fuel", name = "fuel", version = Fuel.version)
     api(group = "com.github.kittinunf.fuel", name = "fuel-coroutines", version = Fuel.version)
+    api(group = "com.github.kittinunf.fuel", name = "fuel-kotlinx-serialization", version = Fuel.version)
 
     // GraphQL
-    api("com.github.pgutkowski:kgraphql:${KGraphQL.version}")
+    api(group = "com.apurebase", name = "kgraphql", version = KGraphQL.version)
 
     // Dependency Injection
     api(group = "org.koin", name = "koin-ktor", version = Koin.version)
@@ -70,6 +91,9 @@ dependencies {
     api(group = "com.squareup.sqldelight", name = "sqlite-driver", version = SQDelight.version)
 
     api(group = "org.jetbrains.squash", name = "squash-h2", version = Squash.version)
+
+    // JSON
+    api(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = Serialization.version)
 
     api(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.9.5")
     api(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version = "2.9.5")

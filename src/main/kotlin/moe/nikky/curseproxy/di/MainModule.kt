@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import moe.nikky.curseproxy.dao.AddonDatabase
 import moe.nikky.curseproxy.dao.AddonStorage
 import moe.nikky.curseproxy.graphql.AppSchema
@@ -16,6 +18,9 @@ val mainModule = module(definition = {
             .registerModule(KotlinModule()) // Enable Kotlin support
             .enable(SerializationFeature.INDENT_OUTPUT)
             .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
+    }
+    provide(kind = Kind.Single) {
+        Json(JsonConfiguration(strictMode = false))
     }
     provide(kind = Kind.Single) { AddonDatabase() as AddonStorage }
     provide(kind = Kind.Single) { AppSchema(get()) }

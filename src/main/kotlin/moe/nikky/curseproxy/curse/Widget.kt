@@ -5,10 +5,11 @@ import kotlinx.html.*
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.VersionComparator
 import moe.nikky.curseproxy.exceptions.AddonNotFoundException
+import voodoo.data.curse.ProjectID
 
 object Widget {
 
-    fun HTML.widget(id: Int, versions: MutableList<String>) {
+    fun HTML.widget(id: ProjectID, versions: MutableList<String>) {
         val addon = runBlocking { CurseClient.getAddon(id) } ?: throw AddonNotFoundException(id)
         val files = runBlocking { CurseClient.getAddonFiles(id) } ?: emptyList()
 
@@ -55,10 +56,10 @@ object Widget {
                                 title = addon.name
                                 target = "_blank"
                                 attributes["id"] = "title-link"
-                                href = addon.webSiteURL
+                                href = addon.websiteUrl
                                 +addon.name
                             }
-                            small { +" by ${addon.primaryAuthorName}" }
+                            small { +" by ${addon.authors.joinToString { it.name }}" }
                         }
                         span("line smaller") {
                             +"${addon.downloadCount.toInt()} Downloads"
@@ -74,7 +75,7 @@ object Widget {
                                 val file = fileMap[version]?.first()
                                 if (file != null) {
                                     a(classes = "files-button") {
-                                        href = file.downloadURL
+                                        href = file.downloadUrl
                                         target = "_blank"
                                         attributes["id"] = "download-button"
                                         +"Download ${file.fileName}"

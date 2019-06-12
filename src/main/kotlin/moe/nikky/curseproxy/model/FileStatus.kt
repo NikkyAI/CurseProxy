@@ -1,6 +1,11 @@
 package moe.nikky.curseproxy.model
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import kotlinx.serialization.Decoder
+import kotlinx.serialization.Encoder
+import kotlinx.serialization.SerialDescriptor
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.internal.IntDescriptor
 import kotlin.jvm.JvmStatic
 
 enum class FileStatus {
@@ -35,16 +40,16 @@ enum class FileStatus {
     // Token: 0x0400004F RID: 79
     FailedPublishing;
 
+    @Serializer(forClass = FileStatus::class)
     companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(key: String?): FileStatus? {
-            return if (key == null)
-                null
-            else {
-                val index = key.toIntOrNull() ?: return valueOf(key.toUpperCase())
-                return values()[index - 1]
-            }
+        override val descriptor: SerialDescriptor = IntDescriptor
+
+        override fun deserialize(decoder: Decoder): FileStatus {
+            return values()[decoder.decodeInt()-1]
+        }
+
+        override fun serialize(encoder: Encoder, obj: FileStatus) {
+            encoder.encodeInt(obj.ordinal + 1)
         }
     }
 }

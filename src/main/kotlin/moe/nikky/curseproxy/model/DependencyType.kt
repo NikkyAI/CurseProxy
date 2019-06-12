@@ -1,8 +1,14 @@
 package moe.nikky.curseproxy.model
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import kotlinx.serialization.Decoder
+import kotlinx.serialization.Encoder
+import kotlinx.serialization.SerialDescriptor
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.internal.IntDescriptor
 
 enum class DependencyType {
+    // Token: 0x04000055 RID: 85
     EmbeddedLibrary,
     // Token: 0x04000056 RID: 86
     OptionalDependency,
@@ -15,16 +21,17 @@ enum class DependencyType {
     // Token: 0x0400005A RID: 90
     Include;
 
+
+    @Serializer(forClass = DependencyType::class)
     companion object {
-        @JsonCreator
-        @JvmStatic
-        fun fromString(key: String?): DependencyType? {
-            return if (key == null)
-                null
-            else {
-                val index = key.toIntOrNull() ?: return valueOf(key.toUpperCase())
-                return values()[index - 1]
-            }
+        override val descriptor: SerialDescriptor = IntDescriptor
+
+        override fun deserialize(decoder: Decoder): DependencyType {
+            return DependencyType.values()[decoder.decodeInt()-1]
+        }
+
+        override fun serialize(encoder: Encoder, obj: DependencyType) {
+            encoder.encodeInt(obj.ordinal + 1)
         }
     }
 }

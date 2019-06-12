@@ -1,0 +1,5 @@
+CREATE TABLE authorEntry (
+  id INTEGER as Int NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  url TEXT NOT NULL
+);

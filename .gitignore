@@ -16,3 +16,5 @@ run/
 curse_debug\.json
 
 curse_debug_formatted\.json
+
+*.db
