@@ -1,11 +1,9 @@
 package moe.nikky.curseproxy.model
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import kotlinx.serialization.Serializable
 import moe.nikky.curseproxy.serialization.LocalDateTimeSerializer
 import voodoo.data.curse.FileID
 import java.time.LocalDateTime
-import java.util.*
 
 @Serializable
 data class AddonFile(

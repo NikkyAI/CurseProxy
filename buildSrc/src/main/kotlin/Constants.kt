@@ -13,6 +13,10 @@ object Serialization {
     const val version = "0.11.0"
 }
 
+object Coroutine {
+    const val version = "1.3.0-M1"
+}
+
 object Ktor {
     const val version = "1.1.3" //""0.9.4"
 }

@@ -98,6 +98,10 @@ dependencies {
     api(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.9.5")
     api(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version = "2.9.5")
 
+    // coroutines
+    api(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-debug", version = Coroutine.version)
+
+
     // Testing
     testCompile(group = "junit", name = "junit", version = "4.12")
     testCompile(ktor("server-test-host"))

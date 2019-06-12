@@ -1,4 +1,4 @@
-CREATE TABLE authorEntry (
+CREATE TABLE authors (
   id INTEGER AS Int NOT NULL PRIMARY KEY,
   name TEXT NOT NULL,
   url TEXT NOT NULL,
@@ -6,21 +6,23 @@ CREATE TABLE authorEntry (
   projectTitleId INTEGER AS Int,
   projectTitleTitle TEXT,
   userId INTEGER AS Int NOT NULL,
-  twitchId INTEGER AS Int
+  twitchId INTEGER AS Int,
+  CONSTRAINT fk_projectId
+      FOREIGN KEY (projectId)
+      REFERENCES addons(id)
 );
 
 selectAll:
 SELECT *
-FROM authorEntry;
+FROM authors;
 
 selectById:
 SELECT *
-FROM authorEntry
+FROM authors
 WHERE id = ?;
 
 replace:
-REPLACE INTO authorEntry(id, name, url, projectId,
-projectTitleId,
-projectTitleTitle,
-userId, twitchId)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+REPLACE INTO authors VALUES ?;
+
+insert:
+INSERT INTO authors VALUES ?;

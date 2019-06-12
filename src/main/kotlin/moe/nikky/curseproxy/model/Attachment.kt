@@ -10,5 +10,6 @@ data class Attachment(
         val isDefault: Boolean,
         val thumbnailUrl: String,
         val title: String,
-        val url: String
+        val url: String,
+        val status: Int
 )

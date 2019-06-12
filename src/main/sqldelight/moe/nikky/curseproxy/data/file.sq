@@ -1,3 +1,0 @@
-CREATE TABLE fileEntry (
-    id INTEGER AS Int PRIMARY KEY NOT NULL
-);

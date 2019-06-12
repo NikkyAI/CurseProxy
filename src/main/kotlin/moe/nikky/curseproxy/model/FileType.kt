@@ -2,6 +2,7 @@ package moe.nikky.curseproxy.model
 
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.internal.IntDescriptor
@@ -12,7 +13,7 @@ enum class FileType {
     Alpha;
 
     @Serializer(forClass = FileType::class)
-    companion object {
+    companion object: KSerializer<FileType> {
         override val descriptor: SerialDescriptor = IntDescriptor
 
         override fun deserialize(decoder: Decoder): FileType {

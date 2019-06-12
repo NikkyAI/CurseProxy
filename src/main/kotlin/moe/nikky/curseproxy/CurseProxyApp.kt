@@ -1,7 +1,5 @@
 package moe.nikky.curseproxy
 
-import com.squareup.sqldelight.ColumnAdapter
-import com.squareup.sqldelight.EnumColumnAdapter
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -13,6 +11,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.locations.Locations
 import io.ktor.response.respond
 import kotlinx.coroutines.*
+import kotlinx.coroutines.debug.DebugProbes
 import moe.nikky.curseproxy.dao.AddonsImporter
 import moe.nikky.curseproxy.di.mainModule
 import moe.nikky.curseproxy.exceptions.*
@@ -22,17 +21,6 @@ import org.koin.standalone.StandAloneContext.startKoin
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
-import com.squareup.sqldelight.db.SqlDriver
-import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
-import moe.nikky.curseproxy.data.AddonEntry
-import moe.nikky.curseproxy.data.CategorySectionEntry
-import moe.nikky.curseproxy.data.CurseDatabase
-import moe.nikky.curseproxy.data.setupCurseDatabase
-import moe.nikky.curseproxy.model.Author
-import moe.nikky.curseproxy.model.CategorySection
-import java.io.File
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 val LOG: Logger = LoggerFactory.getLogger("curseproxy")
 
@@ -108,6 +96,10 @@ fun Application.main() {
             )
         }
     }
+
+    DebugProbes.install()
+    DebugProbes.sanitizeStackTraces = true
+
 
     GlobalScope.launch(Dispatchers.IO + CoroutineName("import")) {
         val importer = AddonsImporter()

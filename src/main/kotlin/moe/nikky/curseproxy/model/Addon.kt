@@ -10,7 +10,7 @@ data class Addon(
     val id: ProjectID,
     val name: String,
     val authors: List<Author> = emptyList(),
-    val attachments: List<Attachment>? = emptyList(),
+    val attachments: List<Attachment> = emptyList(),
     val websiteUrl: String,
     val gameId: Int,
     val summary: String,

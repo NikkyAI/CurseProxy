@@ -1,0 +1,27 @@
+CREATE TABLE attachments (
+  id INTEGER AS Int NOT NULL PRIMARY KEY,
+  projectId INTEGER AS Int NOT NULL,
+  description TEXT,
+  thumbnailUrl TEXT NOT NULL,
+  title TEXT NOT NULL,
+  url TEXT NOT NULL,
+  status INTEGER as Int NOT NULL, -- TODO: enum class for attachment status
+  CONSTRAINT fk_projectId
+      FOREIGN KEY (projectId)
+      REFERENCES addons(id)
+);
+
+selectAll:
+SELECT *
+FROM attachments;
+
+selectById:
+SELECT *
+FROM attachments
+WHERE id = ?;
+
+replace:
+REPLACE INTO attachments VALUES ?;
+
+insert:
+INSERT INTO attachments VALUES ?;

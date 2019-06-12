@@ -2,6 +2,7 @@ package moe.nikky.curseproxy.model
 
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.internal.IntDescriptor
@@ -29,11 +30,11 @@ enum class ProjectStatus {
     UnderReview;
 
     @Serializer(forClass = ProjectStatus::class)
-    companion object {
+    companion object : KSerializer<ProjectStatus> {
         override val descriptor: SerialDescriptor = IntDescriptor
 
         override fun deserialize(decoder: Decoder): ProjectStatus {
-            return values()[decoder.decodeInt()-1]
+            return values()[decoder.decodeInt() - 1]
         }
 
         override fun serialize(encoder: Encoder, obj: ProjectStatus) {

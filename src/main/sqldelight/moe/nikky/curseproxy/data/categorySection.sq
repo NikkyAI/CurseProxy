@@ -1,8 +1,10 @@
-CREATE TABLE categorySectionEntry (
+import moe.nikky.curseproxy.model.PackageType;
+
+CREATE TABLE categorySections (
   id INTEGER AS Int PRIMARY KEY NOT NULL, -- primaryKey
-  gameId INTEGER AS Int NOT NULL, -- primaryKey ?
+  gameId INTEGER AS Int NOT NULL,
   name TEXT NOT NULL,
-  packageType TEXT as moe.nikky.curseproxy.model.PackageType NOT NULL, -- enum
+  packageType TEXT AS PackageType NOT NULL, -- enum
   path TEXT NOT NULL,
   initialInclusionPattern TEXT DEFAULT ".",
   extraIncludePattern TEXT DEFAULT  ""
@@ -11,14 +13,16 @@ CREATE TABLE categorySectionEntry (
 
 selectAll:
 SELECT *
-FROM categorySectionEntry;
+FROM categorySections;
 
 selectById:
 SELECT *
-FROM categorySectionEntry
+FROM categorySections
 WHERE id == ?;
 
 replace:
-REPLACE INTO categorySectionEntry(id, gameId, name, packageType, path, initialInclusionPattern, extraIncludePattern)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+REPLACE INTO categorySections VALUES ?;
+
+insert:
+INSERT INTO categorySections VALUES ?;
 

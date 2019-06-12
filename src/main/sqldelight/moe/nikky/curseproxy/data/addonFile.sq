@@ -1,0 +1,29 @@
+import java.time.LocalDateTime;
+import moe.nikky.curseproxy.model.AddOnFileDependency;
+import moe.nikky.curseproxy.model.FileStatus;
+import moe.nikky.curseproxy.model.FileType;
+import moe.nikky.curseproxy.model.AddOnModule;
+
+CREATE TABLE addonFiles (
+    id INTEGER AS Int PRIMARY KEY NOT NULL,
+    fileName TEXT NOT NULL,
+    fileDate TEXT AS LocalDateTime NOT NULL,
+    releaseType TEXT AS FileType NOT NULL,
+    fileStatus TEXT AS FileStatus NOT NULL,
+    downloadUrl TEXT NOT NULL,
+    isAlternate INTEGER AS Boolean NOT NULL,
+    alternatFileId INTEGER AS Int NOT NULL,
+--     dependencies TEXT AS List<AddOnFileDependency> NOT NULL,
+    isAvailable INTEGER AS Boolean NOT NULL,
+--     dependencies TEXT AS List<AddonModule> NOT NULL,
+    packageFingerprint INTEGER NOT NULL,
+    gameVersion TEXT NOT NULL,
+    installMetadata TEXT,
+    fileLength INTEGER NOT NULL
+);
+
+replace:
+REPLACE INTO addonFiles VALUES ?;
+
+insert:
+INSERT INTO addonFiles VALUES ?;

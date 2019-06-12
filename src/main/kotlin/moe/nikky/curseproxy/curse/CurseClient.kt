@@ -61,10 +61,6 @@ object CurseClient : KoinComponent {
             .httpPost()
             .jsonBody(json.stringify(Int.serializer().list, projectIds))
             .curseAuth()
-            .apply {
-                this.headers["Content-Type"] = "application/json"
-//                    LOG.debug(this.cUrlString())
-            }
             .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer().list))
         return when (result) {
             is Result.Success -> {
