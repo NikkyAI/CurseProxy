@@ -8,8 +8,7 @@ CREATE TABLE categories (
 selectByIds:
 SELECT *
 FROM categories
-WHERE categoryId IN ?
-ORDER BY categories.categoryId;
+WHERE categoryId IN ?;
 
 replace:
 REPLACE INTO categories VALUES ?;

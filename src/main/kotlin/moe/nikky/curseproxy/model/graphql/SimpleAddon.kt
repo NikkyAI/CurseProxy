@@ -18,16 +18,16 @@ data class SimpleAddon(
     companion object {
         fun fromAddon(addon: Addon): SimpleAddon {
             return SimpleAddon(
-                id = addon.id.value,
+                id = addon.id,
                 gameID = addon.gameId,
                 name = addon.name,
                 slug = addon.slug,
 //                sectionName = Section.fromId(addon.categorySection.id)?.sectionName ?: "unknown_${addon.sectionName}_${addon.categorySection.id}",
-                section = addon.categorySection.categorySectionName,
+                section = addon.categorySection.name,
                 dateModified = addon.dateModified.toLocalDate(),
                 dateCreated = addon.dateCreated.toLocalDate(),
                 dateReleased = addon.dateReleased.toLocalDate(),
-                categoryList = addon.categories.map { it.categoryName },
+                categoryList = addon.categories.map { it.name },
                 gameVersions = addon.gameVersionLatestFiles.map { it.gameVersion }.toSet() + addon.latestFiles.flatMap { it.gameVersion }.toSet()
             )
         }

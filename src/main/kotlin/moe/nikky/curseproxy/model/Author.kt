@@ -7,7 +7,7 @@ import voodoo.data.curse.ProjectID
 data class Author(
         val name: String,
         val url: String,
-        val projectId: ProjectID,
+        val projectId: Int,
         val id: Int,
         val projectTitleId: Int?,
         val projectTitleTitle: String?,

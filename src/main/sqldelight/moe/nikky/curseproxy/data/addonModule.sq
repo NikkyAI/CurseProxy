@@ -1,7 +1,5 @@
-import voodoo.data.curse.FileID;
-
 CREATE TABLE addonModules (
-    fileId INTEGER AS FileID NOT NULL,
+    fileId INTEGER AS Int NOT NULL,
     fingerprint INTEGER NOT NULL,
     foldername TEXT NOT NULL,
     PRIMARY KEY(fingerprint, foldername),

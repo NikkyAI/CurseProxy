@@ -1,11 +1,10 @@
 package moe.nikky.curseproxy.model
 
 import kotlinx.serialization.Serializable
-import voodoo.data.curse.ProjectID
 
 @Serializable
 data class AddOnFileDependency(
-        val addonId: ProjectID,
+        val addonId: Int,
         @Serializable(with = DependencyType.Companion::class)
         val type: DependencyType
 )

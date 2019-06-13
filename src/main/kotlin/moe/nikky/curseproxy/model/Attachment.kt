@@ -6,7 +6,7 @@ import voodoo.data.curse.ProjectID
 @Serializable
 data class Attachment(
         val id: Int,
-        val projectId: ProjectID,
+        val projectId: Int,
         val description: String?,
         val isDefault: Boolean,
         val thumbnailUrl: String,

@@ -1,8 +1,30 @@
 import moe.nikky.curseproxy.model.FileType;
+import voodoo.data.curse.ProjectID;
 
--- CREATE TABLE gameVersionLatestFiles (
---     gameVersion TEXT NOT NULL,
---     projectFileId INTEGER AS File,
---     projectFileName TEXT NOT NULL,
---     fileType TEXT AS FileType
--- );
+CREATE TABLE gameVersionLatestFiles (
+    projectFileId INTEGER AS Int PRIMARY KEY NOT NULL,
+    gameVersion TEXT NOT NULL,
+    projectFileName TEXT NOT NULL,
+    fileType TEXT AS FileType NOT NULL,
+    _parentId INTEGER AS Int NOT NULL,
+    CONSTRAINT fk_parentId
+        FOREIGN KEY (_parentId)
+        REFERENCES addons(id)
+);
+
+selectByProjectFileIds:
+SELECT *
+FROM gameVersionLatestFiles
+WHERE projectFileId IN ?;
+
+selectByParentFileIds:
+SELECT *
+FROM gameVersionLatestFiles
+WHERE _parentId IN ?;
+-- ORDER BY _parentId, projectFileId;
+
+replace:
+REPLACE INTO gameVersionLatestFiles VALUES ?;
+
+insert:
+INSERT INTO gameVersionLatestFiles VALUES ?;

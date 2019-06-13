@@ -2,12 +2,11 @@ package moe.nikky.curseproxy.model
 
 import kotlinx.serialization.Serializable
 import moe.nikky.curseproxy.serialization.LocalDateTimeSerializer
-import voodoo.data.curse.ProjectID
 import java.time.LocalDateTime
 
 @Serializable
 data class Addon(
-    val id: ProjectID,
+    val id: Int,
     val name: String,
     val authors: List<Author> = emptyList(),
     val attachments: List<Attachment> = emptyList(),

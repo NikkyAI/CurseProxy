@@ -1,18 +1,23 @@
 package moe.nikky.curseproxy
 
+import com.fasterxml.jackson.databind.MapperFeature
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.application.log
 import io.ktor.features.CallLogging
+import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
+import io.ktor.jackson.jackson
 import io.ktor.locations.Locations
 import io.ktor.response.respond
 import kotlinx.coroutines.*
 import kotlinx.coroutines.debug.DebugProbes
-import moe.nikky.curseproxy.dao.AddonsImporter
+import moe.nikky.curseproxy.data.AddonsImporter
 import moe.nikky.curseproxy.di.mainModule
 import moe.nikky.curseproxy.exceptions.*
 import org.koin.core.Koin
@@ -31,13 +36,13 @@ fun Application.main() {
     install(DefaultHeaders)
     install(CallLogging)
     install(Locations)
-//    install(ContentNegotiation) {
-//        jackson {
-//            registerModule(KotlinModule()) // Enable Kotlin support
-//            enable(SerializationFeature.INDENT_OUTPUT)
+    install(ContentNegotiation) {
+        jackson {
+            registerModule(KotlinModule()) // Enable Kotlin support
+            enable(SerializationFeature.INDENT_OUTPUT)
 //            enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
-//        }
-//    }
+        }
+    }
     //TODO: enable in production
 //    install(HttpsRedirect)
 //    install(HSTS)
@@ -104,8 +109,7 @@ fun Application.main() {
     GlobalScope.launch(Dispatchers.IO + CoroutineName("import")) {
         val importer = AddonsImporter()
         while (true) {
-//            importer.import(log)
-            with(importer) { import(log) }
+            importer.import(log)
             log.info("Addons imported")
             delay(TimeUnit.HOURS.toMillis(3))
         }

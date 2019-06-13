@@ -9,7 +9,7 @@ import voodoo.data.curse.ProjectID
 
 object Widget {
 
-    fun HTML.widget(id: ProjectID, versions: MutableList<String>) {
+    fun HTML.widget(id: Int, versions: MutableList<String>) {
         val addon = runBlocking { CurseClient.getAddon(id) } ?: throw AddonNotFoundException(id)
         val files = runBlocking { CurseClient.getAddonFiles(id) } ?: emptyList()
 

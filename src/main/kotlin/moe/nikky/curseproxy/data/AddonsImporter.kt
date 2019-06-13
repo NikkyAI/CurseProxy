@@ -1,14 +1,10 @@
-package moe.nikky.curseproxy.dao
+package moe.nikky.curseproxy.data
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.CurseClient
-import moe.nikky.curseproxy.data.CurseDatabase
-import moe.nikky.curseproxy.data.allAddons
-import moe.nikky.curseproxy.data.store
-import moe.nikky.curseproxy.data.testAddons
 import moe.nikky.curseproxy.model.Addon
 import moe.nikky.curseproxy.util.measureTimeMillis1
 import org.koin.standalone.KoinComponent
@@ -37,13 +33,13 @@ open class AddonsImporter() : KoinComponent {
         LOG.info("loaded ${searchResult?.size ?: "null"} addons in $duration ms")
         searchResult?.forEach { addon ->
             //            LOG.info("${addon.name}: ${addon.dateModified}")
-            processedIDs += addon.id.value
+            processedIDs += addon.id
 
             val dependencies = addon
                 .latestFiles
                 .flatMap { it.dependencies }
                 .distinctBy { it.addonId }
-            processableIDs.addAll(dependencies.map { it.addonId.value })
+            processableIDs.addAll(dependencies.map { it.addonId })
             Unit
         }
 

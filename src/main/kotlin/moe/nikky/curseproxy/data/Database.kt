@@ -4,6 +4,9 @@ import com.squareup.sqldelight.ColumnAdapter
 import com.squareup.sqldelight.EnumColumnAdapter
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.model.AddOnFileDependency
 import moe.nikky.curseproxy.model.AddOnModule
@@ -13,8 +16,9 @@ import moe.nikky.curseproxy.model.Attachment
 import moe.nikky.curseproxy.model.Author
 import moe.nikky.curseproxy.model.Category
 import moe.nikky.curseproxy.model.CategorySection
-import voodoo.data.curse.FileID
-import voodoo.data.curse.ProjectID
+import moe.nikky.curseproxy.model.GameVersionLatestFile
+import moe.nikky.curseproxy.util.measureMillisAndReport
+import moe.nikky.curseproxy.util.measureTimeMillis1
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -40,72 +44,76 @@ fun setupCurseDatabase(dbPath: String = "curse.db"): CurseDatabase {
 
         override fun encode(value: List<String>): String = value.joinToString(",")
     }
-    val fileIdListAdapter = object : ColumnAdapter<List<FileID>, String> {
-        override fun decode(databaseValue: String): List<FileID> =
-            databaseValue.split(",")
-                .mapNotNull { it.toIntOrNull() }
-                .map { FileID(it) }
-
-        override fun encode(value: List<FileID>): String = value.joinToString(",")
-    }
+//    val fileIdListAdapter = object : ColumnAdapter<List<FileID>, String> {
+//        override fun decode(databaseValue: String): List<FileID> =
+//            databaseValue.split(",")
+//                .mapNotNull { it.toIntOrNull() }
+//                .map { FileID(it) }
+//
+//        override fun encode(value: List<FileID>): String = value.joinToString(",")
+//    }
     val localDateTimeAdapter = object : ColumnAdapter<LocalDateTime, String> {
         val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss")
         override fun decode(databaseValue: String): LocalDateTime = LocalDateTime.from(formatter.parse(databaseValue))
         override fun encode(value: LocalDateTime): String = formatter.format(value)
     }
-    val projectIdAdapter = object: ColumnAdapter<ProjectID, Long> {
-        override fun decode(databaseValue: Long): ProjectID = ProjectID(databaseValue.toInt())
-        override fun encode(value: ProjectID): Long = value.value.toLong()
-    }
-    val fileIdAdapter = object: ColumnAdapter<FileID, Long> {
-        override fun decode(databaseValue: Long): FileID = FileID(databaseValue.toInt())
-        override fun encode(value: FileID): Long = value.value.toLong()
-    }
+//    val projectIdAdapter = object: ColumnAdapter<ProjectID, Long> {
+//        override fun decode(databaseValue: Long): ProjectID = ProjectID(databaseValue.toInt())
+//        override fun encode(value: ProjectID): Long = value.value.toLong()
+//    }
+//    val fileIdAdapter = object: ColumnAdapter<FileID, Long> {
+//        override fun decode(databaseValue: Long): FileID = FileID(databaseValue.toInt())
+//        override fun encode(value: FileID): Long = value.value.toLong()
+//    }
     lateinit var database: CurseDatabase
     database = CurseDatabase(
         driver = driver,
         addonsAdapter = Addons.Adapter(
-            idAdapter = projectIdAdapter,
+//            idAdapter = projectIdAdapter,
             authorIdsAdapter = intListAdapter,
             attachmentIdsAdapter = intListAdapter,
-            latestFileIdsAdapter = fileIdListAdapter,
+            latestFileIdsAdapter = intListAdapter,
             categoryIdsAdapter = intListAdapter,
+            gameVersionLatestFileIdsAdapter = intListAdapter,
             statusAdapter = EnumColumnAdapter(),
             dateCreatedAdapter = localDateTimeAdapter,
             dateModifiedAdapter = localDateTimeAdapter,
             dateReleasedAdapter = localDateTimeAdapter
         ),
         addonFilesAdapter = AddonFiles.Adapter(
-            idAdapter = fileIdAdapter,
+//            idAdapter = fileIdAdapter,
             fileDateAdapter = localDateTimeAdapter,
             releaseTypeAdapter = EnumColumnAdapter(),
             fileStatusAdapter = EnumColumnAdapter(),
             gameVersionAdapter = stringListAdapter
         ),
         addonFileDependenciesAdapter = AddonFileDependencies.Adapter(
-            _parentIdAdapter = fileIdAdapter,
-            addonIdAdapter = projectIdAdapter,
+//            _parentIdAdapter = fileIdAdapter,
+//            addonIdAdapter = projectIdAdapter,
             typeAdapter = EnumColumnAdapter()
         ),
-        addonModulesAdapter = AddonModules.Adapter(
-            fileIdAdapter = fileIdAdapter
-        ),
-        attachmentsAdapter = Attachments.Adapter(
-            projectIdAdapter = projectIdAdapter
-        ),
-        authorsAdapter = Authors.Adapter(
-            projectIdAdapter = projectIdAdapter
-        ),
+//        addonModulesAdapter = AddonModules.Adapter(
+//            fileIdAdapter = fileIdAdapter
+//        ),
+//        attachmentsAdapter = Attachments.Adapter(
+//            projectIdAdapter = projectIdAdapter
+//        ),
+//        authorsAdapter = Authors.Adapter(
+//            projectIdAdapter = projectIdAdapter
+//        ),
         categorySectionsAdapter = CategorySections.Adapter(
             packageTypeAdapter = EnumColumnAdapter()
+        ),
+        gameVersionLatestFilesAdapter = GameVersionLatestFiles.Adapter(
+//            _parentIdAdapter = projectIdAdapter,
+//            projectFileIdAdapter = fileIdAdapter,
+            fileTypeAdapter = EnumColumnAdapter()
         )
-
     )
     return database
 }
 
 fun CurseDatabase.store(addon: Addon) {
-    val projectId = addon.id.value
     val authorIds = addon.authors.map { author ->
         store(author)
     }
@@ -121,6 +129,10 @@ fun CurseDatabase.store(addon: Addon) {
     // TODO: latestFIles
     // TODO: categories
     val categorySectionId = store(addon.categorySection)
+    val gameVersionLatestFileIds = addon.gameVersionLatestFiles.map { gameVersionFile ->
+        store(gameVersionFile, addon.id)
+    }
+
     LOG.info("store ${addon.id}")
     addonQueries.replace(
         Addons.Impl(
@@ -138,7 +150,7 @@ fun CurseDatabase.store(addon: Addon) {
             status = addon.status,
             categorySectionId = categorySectionId,
             slug = addon.slug,
-//            gameVersionLatestFiles = addon.gameVersionLatestFiles,
+            gameVersionLatestFileIds = gameVersionLatestFileIds,
             popularityScore = addon.popularityScore,
             gamePopularityRank = addon.gamePopularityRank,
             gameName = addon.gameName,
@@ -187,7 +199,7 @@ fun CurseDatabase.store(attachment: Attachment): Int {
     return attachment.id
 }
 
-fun CurseDatabase.store(addonFile: AddonFile): FileID {
+fun CurseDatabase.store(addonFile: AddonFile): Int {
 //    LOG.info("store $addonFile")
     addonFile.dependencies.forEach { dependency ->
         store(dependency, addonFile.id)
@@ -215,7 +227,7 @@ fun CurseDatabase.store(addonFile: AddonFile): FileID {
     return addonFile.id
 }
 
-fun CurseDatabase.store(dependency: AddOnFileDependency, fileId: FileID) {
+fun CurseDatabase.store(dependency: AddOnFileDependency, fileId: Int) {
 //    LOG.info("store $dependency fileId = $fileId")
     addonFileDependencyQueries.replace(
         AddonFileDependencies.Impl(
@@ -225,7 +237,8 @@ fun CurseDatabase.store(dependency: AddOnFileDependency, fileId: FileID) {
         )
     )
 }
-fun CurseDatabase.store(module: AddOnModule, fileId: FileID) {
+
+fun CurseDatabase.store(module: AddOnModule, fileId: Int) {
 //    LOG.info("store $module fileId = $fileId")
     addonModuleQueries.replace(
         AddonModules.Impl(
@@ -241,7 +254,7 @@ fun CurseDatabase.store(category: Category): Int {
     categoryQueries.replace(
         Categories.Impl(
             categoryId = category.categoryId,
-            categoryName = category.categoryName,
+            categoryName = category.name,
             url = category.url,
             avatarUrl = category.avatarUrl
         )
@@ -253,109 +266,203 @@ fun CurseDatabase.store(categorySection: CategorySection): Int {
 //    LOG.info("store $categorySection")
     categorySectionQueries.replace(
         CategorySections.Impl(
-            categorySectionId = categorySection.categorySectionId,
-            categorySectionGameId = categorySection.categorySectionGameId,
-            categorySectionName = categorySection.categorySectionName,
+            categorySectionId = categorySection.id,
+            categorySectionGameId = categorySection.gameId,
+            categorySectionName = categorySection.name,
             packageType = categorySection.packageType,
             path = categorySection.path,
             initialInclusionPattern = categorySection.initialInclusionPattern,
             extraIncludePattern = categorySection.extraIncludePattern
         )
     )
-    return categorySection.categorySectionId
+    return categorySection.id
 }
 
-fun CurseDatabase.addons(mcVersions: List<String>, gameIds: List<Int>): List<Addon> {
-    val results = addonQueries.selectAll().executeAsList()
-        .filter {
-            it.gameId in gameIds
-        }
-    return toAddons(results)
+fun CurseDatabase.store(gameVersionLatestFile: GameVersionLatestFile, parentId: Int): Int {
+//    LOG.info("store $categorySection")
+    gameVersionLatestFileQueries.replace(
+        GameVersionLatestFiles.Impl(
+            _parentId = parentId,
+            gameVersion = gameVersionLatestFile.gameVersion,
+            projectFileId = gameVersionLatestFile.projectFileId,
+            projectFileName = gameVersionLatestFile.projectFileName,
+            fileType = gameVersionLatestFile.fileType
+        )
+    )
+    return gameVersionLatestFile.projectFileId
 }
 
-fun CurseDatabase.allAddons(logging: Boolean = false): List<Addon> {
+suspend fun CurseDatabase.addons(
+    gameId: Int? = null,
+    name: String? = null,
+    slug: String? = null,
+    category: String? = null,
+    section: String? = null,
+    gameVersions: List<String>? = null
+): List<Addon> {
+    val results= measureMillisAndReport(LOG, "query addons") {
+        addonQueries.select(
+            gameId == null, gameId ?: 0,
+            category == null, category ?: "",
+            name == null, name ?: ""
+        ).executeAsList()
+    }
+
+    val remappedResults = measureMillisAndReport(LOG, "remap addons") {
+        results
+            .map {
+                SelectAll.Impl(
+                    id = it.id,
+                    name = it.name,
+                    authorIds = it.authorIds,
+                    attachmentIds = it.attachmentIds,
+                    websiteUrl = it.websiteUrl,
+                    gameId = it.gameId,
+                    summary = it.summary,
+                    defaultFileId = it.defaultFileId,
+                    downloadCount = it.downloadCount,
+                    latestFileIds = it.latestFileIds,
+                    categoryIds = it.categoryIds,
+                    status = it.status,
+                    categorySectionId = it.categorySectionId,
+                    slug = it.slug,
+                    gameVersionLatestFileIds = it.gameVersionLatestFileIds,
+                    popularityScore = it.popularityScore,
+                    gamePopularityRank = it.gamePopularityRank,
+                    gameName = it.gameName,
+                    portalName = it.portalName,
+                    dateModified = it.dateModified,
+                    dateCreated = it.dateCreated,
+                    dateReleased = it.dateReleased,
+                    isAvailable = it.isAvailable,
+                    primaryLanguage = it.primaryLanguage,
+                    isFeatured = it.isFeatured,
+                    categorySectionId_ = it.categorySectionId_,
+                    categorySectionGameId = it.categorySectionGameId,
+                    categorySectionName = it.categorySectionName,
+                    packageType = it.packageType,
+                    path = it.path,
+                    initialInclusionPattern = it.initialInclusionPattern,
+                    extraIncludePattern = it.extraIncludePattern
+                )
+            }
+    }
+
+    return measureMillisAndReport(LOG, "convert to addons") {
+        toAddons(remappedResults)
+    }
+}
+
+suspend fun CurseDatabase.allAddons(logging: Boolean = false): List<Addon> {
     val results = addonQueries.selectAll().executeAsList()
     return toAddons(results, logging)
 }
 
-fun CurseDatabase.testAddons(limit: Int = 50, logging: Boolean = false): List<Addon> {
+suspend fun CurseDatabase.testAddons(limit: Int = 50, logging: Boolean = false): List<Addon> {
     val results = addonQueries.selectAll().executeAsList().take(limit)
     return toAddons(results, logging)
 }
 
-fun CurseDatabase.toAddons(results: List<SelectAll>, logging: Boolean = true): List<Addon> {
+suspend fun CurseDatabase.toAddons(results: List<SelectAll>, logging: Boolean = false): List<Addon> = coroutineScope {
     val projectIds = results.map { it.id }
-    val categorySections = results.associate {
-        it.categorySectionId to CategorySection(
-            categorySectionId = it.categorySectionId,
-            categorySectionGameId = it.categorySectionGameId,
-            categorySectionName = it.categorySectionName,
-            packageType = it.packageType,
-            path = it.path,
-            initialInclusionPattern = it.initialInclusionPattern,
-            extraIncludePattern = it.extraIncludePattern
-        )
+    val latestFileIds = results.flatMap { it.latestFileIds }
+    val categoryIds = results.flatMap { it.categoryIds }
+
+    val categorySectionsDeferred = async(Dispatchers.IO) {
+       measureMillisAndReport(LOG, "map category sections") {
+            results.associate {
+                it.categorySectionId to CategorySection(
+                    id = it.categorySectionId,
+                    gameId = it.categorySectionGameId,
+                    name = it.categorySectionName,
+                    packageType = it.packageType,
+                    path = it.path,
+                    initialInclusionPattern = it.initialInclusionPattern,
+                    extraIncludePattern = it.extraIncludePattern
+                )
+            }
+        }
     }
 
     val authorIds = results.flatMap { it.authorIds }
-    val groupedAuthors = authorQueries.selectByIds(authorIds)
-        .executeAsList()
-//        .also {
-//            if(logging) {
-//                LOG.info("authors: $it")
-//            }
-//        }
-        .groupBy({ it.projectId }) {
-            Author(
-                id = it.id,
-                name = it.name,
-                url = it.url,
-                projectId = it.projectId,
-                projectTitleId = it.projectTitleId,
-                projectTitleTitle = it.projectTitleTitle,
-                userId = it.userId,
-                twitchId = it.twitchId
-            )
+    val groupedAuthorsDeferred = async(Dispatchers.IO) {
+        measureMillisAndReport(LOG, "query authors") {
+            authorQueries.selectByIds(authorIds).executeAsList()
+                .groupBy({ it.projectId }) {
+                    Author(
+                        id = it.id,
+                        name = it.name,
+                        url = it.url,
+                        projectId = it.projectId,
+                        projectTitleId = it.projectTitleId,
+                        projectTitleTitle = it.projectTitleTitle,
+                        userId = it.userId,
+                        twitchId = it.twitchId
+                    )
+                }
         }
-
-    if(logging) {
-        LOG.info("groupedAuthors: $groupedAuthors")
     }
 
-    val attachments = attachmentQueries.selectByProjectIds(projectIds)
-        .executeAsList().groupBy({ it.projectId }) {
-            Attachment(
-                id = it.id,
-                projectId = it.projectId,
-                description = it.description,
-                isDefault = it.isDefault,
-                thumbnailUrl = it.thumbnailUrl,
-                title = it.title,
-                url = it.url,
-                status = it.status
-            )
+
+//    if(logging) {
+//        LOG.info("groupedAuthors: $groupedAuthors")
+//    }
+
+    val attachmentsDeferred = async(Dispatchers.IO) {
+        val attachments = measureMillisAndReport(LOG, "query attachments") {
+            attachmentQueries.selectByProjectIds(projectIds)
+                .executeAsList().groupBy({ it.projectId }) {
+                    Attachment(
+                        id = it.id,
+                        projectId = it.projectId,
+                        description = it.description,
+                        isDefault = it.isDefault,
+                        thumbnailUrl = it.thumbnailUrl,
+                        title = it.title,
+                        url = it.url,
+                        status = it.status
+                    )
+                }
         }
-    if(logging) {
-        LOG.info("attachments: $attachments")
+        if (logging) {
+            LOG.info("attachments: ")
+            for (attachment in attachments) {
+                LOG.info("$attachment")
+            }
+        }
+        attachments
     }
 
-    val fileIds = results.flatMap { it.latestFileIds }
-    val fileResults = addonFileQueries.selectByIds(fileIds).executeAsList()
-    val dependencies = addonFileDependencyQueries.selectByParentFileIds(fileIds)
-        .executeAsList().groupBy({it._parentId}) {
-            AddOnFileDependency(
-                addonId = it.addonId,
-                type = it.type
-            )
+    val dependenciesDeferred = async(Dispatchers.IO) {
+        measureMillisAndReport(LOG, "query dependencies") {
+            addonFileDependencyQueries.selectByParentFileIds(latestFileIds)
+                .executeAsList().groupBy({ it._parentId }) {
+                    AddOnFileDependency(
+                        addonId = it.addonId,
+                        type = it.type
+                    )
+                }
         }
+    }
 
-    val modules = addonModuleQueries.selectByFileIds(fileIds)
-        .executeAsList().groupBy({ it.fileId }) {
-            AddOnModule(
-                fingerprint = it.fingerprint,
-                foldername = it.foldername
-            )
+    val fileResultsDeferred = async {
+        measureMillisAndReport(LOG, "query addonFiles") {
+            addonFileQueries.selectByIds(latestFileIds).executeAsList()
         }
+    }
+
+    val modules = measureMillisAndReport(LOG, "query modules") {
+        addonModuleQueries.selectByFileIds(latestFileIds)
+            .executeAsList().groupBy({ it.fileId }) {
+                AddOnModule(
+                    fingerprint = it.fingerprint,
+                    foldername = it.foldername
+                )
+            }
+    }
+
+    val fileResults = fileResultsDeferred.await()
+    val dependencies = dependenciesDeferred.await()
     val files = fileResults.associate {
         it.id to AddonFile(
             id = it.id,
@@ -366,7 +473,7 @@ fun CurseDatabase.toAddons(results: List<SelectAll>, logging: Boolean = true): L
             downloadUrl = it.downloadUrl,
             isAlternate = it.isAlternate,
             alternateFileId = it.alternateFileId,
-            dependencies = dependencies[it.id] ?: listOf(), // TODO
+            dependencies = dependencies[it.id] ?: listOf(),
             isAvailable = it.isAvailable,
             modules = modules[it.id] ?: listOf(),
             packageFingerprint = it.packageFingerprint,
@@ -376,48 +483,75 @@ fun CurseDatabase.toAddons(results: List<SelectAll>, logging: Boolean = true): L
         )
     }
 
-    val categoryIds = results.flatMap { it.categoryIds }
-    val allCategories = categoryQueries.selectByIds(categoryIds)
-        .executeAsList().associate {
-            it.categoryId to Category(
-                categoryId = it.categoryId,
-                categoryName = it.categoryName,
-                avatarUrl = it.avatarUrl,
-                url = it.url
+    val allCategoriesDeferred = async(Dispatchers.IO) {
+        measureMillisAndReport(LOG, "query categories") {
+            categoryQueries.selectByIds(categoryIds)
+                .executeAsList().associate {
+                    it.categoryId to Category(
+                        categoryId = it.categoryId,
+                        name = it.categoryName,
+                        avatarUrl = it.avatarUrl,
+                        url = it.url
+                    )
+                }
+        }
+    }
+
+    val gameVersionFileIds = results.flatMap { it.gameVersionLatestFileIds }
+
+    val gameVersionLatestFilesDeferred = async(Dispatchers.IO) {
+        measureMillisAndReport(LOG, "query gameVersionLatest") {
+            gameVersionLatestFileQueries.selectByProjectFileIds(gameVersionFileIds)
+                .executeAsList().groupBy({ it._parentId }) {
+                    GameVersionLatestFile(
+                        gameVersion = it.gameVersion,
+                        projectFileId = it.projectFileId,
+                        projectFileName = it.projectFileName,
+                        fileType = it.fileType
+                    )
+                }
+        }
+    }
+
+    val categorySections = categorySectionsDeferred.await()
+    val groupedAuthors = groupedAuthorsDeferred.await()
+    val attachments = attachmentsDeferred.await()
+    val allCategories = allCategoriesDeferred.await()
+    val gameVersionLatestFiles = gameVersionLatestFilesDeferred.await()
+    return@coroutineScope measureMillisAndReport(LOG, "map results into addons") {
+        results.map {
+            //        val authors = it.authorIds.map { authorId -> allAuthors.getValue(authorId) }
+            val latestFiles = it.latestFileIds.map { fileId -> files.getValue(fileId) }
+            val categories = it.categoryIds.map { categoryId -> allCategories.getValue(categoryId) }
+            Addon(
+                id = it.id,
+                name = it.name,
+                authors = groupedAuthors[it.id] ?: listOf(),
+                attachments = attachments[it.id] ?: listOf(),
+                websiteUrl = it.websiteUrl,
+                gameId = it.gameId,
+                summary = it.summary,
+                defaultFileId = it.defaultFileId,
+                downloadCount = it.downloadCount,
+                latestFiles = latestFiles,
+                categories = categories,
+                status = it.status,
+                categorySection = categorySections[it.categorySectionId]
+                    ?: error("no categorySection with id '${it.categorySectionId}' for project ${it.id}"),
+                slug = it.slug,
+                gameVersionLatestFiles = gameVersionLatestFiles[it.id] ?: listOf(), // TODO
+                popularityScore = it.popularityScore,
+                gamePopularityRank = it.gamePopularityRank,
+                gameName = it.gameName,
+                portalName = it.portalName,
+                dateModified = it.dateModified,
+                dateCreated = it.dateCreated,
+                dateReleased = it.dateReleased,
+                isAvailable = it.isAvailable,
+                primaryLanguage = it.primaryLanguage,
+                isFeatured = it.isFeatured
             )
         }
-
-    return results.map {
-//        val authors = it.authorIds.map { authorId -> allAuthors.getValue(authorId) }
-        val latestFiles = it.latestFileIds.map { fileId -> files.getValue(fileId) }
-        val categories = it.categoryIds.map { categoryId -> allCategories.getValue(categoryId) }
-        Addon(
-            id = it.id,
-            name = it.name,
-            authors = groupedAuthors.getValue(it.id),
-            attachments = attachments.getValue(it.id),
-            websiteUrl = it.websiteUrl,
-            gameId = it.gameId,
-            summary = it.summary,
-            defaultFileId = it.defaultFileId,
-            downloadCount = it.downloadCount,
-            latestFiles = latestFiles,
-            categories = categories,
-            status = it.status,
-            categorySection = categorySections.getValue(it.categorySectionId),
-            slug = it.slug,
-            gameVersionLatestFiles = listOf(), // TODO
-            popularityScore = it.popularityScore,
-            gamePopularityRank = it.gamePopularityRank,
-            gameName = it.gameName,
-            portalName = it.portalName,
-            dateModified = it.dateModified,
-            dateCreated = it.dateCreated,
-            dateReleased = it.dateReleased,
-            isAvailable = it.isAvailable,
-            primaryLanguage = it.primaryLanguage,
-            isFeatured = it.isFeatured
-        )
     }
 }
 

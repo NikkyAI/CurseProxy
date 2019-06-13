@@ -13,6 +13,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.internal.IntSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 import kotlinx.serialization.map
@@ -23,8 +24,6 @@ import moe.nikky.curseproxy.model.AddonFile
 import moe.nikky.curseproxy.model.Addon
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
-import voodoo.data.curse.FileID
-import voodoo.data.curse.ProjectID
 
 /**
  * Created by nikky on 25/05/18.
@@ -36,7 +35,7 @@ object CurseClient : KoinComponent {
     private val json: Json by inject()
     private const val ADDON_API = "https://addons-ecs.forgesvc.net/api/v2"
 
-    suspend fun getAddon(projectId: ProjectID, ignoreError: Boolean = false): Addon? {
+    suspend fun getAddon(projectId: Int, ignoreError: Boolean = false): Addon? {
         val url = "$ADDON_API/addon/$projectId"
         val (request, response, result) = url
             .httpGet()
@@ -95,7 +94,7 @@ object CurseClient : KoinComponent {
         }
     }
 
-    suspend fun getAddonFile(projectId: ProjectID, fileId: FileID): AddonFile? {
+    suspend fun getAddonFile(projectId: Int, fileId: Int): AddonFile? {
         val url = "$ADDON_API/addon/$projectId/file/$fileId"
         val (request, response, result) = url
             .httpGet()
@@ -112,7 +111,7 @@ object CurseClient : KoinComponent {
         }
     }
 
-    suspend fun getAddonFiles(projectId: ProjectID): List<AddonFile>? {
+    suspend fun getAddonFiles(projectId: Int): List<AddonFile>? {
         val url = "$ADDON_API/addon/$projectId/files"
         val (request, response, result) = url
             .httpGet()
@@ -143,7 +142,7 @@ object CurseClient : KoinComponent {
             .curseAuth()
             .awaitObjectResponseResult(
                 kotlinxDeserializerOf(
-                    json = json, loader = (Int.serializer() to AddonFile.serializer().list).map
+                    json = json, loader = (IntSerializer to AddonFile.serializer().list).map
                 )
             )
 
@@ -158,7 +157,7 @@ object CurseClient : KoinComponent {
         }
     }
 
-    suspend fun getAddonChangelog(projectId: ProjectID, fileId: FileID): String? {
+    suspend fun getAddonChangelog(projectId: Int, fileId: Int): String? {
         val url = "$ADDON_API/addon/$projectId/file/$fileId/changelog"
         val (request, response, result) = url
             .httpGet()

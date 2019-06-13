@@ -8,5 +8,5 @@ import voodoo.data.curse.ProjectID
  * @version 1.0
  */
 open class AddonNotFoundException(
-        val unknown_id: ProjectID
+        val unknown_id: Int
 ) : MessageException("CurseAddon not found")

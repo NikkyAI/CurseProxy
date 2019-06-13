@@ -4,7 +4,7 @@ CREATE TABLE authors (
   id INTEGER AS Int NOT NULL PRIMARY KEY,
   name TEXT NOT NULL,
   url TEXT NOT NULL,
-  projectId INTEGER AS ProjectID NOT NULL,
+  projectId INTEGER AS Int NOT NULL,
   projectTitleId INTEGER AS Int,
   projectTitleTitle TEXT,
   userId INTEGER AS Int NOT NULL,

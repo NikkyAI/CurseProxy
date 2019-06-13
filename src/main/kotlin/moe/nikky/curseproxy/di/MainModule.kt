@@ -6,8 +6,6 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
-import moe.nikky.curseproxy.dao.AddonDatabase
-import moe.nikky.curseproxy.dao.AddonStorage
 import moe.nikky.curseproxy.data.setupCurseDatabase
 import moe.nikky.curseproxy.graphql.AppSchema
 import org.koin.dsl.definition.Kind
@@ -24,6 +22,5 @@ val mainModule = module(definition = {
         Json(JsonConfiguration(strictMode = false))
     }
     provide(kind = Kind.Single) { setupCurseDatabase("curse.db") }
-    provide(kind = Kind.Single) { AddonDatabase() as AddonStorage }
-    provide(kind = Kind.Single) { AppSchema(get()) }
+//    provide(kind = Kind.Single) { AppSchema(get()) }
 })

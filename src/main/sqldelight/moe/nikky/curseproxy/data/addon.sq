@@ -2,11 +2,10 @@ import java.time.LocalDateTime;
 import moe.nikky.curseproxy.model.Author;
 import moe.nikky.curseproxy.model.CategorySection;
 import moe.nikky.curseproxy.model.ProjectStatus;
-import voodoo.data.curse.FileID;
 import voodoo.data.curse.ProjectID;
 
 CREATE TABLE addons (
-    id INTEGER AS ProjectID NOT NULL PRIMARY KEY,
+    id INTEGER AS Int NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
     authorIds TEXT AS List<Int> NOT NULL, -- DONE
     attachmentIds TEXT AS List<Int> NOT NULL, -- list of foreign key
@@ -15,13 +14,13 @@ CREATE TABLE addons (
     summary TEXT NOT NULL,
     defaultFileId INTEGER AS Int NOT NULL,
     downloadCount REAL AS Float NOT NULL,
-    latestFileIds TEXT AS List<FileID> NOT NULL,
+    latestFileIds TEXT AS List<Int> NOT NULL,
     categoryIds TEXT AS List<Int> NOT NULL,
     status TEXT AS ProjectStatus NOT NULL, -- enum
   -- relations
     categorySectionId INTEGER AS Int NOT NULL, -- AS CategorySection foreign key or flatten <<<<<ß
     slug TEXT NOT NULL,
---   gameVersionLatestFiles TEXT AS List<GameVersionLatestFile> NOT NULL, -- list of foreign key
+    gameVersionLatestFileIds TEXT AS List<Int> NOT NULL, -- list of foreign key
     popularityScore REAL AS Float NOT NULL,
     gamePopularityRank INTEGER AS Int NOT NULL,
     gameName TEXT NOT NULL,
@@ -60,12 +59,14 @@ FROM addons AS a
 WHERE a.id IN ?
 ORDER BY a.id;
 
-selectById:
+select:
 SELECT *
 FROM addons AS a
   INNER JOIN categorySections AS c
   ON a.categorySectionId = c.categorySectionId
-WHERE a.id == ?
+WHERE (:skipGameId OR a.gameId = ?)
+  AND (:skipCategorySectionName OR c.categorySectionName = ?)
+  AND (:skipName OR a.name LIKE ?)
 ORDER BY a.id;
 
 replace:

@@ -1,9 +1,11 @@
 package moe.nikky.curseproxy.graphql
 
 import com.apurebase.kgraphql.KGraphQL
+import kotlinx.coroutines.runBlocking
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.CurseClient
-import moe.nikky.curseproxy.dao.AddonStorage
+import moe.nikky.curseproxy.data.CurseDatabase
+import moe.nikky.curseproxy.data.addons
 import moe.nikky.curseproxy.model.AddOnModule
 import moe.nikky.curseproxy.model.Addon
 import moe.nikky.curseproxy.model.AddonFile
@@ -18,11 +20,13 @@ import moe.nikky.curseproxy.model.GameVersionLatestFile
 import moe.nikky.curseproxy.model.PackageType
 import moe.nikky.curseproxy.model.ProjectStatus
 import moe.nikky.curseproxy.model.graphql.SimpleAddon
+import moe.nikky.curseproxy.util.measureMillisAndReport
+import voodoo.data.curse.ProjectID
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class AppSchema(private val storage: AddonStorage) {
+class AppSchema(private val database: CurseDatabase) {
 
     val schema = KGraphQL.schema {
 
@@ -42,7 +46,13 @@ class AppSchema(private val storage: AddonStorage) {
 
         query("addons") {
             resolver { gameID: Int?, name: String?, slug: String?, category: String?, section: String?, gameVersions: List<String>? ->
-                storage.getAll(gameID, name, slug, category, section, gameVersions)
+                measureMillisAndReport(LOG, "call db blocking") {
+                    runBlocking {
+                        measureMillisAndReport(LOG, "call db") {
+                            database.addons(gameID, name, slug, category, section, gameVersions)
+                        }
+                    }
+                }
             }.withArgs {
                 arg<Int> { name = "gameID"; defaultValue = null; description = "The game id to filter for" }
                 arg<String> { name = "name"; defaultValue = null; description = "The name of the addon to return" }
@@ -81,35 +91,45 @@ class AppSchema(private val storage: AddonStorage) {
             }
         }
 
-        type<Dummy> {
-            description = "A Dummy Type"
-
-            property(Dummy::placeholder) {
-                description = "placeholder field"
-            }
-        }
-        type<SimpleAddon> {
-            description = "A Sparse CurseAddon"
-            property(SimpleAddon::gameID) {
-                description = "id of the game this addon is for"
-            }
-            property(SimpleAddon::name) {
-                description = "addon name"
-            }
-            property(SimpleAddon::slug) {
-                description = "addon url slug"
-            }
-            property(SimpleAddon::categoryList) {
-                description = "list of project categories"
-            }
-        }
+//        type<Dummy> {
+//            description = "A Dummy Type"
+//
+//            property(Dummy::placeholder) {
+//                description = "placeholder field"
+//            }
+//        }
+//        type<SimpleAddon> {
+//            description = "A Sparse CurseAddon"
+//            property(SimpleAddon::gameID) {
+//                description = "id of the game this addon is for"
+//            }
+//            property(SimpleAddon::name) {
+//                description = "addon name"
+//            }
+//            property(SimpleAddon::slug) {
+//                description = "addon url slug"
+//            }
+//            property(SimpleAddon::categoryList) {
+//                description = "list of project categories"
+//            }
+//        }
 
         type<Addon> {
-            description = "A CurseAddon"
-//            property(CurseAddon::categories) {
-//
+            description = "A curse Addon"
+//            property(Addon::id) {
+//                ignore = true
+//            }
+//            this.unionProperty("id") {
+//                resolver {
+//                    it.id.value
+//                }
 //            }
         }
+
+        type<ProjectID> {
+            description = "a Project ID"
+        }
+
         type<GameVersionLatestFile> {
             description = "Curse Latest File"
         }

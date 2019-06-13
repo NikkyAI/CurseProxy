@@ -32,20 +32,21 @@ import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.curse.Widget
 import moe.nikky.curseproxy.curse.files
 import moe.nikky.curseproxy.curse.latestFile
+import moe.nikky.curseproxy.data.CurseDatabase
 import moe.nikky.curseproxy.exceptions.AddonFileNotFoundException
 import moe.nikky.curseproxy.exceptions.AddonNotFoundException
 import moe.nikky.curseproxy.graphql.AppSchema
 import moe.nikky.encodeBase64
 import org.koin.ktor.ext.inject
-import voodoo.data.curse.FileID
-import voodoo.data.curse.ProjectID
 import java.io.File
 
 @Suppress("unused")
 fun Application.routes() {
 
     routing {
-        val appSchema: AppSchema by inject()
+        val database: CurseDatabase by inject()
+//        val appSchema: AppSchema by inject()
+        val appSchema = AppSchema(database)
         val json: Json by inject()
         graphql(log, json, appSchema.schema)
         curse()
@@ -56,12 +57,12 @@ fun Application.routes() {
         }
 
         get("/test/exception") {
-            throw AddonFileNotFoundException(ProjectID(1234), FileID(5678))
+            throw AddonFileNotFoundException(1234, 5678)
         }
 
         get("/api/widget/{id}") {
-            val id = ProjectID(call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id"))
+            val id = call.parameters["id"]?.toInt()
+                ?: throw NumberFormatException("id")
             val versions: MutableList<String> = call.parameters.getAll("version")?.toMutableList() ?: mutableListOf()
 
             call.respondHtml {
@@ -147,8 +148,8 @@ fun Application.routes() {
         }
 
         get("/api/url/{id}") {
-            val id = ProjectID(call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id"))
+            val id = call.parameters["id"]?.toInt()
+                ?: throw NumberFormatException("id")
             val addon = CurseClient.getAddon(id) ?: throw AddonNotFoundException(id)
             val versions = call.parameters.getAll("version") ?: emptyList()
             val file = addon.latestFile(versions)
@@ -156,17 +157,17 @@ fun Application.routes() {
         }
 
         get("/api/url/{id}/{fileid}") {
-            val id = ProjectID(call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id"))
-            val fileid = FileID(call.parameters["fileid"]?.toInt()
-                ?: throw NumberFormatException("fileid"))
+            val id = call.parameters["id"]?.toInt()
+                ?: throw NumberFormatException("id")
+            val fileid = call.parameters["fileid"]?.toInt()
+                ?: throw NumberFormatException("fileid")
             val file = CurseClient.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
             call.respondRedirect(url = file.downloadUrl, permanent = false)
         }
 
         get("/api/img/{id}") {
-            val id = ProjectID(call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id"))
+            val id = call.parameters["id"]?.toInt()
+                ?: throw NumberFormatException("id")
             log.info(call.parameters.entries().joinToString())
             val style = call.parameters["style"]
             val colorA = call.parameters["colorA"]
@@ -217,8 +218,8 @@ fun Application.routes() {
         }
 
         get("/api/img/{id}/files") {
-            val id = ProjectID(call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id"))
+            val id = call.parameters["id"]?.toInt()
+                ?: throw NumberFormatException("id")
             val style = call.parameters["style"]
             val colorA = call.parameters["colorA"]
             val colorB = call.parameters["colorB"]
@@ -265,10 +266,10 @@ fun Application.routes() {
         }
 
         get("/api/img/{id}/{fileid}") {
-            val id = ProjectID(call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id"))
-            val fileid = FileID(call.parameters["fileid"]?.toInt()
-                ?: throw NumberFormatException("fileid"))
+            val id =call.parameters["id"]?.toInt()
+                ?: throw NumberFormatException("id")
+            val fileid = call.parameters["fileid"]?.toInt()
+                ?: throw NumberFormatException("fileid")
             val style = call.parameters["style"]
             val colorA = call.parameters["colorA"]
             val colorB = call.parameters["colorB"]

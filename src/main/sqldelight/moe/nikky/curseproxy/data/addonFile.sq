@@ -3,10 +3,9 @@ import moe.nikky.curseproxy.model.AddOnFileDependency;
 import moe.nikky.curseproxy.model.AddOnModule;
 import moe.nikky.curseproxy.model.FileStatus;
 import moe.nikky.curseproxy.model.FileType;
-import voodoo.data.curse.FileID;
 
 CREATE TABLE addonFiles (
-    id INTEGER AS FileID PRIMARY KEY NOT NULL,
+    id INTEGER AS Int PRIMARY KEY NOT NULL,
     fileName TEXT NOT NULL,
     fileDate TEXT AS LocalDateTime NOT NULL,
     releaseType TEXT AS FileType NOT NULL,

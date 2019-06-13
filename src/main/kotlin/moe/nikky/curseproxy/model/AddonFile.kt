@@ -2,12 +2,11 @@ package moe.nikky.curseproxy.model
 
 import kotlinx.serialization.Serializable
 import moe.nikky.curseproxy.serialization.LocalDateTimeSerializer
-import voodoo.data.curse.FileID
 import java.time.LocalDateTime
 
 @Serializable
 data class AddonFile(
-        val id: FileID,
+        val id: Int,
         val fileName: String,
         @Serializable(with = LocalDateTimeSerializer::class)
         val fileDate: LocalDateTime,

@@ -1,10 +1,9 @@
 package moe.nikky.curseproxy
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
-import moe.nikky.curseproxy.dao.AddonsImporter
+import moe.nikky.curseproxy.data.AddonsImporter
 import moe.nikky.curseproxy.di.mainModule
 import org.koin.core.Koin
 import org.koin.log.PrintLogger
