@@ -1,0 +1,8 @@
+import moe.nikky.curseproxy.model.FileType;
+
+-- CREATE TABLE gameVersionLatestFiles (
+--     gameVersion TEXT NOT NULL,
+--     projectFileId INTEGER AS File,
+--     projectFileName TEXT NOT NULL,
+--     fileType TEXT AS FileType
+-- );

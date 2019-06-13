@@ -1,0 +1,21 @@
+import moe.nikky.curseproxy.model.DependencyType;
+import voodoo.data.curse.FileID;
+import voodoo.data.curse.ProjectID;
+
+CREATE TABLE addonFileDependencies (
+    _parentId INTEGER AS FileID NOT NULL,
+    addonId INTEGER AS ProjectID NOT NULL,
+    type TEXT as DependencyType NOT NULL
+);
+
+selectByParentFileIds:
+SELECT *
+FROM addonFileDependencies
+WHERE _parentId IN ?
+ORDER BY _parentId, addonId;
+
+replace:
+REPLACE INTO addonFileDependencies VALUES ?;
+
+insert:
+INSERT INTO addonFileDependencies VALUES ?;

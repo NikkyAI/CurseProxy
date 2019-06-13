@@ -1,13 +1,15 @@
 package moe.nikky.curseproxy.dao
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.data.CurseDatabase
+import moe.nikky.curseproxy.data.allAddons
 import moe.nikky.curseproxy.data.store
+import moe.nikky.curseproxy.data.testAddons
+import moe.nikky.curseproxy.model.Addon
 import moe.nikky.curseproxy.util.measureTimeMillis1
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
@@ -29,11 +31,11 @@ open class AddonsImporter() : KoinComponent {
         processedIDs.clear()
         processableIDs.clear()
         LOG.info("get addons fromCurseAddon search")
-        val (addons, duration) = measureTimeMillis1 {
+        val (searchResult, duration) = measureTimeMillis1 {
             CurseClient.getAddonsByCriteria(432, sort = CurseClient.AddonSortMethod.LastUpdated)
         }
-        LOG.info("loaded ${addons?.size ?: "null"} addons in $duration ms")
-        addons?.forEach { addon ->
+        LOG.info("loaded ${searchResult?.size ?: "null"} addons in $duration ms")
+        searchResult?.forEach { addon ->
             //            LOG.info("${addon.name}: ${addon.dateModified}")
             processedIDs += addon.id.value
 
@@ -103,5 +105,14 @@ open class AddonsImporter() : KoinComponent {
 //        }
 
         log.info("import complete")
+    }
+
+    suspend fun test(log: Logger, json: Json) = coroutineScope {
+        val addons = database.testAddons(5, true)
+        log.info("loaded ${addons.size} addons from db")
+        log.info("")
+        addons.forEach { addon ->
+            log.info(json.stringify(Addon.serializer(), addon))
+        }
     }
 }

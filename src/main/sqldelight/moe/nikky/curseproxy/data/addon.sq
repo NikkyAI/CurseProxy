@@ -2,61 +2,69 @@ import java.time.LocalDateTime;
 import moe.nikky.curseproxy.model.Author;
 import moe.nikky.curseproxy.model.CategorySection;
 import moe.nikky.curseproxy.model.ProjectStatus;
+import voodoo.data.curse.FileID;
+import voodoo.data.curse.ProjectID;
 
 CREATE TABLE addons (
-  id INTEGER AS Int NOT NULL PRIMARY KEY,
-  name TEXT NOT NULL,
---   authors TEXT AS List<Author> NOT NULL, -- DONE
---   attachments TEXT AS List<Int> NOT NULL, -- list of foreign key
-  websiteUrl TEXT NOT NULL,
-  gameId INTEGER AS Int NOT NULL,
-  summary TEXT NOT NULL,
-  defaultFileId INTEGER AS Int NOT NULL,
-  downloadCount REAL AS Float NOT NULL,
---   latestFiles TEXT AS List<AddonFile> NOT NULL,
---   categories TEXT AS List<Category> NOT NULL,
-  status TEXT AS ProjectStatus NOT NULL, -- enum
+    id INTEGER AS ProjectID NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    authorIds TEXT AS List<Int> NOT NULL, -- DONE
+    attachmentIds TEXT AS List<Int> NOT NULL, -- list of foreign key
+    websiteUrl TEXT NOT NULL,
+    gameId INTEGER AS Int NOT NULL,
+    summary TEXT NOT NULL,
+    defaultFileId INTEGER AS Int NOT NULL,
+    downloadCount REAL AS Float NOT NULL,
+    latestFileIds TEXT AS List<FileID> NOT NULL,
+    categoryIds TEXT AS List<Int> NOT NULL,
+    status TEXT AS ProjectStatus NOT NULL, -- enum
   -- relations
-  categorySection INTEGER AS Int NOT NULL, -- AS CategorySection foreign key or flatten <<<<<ß
-  slug TEXT NOT NULL,
+    categorySectionId INTEGER AS Int NOT NULL, -- AS CategorySection foreign key or flatten <<<<<ß
+    slug TEXT NOT NULL,
 --   gameVersionLatestFiles TEXT AS List<GameVersionLatestFile> NOT NULL, -- list of foreign key
-  popularityScore REAL AS Float NOT NULL,
-  gamePopularityRank INTEGER AS Int NOT NULL,
-  gameName TEXT NOT NULL,
-  portalName TEXT NOT NULL,
-  dateModified TEXT AS LocalDateTime NOT NULL,
-  dateCreated TEXT AS LocalDateTime NOT NULL,
-  dateReleased TEXT AS LocalDateTime NOT NULL,
-  isAvailable INTEGER AS Boolean NOT NULL,
-  primaryLanguage TEXT NOT NULL,
-  isFeatured INTEGER AS Boolean NOT NULL,
-  CONSTRAINT fk_categorySection
-      FOREIGN KEY (categorySection)
-      REFERENCES categorySections(id)
+    popularityScore REAL AS Float NOT NULL,
+    gamePopularityRank INTEGER AS Int NOT NULL,
+    gameName TEXT NOT NULL,
+    portalName TEXT NOT NULL,
+    dateModified TEXT AS LocalDateTime NOT NULL,
+    dateCreated TEXT AS LocalDateTime NOT NULL,
+    dateReleased TEXT AS LocalDateTime NOT NULL,
+    isAvailable INTEGER AS Boolean NOT NULL,
+    primaryLanguage TEXT NOT NULL,
+    isFeatured INTEGER AS Boolean NOT NULL,
+    CONSTRAINT fk_categorySection
+      FOREIGN KEY (categorySectionId)
+      REFERENCES categorySections(categorySectionId)
 );
 
 selectAll:
 SELECT *
 FROM addons
+  INNER JOIN categorySections
+  ON addons.categorySectionId == categorySections.categorySectionId
 ORDER BY addons.id;
+
+-- selectByGameIds:
+-- SELECT *
+-- FROM addons
+--   INNER JOIN categorySections
+--   ON addons.categorySectionId == categorySections.categorySectionId
+-- WHERE addons.gameId == ?
+-- ORDER BY addons.id;
+
+selectByIds:
+SELECT *
+FROM addons AS a
+  INNER JOIN categorySections AS c
+  ON a.categorySectionId = c.categorySectionId
+WHERE a.id IN ?
+ORDER BY a.id;
 
 selectById:
 SELECT *
-FROM addons
-ORDER BY addons.id;
-
-crossSelectAll:
-SELECT *
 FROM addons AS a
   INNER JOIN categorySections AS c
-  ON a.categorySection = c.id
-ORDER BY a.id;
-
-crossSelectById:
-SELECT *
-FROM addons AS a
-  INNER JOIN categorySections AS c
-  ON a.categorySection = c.id
+  ON a.categorySectionId = c.categorySectionId
 WHERE a.id == ?
 ORDER BY a.id;
 

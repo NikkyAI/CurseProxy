@@ -1,7 +1,10 @@
+import voodoo.data.curse.ProjectID;
+
 CREATE TABLE attachments (
   id INTEGER AS Int NOT NULL PRIMARY KEY,
-  projectId INTEGER AS Int NOT NULL,
+  projectId INTEGER AS ProjectID NOT NULL,
   description TEXT,
+  isDefault INTEGER as Boolean NOT NULL,
   thumbnailUrl TEXT NOT NULL,
   title TEXT NOT NULL,
   url TEXT NOT NULL,
@@ -18,7 +21,13 @@ FROM attachments;
 selectById:
 SELECT *
 FROM attachments
-WHERE id = ?;
+WHERE id IN ?
+ORDER BY attachments.id;
+
+selectByProjectIds:
+SELECT *
+FROM attachments
+WHERE projectId IN ?;
 
 replace:
 REPLACE INTO attachments VALUES ?;

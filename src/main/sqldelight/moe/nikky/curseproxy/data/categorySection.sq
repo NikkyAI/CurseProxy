@@ -1,9 +1,9 @@
 import moe.nikky.curseproxy.model.PackageType;
 
 CREATE TABLE categorySections (
-  id INTEGER AS Int PRIMARY KEY NOT NULL, -- primaryKey
-  gameId INTEGER AS Int NOT NULL,
-  name TEXT NOT NULL,
+  categorySectionId INTEGER AS Int PRIMARY KEY NOT NULL, -- primaryKey
+  categorySectionGameId INTEGER AS Int NOT NULL,
+  categorySectionName TEXT NOT NULL,
   packageType TEXT AS PackageType NOT NULL, -- enum
   path TEXT NOT NULL,
   initialInclusionPattern TEXT DEFAULT ".",
@@ -18,7 +18,7 @@ FROM categorySections;
 selectById:
 SELECT *
 FROM categorySections
-WHERE id == ?;
+WHERE categorySectionId == ?;
 
 replace:
 REPLACE INTO categorySections VALUES ?;

@@ -1,0 +1,15 @@
+CREATE TABLE categories (
+    categoryId INTEGER AS Int NOT NULL PRIMARY KEY,
+    categoryName TEXT NOT NULL,
+    url TEXT NOT NULL,
+    avatarUrl TEXT NOT NULL
+);
+
+selectByIds:
+SELECT *
+FROM categories
+WHERE categoryId IN ?
+ORDER BY categories.categoryId;
+
+replace:
+REPLACE INTO categories VALUES ?;

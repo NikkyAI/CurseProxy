@@ -1,8 +1,10 @@
+import voodoo.data.curse.ProjectID;
+
 CREATE TABLE authors (
   id INTEGER AS Int NOT NULL PRIMARY KEY,
   name TEXT NOT NULL,
   url TEXT NOT NULL,
-  projectId INTEGER AS Int NOT NULL,
+  projectId INTEGER AS ProjectID NOT NULL,
   projectTitleId INTEGER AS Int,
   projectTitleTitle TEXT,
   userId INTEGER AS Int NOT NULL,
@@ -16,10 +18,17 @@ selectAll:
 SELECT *
 FROM authors;
 
-selectById:
+selectByIds:
 SELECT *
 FROM authors
-WHERE id = ?;
+WHERE id IN ?
+ORDER BY id;
+
+selectByProjectIds:
+SELECT *
+FROM authors
+WHERE projectId IN ?
+ORDER BY id;
 
 replace:
 REPLACE INTO authors VALUES ?;

@@ -1,0 +1,23 @@
+import voodoo.data.curse.FileID;
+
+CREATE TABLE addonModules (
+    fileId INTEGER AS FileID NOT NULL,
+    fingerprint INTEGER NOT NULL,
+    foldername TEXT NOT NULL,
+    PRIMARY KEY(fingerprint, foldername),
+    CONSTRAINT fk_fileId
+      FOREIGN KEY (fileId)
+      REFERENCES addonFiles(id)
+);
+
+selectByFileIds:
+SELECT *
+FROM addonModules
+WHERE fileId IN ?
+ORDER BY addonModules.fileId;
+
+replace:
+REPLACE INTO addonModules VALUES ?;
+
+insert:
+INSERT INTO addonModules VALUES ?;

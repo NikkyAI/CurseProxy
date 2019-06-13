@@ -23,11 +23,11 @@ data class SimpleAddon(
                 name = addon.name,
                 slug = addon.slug,
 //                sectionName = Section.fromId(addon.categorySection.id)?.sectionName ?: "unknown_${addon.sectionName}_${addon.categorySection.id}",
-                section = addon.categorySection.name,
+                section = addon.categorySection.categorySectionName,
                 dateModified = addon.dateModified.toLocalDate(),
                 dateCreated = addon.dateCreated.toLocalDate(),
                 dateReleased = addon.dateReleased.toLocalDate(),
-                categoryList = addon.categories.map { it.name },
+                categoryList = addon.categories.map { it.categoryName },
                 gameVersions = addon.gameVersionLatestFiles.map { it.gameVersion }.toSet() + addon.latestFiles.flatMap { it.gameVersion }.toSet()
             )
         }
