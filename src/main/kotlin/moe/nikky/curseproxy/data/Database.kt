@@ -28,9 +28,9 @@ fun setupCurseDatabase(dbPath: String = "curse.db"): CurseDatabase {
     val dbFile = File(dbPath)
     val dbFileExists = dbFile.exists()
     val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:$dbPath")
-//    if (!dbFileExists) {
-//        CurseDatabase.Schema.create(driver)
-//    }
+    if (!dbFileExists) {
+        CurseDatabase.Schema.create(driver)
+    }
 
     val intListAdapter = object : ColumnAdapter<List<Int>, String> {
         override fun decode(databaseValue: String): List<Int> =
@@ -321,12 +321,12 @@ suspend fun CurseDatabase.addons(
     section: String? = null,
     gameVersions: List<String>? = null
 ): List<Addon> {
-    GlobalScope.launch {
-        val runtime = Runtime.getRuntime()
-        LOG.info(String.format("max memory: %.3f Mb", runtime.maxMemory() / 1024.0 / 1024.0))
-        LOG.info(String.format("total memory: %.3f Mb", runtime.totalMemory() / 1024.0 / 1024.0))
-        LOG.info(String.format("free memory: %.3f Mb", runtime.freeMemory() / 1024.0 / 1024.0))
-    }
+//    GlobalScope.launch {
+//        val runtime = Runtime.getRuntime()
+//        LOG.info(String.format("max memory: %.3f Mb", runtime.maxMemory() / 1024.0 / 1024.0))
+//        LOG.info(String.format("total memory: %.3f Mb", runtime.totalMemory() / 1024.0 / 1024.0))
+//        LOG.info(String.format("free memory: %.3f Mb", runtime.freeMemory() / 1024.0 / 1024.0))
+//    }
 
     val results = measureMillisAndReport(LOG, "query addons") {
         Database.addons.filter { (id, addon) ->
