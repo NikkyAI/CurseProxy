@@ -19,7 +19,6 @@ import moe.nikky.curseproxy.model.FileType
 import moe.nikky.curseproxy.model.GameVersionLatestFile
 import moe.nikky.curseproxy.model.PackageType
 import moe.nikky.curseproxy.model.ProjectStatus
-import moe.nikky.curseproxy.model.graphql.SimpleAddon
 import moe.nikky.curseproxy.util.measureMillisAndReport
 import voodoo.data.curse.ProjectID
 import java.time.LocalDate
@@ -46,11 +45,9 @@ class AppSchema(private val database: CurseDatabase) {
 
         query("addons") {
             resolver { gameID: Int?, name: String?, slug: String?, category: String?, section: String?, gameVersions: List<String>? ->
-                measureMillisAndReport(LOG, "call db blocking") {
+                measureMillisAndReport(LOG, "call db") {
                     runBlocking {
-                        measureMillisAndReport(LOG, "call db") {
-                            database.addons(gameID, name, slug, category, section, gameVersions)
-                        }
+                        database.addons(gameID, name, slug, category, section, gameVersions)
                     }
                 }
             }.withArgs {

@@ -1,6 +1,7 @@
 package moe.nikky.curseproxy
 
 import com.apurebase.kgraphql.schema.Schema
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.application.call
 import io.ktor.http.ContentType
 import io.ktor.locations.Location
@@ -21,7 +22,7 @@ data class GraphQLRequest(
     val operationName: String? = null
 )
 
-fun Route.graphql(log: Logger, json: Json, schema: Schema) {
+fun Route.graphql(log: Logger, mapper: ObjectMapper, schema: Schema) {
 //    graphQL(
 //            "path/to/schema.graphqls",
 //            MyQueryResolver()
@@ -33,7 +34,7 @@ fun Route.graphql(log: Logger, json: Json, schema: Schema) {
         log.info("the graphql query: $query")
         log.info("request.variables: ${request.variables}")
 
-        val variables = "{}" //mapper.writeValueAsString(request.variables ?: emptyMap<String, Any>())
+        val variables = mapper.writeValueAsString(request.variables ?: emptyMap<String, Any>())
         log.info("the graphql variables: $variables")
         val response = measureMillisAndReport(log, "execute schema") {
             schema.execute(query, variables)

@@ -1,5 +1,6 @@
 package moe.nikky.curseproxy
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.log
@@ -48,7 +49,8 @@ fun Application.routes() {
 //        val appSchema: AppSchema by inject()
         val appSchema = AppSchema(database)
         val json: Json by inject()
-        graphql(log, json, appSchema.schema)
+        val mapper: ObjectMapper by inject()
+        graphql(log, mapper, appSchema.schema)
         curse()
 
         static("/") {
