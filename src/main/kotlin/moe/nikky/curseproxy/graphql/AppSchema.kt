@@ -46,9 +46,7 @@ class AppSchema(private val database: CurseDatabase) {
         query("addons") {
             resolver { gameID: Int?, ids: List<Int>?, slugs: List<String>?, category: String?, section: String?, gameVersions: List<String>? ->
                 measureMillisAndReport(LOG, "call db") {
-                    runBlocking {
-                        database.addons(gameID, ids, slugs, category, section, gameVersions)
-                    }
+                    database.addons(gameID, ids, slugs, category, section, gameVersions)
                 }
             }.withArgs {
                 arg<Int> { name = "gameID"; defaultValue = null; description = "The game id to filter for" }
@@ -62,7 +60,7 @@ class AppSchema(private val database: CurseDatabase) {
 
         query("addonSearch") {
             description = "search for addons, passes the request through to the curse api"
-            suspendResolver { searchFilter: String?, gameID: Int?, gameVersions: List<String>?, categoryIds: List<Int>?, section: Int? ->
+            resolver { searchFilter: String?, gameID: Int?, gameVersions: List<String>?, categoryIds: List<Int>?, section: Int? ->
                 CurseClient.getAllAddonsByCriteria(
                     gameId = gameID ?: 432,
                     sectionId = section,
@@ -88,39 +86,16 @@ class AppSchema(private val database: CurseDatabase) {
             }
         }
 
-//        type<Dummy> {
-//            description = "A Dummy Type"
-//
-//            property(Dummy::placeholder) {
-//                description = "placeholder field"
-//            }
-//        }
-//        type<SimpleAddon> {
-//            description = "A Sparse CurseAddon"
-//            property(SimpleAddon::gameID) {
-//                description = "id of the game this addon is for"
-//            }
-//            property(SimpleAddon::name) {
-//                description = "addon name"
-//            }
-//            property(SimpleAddon::slug) {
-//                description = "addon url slug"
-//            }
-//            property(SimpleAddon::categoryList) {
-//                description = "list of project categories"
-//            }
-//        }
-
         type<Addon> {
             description = "A curse Addon"
-//            property(Addon::id) {
-//                ignore = true
-//            }
-//            this.unionProperty("id") {
-//                resolver {
-//                    it.id.value
-//                }
-//            }
+
+            property<List<Attachment>>("attachments") {
+                resolver { addon: Addon, isDefault: Boolean? ->
+                    addon.attachments.filter { isDefault == null || isDefault == it.isDefault }
+                }.withArgs {
+                    arg<Boolean> {name = "isDefault"; defaultValue = null; description = "only list the default attachment or exclude the default attachment"}
+                }
+            }
         }
 
         type<ProjectID> {

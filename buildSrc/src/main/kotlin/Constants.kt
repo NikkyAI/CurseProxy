@@ -30,7 +30,7 @@ object Fuel {
 }
 
 object KGraphQL {
-    const val version = "0.5.1"
+    const val version = "0.6.4"
 }
 
 object Koin {
