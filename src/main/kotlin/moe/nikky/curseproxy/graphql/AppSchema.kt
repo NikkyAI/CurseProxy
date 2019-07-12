@@ -44,10 +44,10 @@ class AppSchema(private val database: CurseDatabase) {
         }
 
         query("addons") {
-            resolver { gameID: Int?, ids: List<Int>?, slug: List<String>?, category: String?, section: String?, gameVersions: List<String>? ->
+            resolver { gameID: Int?, ids: List<Int>?, slugs: List<String>?, category: String?, section: String?, gameVersions: List<String>? ->
                 measureMillisAndReport(LOG, "call db") {
                     runBlocking {
-                        database.addons(gameID, ids, slug, category, section, gameVersions)
+                        database.addons(gameID, ids, slugs, category, section, gameVersions)
                     }
                 }
             }.withArgs {
