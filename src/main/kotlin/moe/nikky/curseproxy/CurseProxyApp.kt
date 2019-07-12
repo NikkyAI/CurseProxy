@@ -7,6 +7,7 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.application.log
+import io.ktor.features.CORS
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
@@ -25,6 +26,7 @@ import org.koin.log.PrintLogger
 import org.koin.standalone.StandAloneContext.startKoin
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 val LOG: Logger = LoggerFactory.getLogger("curseproxy")
@@ -46,9 +48,10 @@ fun Application.main() {
     //TODO: enable in production
 //    install(HttpsRedirect)
 //    install(HSTS)
-//    install(CORS) {
-//        maxAge = Duration.ofDays(1)
-//    }
+    install(CORS) {
+        maxAge = Duration.ofDays(1)
+        anyHost()
+    }
 //    install(Metrics) {
 //        val reporter = Slf4jReporter.forRegistry(registry)
 //                .outputTo(log)
