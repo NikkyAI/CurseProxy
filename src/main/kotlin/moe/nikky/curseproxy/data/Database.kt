@@ -315,8 +315,8 @@ fun CurseDatabase.store(gameVersionLatestFile: GameVersionLatestFile, parentId: 
 
 suspend fun CurseDatabase.addons(
     gameId: Int? = null,
-    name: String? = null,
-    slug: String? = null,
+    ids: List<Int>? = null,
+    slugs: List<String>? = null,
     category: String? = null,
     section: String? = null,
     gameVersions: List<String>? = null
@@ -331,8 +331,8 @@ suspend fun CurseDatabase.addons(
     val results = measureMillisAndReport(LOG, "query addons") {
         Database.addons.filter { (id, addon) ->
             (gameId == null || addon.gameId == gameId) &&
-                    (name == null || addon.name == name) &&
-                    (slug == null || addon.slug == slug) &&
+                    (ids == null || addon.id in ids) &&
+                    (slugs == null || addon.slug in slugs) &&
                     (category == null || addon.categories.any { it.name == category }) &&
                     (section == null || addon.categorySection.name == section ) &&
                     (gameVersions == null || addon.gameVersionLatestFiles.any { it.gameVersion in gameVersions })

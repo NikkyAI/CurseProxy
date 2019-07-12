@@ -44,16 +44,16 @@ class AppSchema(private val database: CurseDatabase) {
         }
 
         query("addons") {
-            resolver { gameID: Int?, name: String?, slug: String?, category: String?, section: String?, gameVersions: List<String>? ->
+            resolver { gameID: Int?, ids: List<Int>?, slug: List<String>?, category: String?, section: String?, gameVersions: List<String>? ->
                 measureMillisAndReport(LOG, "call db") {
                     runBlocking {
-                        database.addons(gameID, name, slug, category, section, gameVersions)
+                        database.addons(gameID, ids, slug, category, section, gameVersions)
                     }
                 }
             }.withArgs {
                 arg<Int> { name = "gameID"; defaultValue = null; description = "The game id to filter for" }
-                arg<String> { name = "name"; defaultValue = null; description = "The name of the addon to return" }
-                arg<String> { name = "slug"; defaultValue = null; description = "The slug of the addon to return" }
+                arg<List<Int>> { name = "ids"; defaultValue = null; description = "The ids of the addons to return" }
+                arg<List<String>> { name = "slugs"; defaultValue = null; description = "The slugs of the addon to return" }
                 arg<String> { name = "category"; defaultValue = null; description = "category string" }
                 arg<String> { name = "section"; defaultValue = null; description = "section name" }
                 arg<List<String>> { name = "gameVersions"; defaultValue = null; description = "game versions" }
