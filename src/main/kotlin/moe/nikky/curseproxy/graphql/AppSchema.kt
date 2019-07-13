@@ -39,7 +39,7 @@ class AppSchema(private val database: CurseDatabase) {
     }
 
     suspend fun addonsResolver(
-        gameID: Int?, gameIDList: List<Int>?,
+        gameId: Int?, gameIdList: List<Int>?,
         category: String?, categoryList: List<String>? =null,
         gameVersion: String?, gameVersionList: List<String>?,
         id: Int?, idList: List<Int>?,
@@ -49,7 +49,7 @@ class AppSchema(private val database: CurseDatabase) {
         status: ProjectStatus?, statusList: List<ProjectStatus>?
     ) = measureMillisAndReport(LOG, "call db") {
         var addons = database.filterAddons()
-        addons = addons.filter(gameID, gameIDList) { addon, list ->
+        addons = addons.filter(gameId, gameIdList) { addon, list ->
             addon.gameId in list
         }
         addons = addons.filter(id, idList) { addon, list ->
