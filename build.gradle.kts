@@ -1,10 +1,5 @@
 import com.squareup.sqldelight.gradle.SqlDelightDatabase
-import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-buildscript {
-
-}
 
 plugins {
     kotlin("jvm") version Kotlin.version
@@ -12,6 +7,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "4.0.0"
     id("com.squareup.sqldelight") version SQDelight.version
     application
+    idea
 }
 
 group = "moe.nikky"
@@ -35,6 +31,21 @@ sqldelight {
     )
 }
 
+val databaseSource = project.buildDir.resolve("sqldelight").resolve("CurseDatabase")
+
+kotlin {
+    sourceSets {
+        getByName("main") {
+            kotlin.srcDir(databaseSource)
+        }
+    }
+}
+
+idea {
+    module {
+        generatedSourceDirs.add(databaseSource)
+    }
+}
 
 //war {
 //    webAppDirName = "webapp"
@@ -113,10 +124,6 @@ tasks.withType<KotlinCompile> {
         languageVersion = "1.3"
         jvmTarget = "1.8"
     }
-}
-
-kotlin {
-//    experimental.coroutines = Coroutines.ENABLE
 }
 
 tasks.withType<Wrapper> {

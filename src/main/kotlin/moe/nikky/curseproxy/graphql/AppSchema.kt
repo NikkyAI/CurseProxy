@@ -1,11 +1,10 @@
 package moe.nikky.curseproxy.graphql
 
 import com.apurebase.kgraphql.KGraphQL
-import kotlinx.coroutines.runBlocking
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.data.CurseDatabase
-import moe.nikky.curseproxy.data.addons
+import moe.nikky.curseproxy.data.filterAddons
 import moe.nikky.curseproxy.model.AddOnModule
 import moe.nikky.curseproxy.model.Addon
 import moe.nikky.curseproxy.model.AddonFile
@@ -27,35 +26,88 @@ import java.time.format.DateTimeFormatter
 
 class AppSchema(private val database: CurseDatabase) {
 
+    inline fun <T: Any, R: Any> List<R>.filter(
+        value: T?,
+        valueList: List<T>?,
+        function: (R, List<T>) -> Boolean
+    ): List<R> {
+        val list = (valueList.orEmpty() + listOfNotNull(value))
+        if(list.isEmpty()) return this
+        return this.filter { addon ->
+            function(addon, list)
+        }
+    }
+
+    suspend fun addonsResolver(
+        gameID: Int?, gameIDList: List<Int>?,
+        category: String?, categoryList: List<String>? =null,
+        gameVersion: String?, gameVersionList: List<String>?,
+        id: Int?, idList: List<Int>?,
+        name: String?, nameList: List<String>?,
+        slug: String?, slugList: List<String>?,
+        section: String?, sectionList: List<String>?,
+        status: ProjectStatus?, statusList: List<ProjectStatus>?
+    ) = measureMillisAndReport(LOG, "call db") {
+        var addons = database.filterAddons()
+        addons = addons.filter(gameID, gameIDList) { addon, list ->
+            addon.gameId in list
+        }
+        addons = addons.filter(id, idList) { addon, list ->
+            addon.id in list
+        }
+        addons = addons.filter(category, categoryList) { addon, list ->
+            addon.categories.any { it.name in list }
+        }
+        addons = addons.filter(gameVersion, gameVersionList) { addon, list ->
+            addon.gameVersionLatestFiles.any { it.gameVersion in list }
+        }
+        addons = addons.filter(name, nameList) { addon, list ->
+            addon.name in list
+        }
+        addons = addons.filter(slug, slugList) { addon, list ->
+            addon.slug in list
+        }
+        addons = addons.filter(section, sectionList) { addon, list ->
+            addon.categorySection.name in list
+        }
+        addons = addons.filter(status, statusList) { addon, list ->
+            addon.status in list
+        }
+        addons
+    }
+
+    suspend fun filesResolve(
+        id: Int,
+        fileStatus: FileStatus?, fileStatusList: List<FileStatus>?,
+        gameVersion: String?, gameVersionList: List<String>?,
+        releaseType: FileType?, releaseTypeList: List<FileType>?
+    ): List<AddonFile> {
+        var files = CurseClient.getAddonFiles(id)!!
+        files = files.filter(fileStatus, fileStatusList) { file, list ->
+            file.fileStatus in list
+        }
+        files = files.filter(gameVersion, gameVersionList) { file, list ->
+            file.gameVersion.any { it in list }
+        }
+        files = files.filter(releaseType, releaseTypeList) { file, list ->
+            file.releaseType in list
+        }
+        return files
+    }
+
     val schema = KGraphQL.schema {
 
         configure {
             useDefaultPrettyPrinter = true
-        }
-
-        stringScalar<LocalDate> {
-            serialize = { date -> date.toString() }
-            deserialize = { dateString -> LocalDate.parse(dateString) }
-        }
-        stringScalar<LocalDateTime> {
-            val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss")
-            serialize = { date -> formatter.format(date) }
-            deserialize = { dateString -> LocalDateTime.from(formatter.parse(dateString)) }
+            acceptSingleValueAsArray = true
         }
 
         query("addons") {
-            resolver { gameID: Int?, ids: List<Int>?, slugs: List<String>?, category: String?, section: String?, gameVersions: List<String>? ->
-                measureMillisAndReport(LOG, "call db") {
-                    database.addons(gameID, ids, slugs, category, section, gameVersions)
-                }
-            }.withArgs {
-                arg<Int> { name = "gameID"; defaultValue = null; description = "The game id to filter for" }
-                arg<List<Int>> { name = "ids"; defaultValue = null; description = "The ids of the addons to return" }
-                arg<List<String>> { name = "slugs"; defaultValue = null; description = "The slugs of the addon to return" }
-                arg<String> { name = "category"; defaultValue = null; description = "category string" }
-                arg<String> { name = "section"; defaultValue = null; description = "section name" }
-                arg<List<String>> { name = "gameVersions"; defaultValue = null; description = "game versions" }
-            }
+            ::addonsResolver.toResolver()
+        }
+
+        query("files") {
+            ::filesResolve.toResolver()
         }
 
         query("addonSearch") {
@@ -93,9 +145,22 @@ class AppSchema(private val database: CurseDatabase) {
                 resolver { addon: Addon, isDefault: Boolean? ->
                     addon.attachments.filter { isDefault == null || isDefault == it.isDefault }
                 }.withArgs {
-                    arg<Boolean> {name = "isDefault"; defaultValue = null; description = "only list the default attachment or exclude the default attachment"}
+                    arg<Boolean> {
+                        name = "isDefault"; defaultValue = null; description =
+                        "only list the default attachment or exclude the default attachment"
+                    }
                 }
             }
+
+            property<List<AddonFile>>("files") {
+                resolver { addon ->
+                    CurseClient.getAddonFiles(addon.id)!!
+                }
+            }
+        }
+
+        type<AddonFile> {
+            description = "Curse File"
         }
 
         type<ProjectID> {
@@ -134,10 +199,6 @@ class AppSchema(private val database: CurseDatabase) {
             description = "Curse dependency type"
         }
 
-        type<AddonFile> {
-            description = "Curse File"
-        }
-
         enum<FileType> {
             description = "Curse File type"
         }
@@ -148,6 +209,16 @@ class AppSchema(private val database: CurseDatabase) {
 
         type<AddOnModule> {
             description = "Curse addon module"
+        }
+
+        stringScalar<LocalDate> {
+            serialize = { date -> date.toString() }
+            deserialize = { dateString -> LocalDate.parse(dateString) }
+        }
+        stringScalar<LocalDateTime> {
+            val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss")
+            serialize = { date -> formatter.format(date) }
+            deserialize = { dateString -> LocalDateTime.from(formatter.parse(dateString)) }
         }
     }
 }

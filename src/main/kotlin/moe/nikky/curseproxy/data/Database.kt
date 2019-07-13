@@ -5,10 +5,8 @@ import com.squareup.sqldelight.EnumColumnAdapter
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.model.AddOnFileDependency
 import moe.nikky.curseproxy.model.AddOnModule
@@ -313,13 +311,13 @@ fun CurseDatabase.store(gameVersionLatestFile: GameVersionLatestFile, parentId: 
     return gameVersionLatestFile.projectFileId
 }
 
-suspend fun CurseDatabase.addons(
-    gameId: Int? = null,
-    ids: List<Int>? = null,
-    slugs: List<String>? = null,
-    category: String? = null,
-    section: String? = null,
-    gameVersions: List<String>? = null
+suspend fun CurseDatabase.filterAddons(
+//    gameId: Int? = null,
+//    ids: List<Int>? = null,
+//    slugs: List<String>? = null,
+//    category: String? = null,
+//    section: String? = null,
+//    gameVersions: List<String>? = null
 ): List<Addon> {
 //    GlobalScope.launch {
 //        val runtime = Runtime.getRuntime()
@@ -329,14 +327,15 @@ suspend fun CurseDatabase.addons(
 //    }
 
     val results = measureMillisAndReport(LOG, "query addons") {
-        Database.addons.filter { (id, addon) ->
-            (gameId == null || addon.gameId == gameId) &&
-                    (ids == null || addon.id in ids) &&
-                    (slugs == null || addon.slug in slugs) &&
-                    (category == null || addon.categories.any { it.name == category }) &&
-                    (section == null || addon.categorySection.name == section ) &&
-                    (gameVersions == null || addon.gameVersionLatestFiles.any { it.gameVersion in gameVersions })
-        }
+        Database.addons
+//            .filter { (id, addon) ->
+//                (gameId == null || addon.gameId == gameId) &&
+//                        (ids == null || addon.id in ids) &&
+//                        (slugs == null || addon.slug in slugs) &&
+//                        (category == null || addon.categories.any { it.name == category }) &&
+//                        (section == null || addon.categorySection.name == section) &&
+//                        (gameVersions == null || addon.gameVersionLatestFiles.any { it.gameVersion in gameVersions })
+//            }
 //        addonQueries.select(
 //            gameId == null, gameId ?: 0,
 //            category == null, category ?: "",
