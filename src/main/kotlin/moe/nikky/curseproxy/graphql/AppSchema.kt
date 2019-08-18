@@ -40,7 +40,7 @@ class AppSchema(private val database: CurseDatabase) {
 
     suspend fun addonsResolver(
         gameId: Int?, gameIdList: List<Int>?,
-        category: String?, categoryList: List<String>? =null,
+        category: String?, categoryList: List<String>?,
         gameVersion: String?, gameVersionList: List<String>?,
         id: Int?, idList: List<Int>?,
         name: String?, nameList: List<String>?,
@@ -59,7 +59,8 @@ class AppSchema(private val database: CurseDatabase) {
             addon.categories.any { it.name in list }
         }
         addons = addons.filter(gameVersion, gameVersionList) { addon, list ->
-            addon.gameVersionLatestFiles.any { it.gameVersion in list }
+            addon.latestFiles.any { it.gameVersion.all { it in list } }
+                || addon.gameVersionLatestFiles.any { it.gameVersion in list }
         }
         addons = addons.filter(name, nameList) { addon, list ->
             addon.name in list
