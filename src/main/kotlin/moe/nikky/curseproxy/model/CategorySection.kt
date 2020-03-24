@@ -12,5 +12,6 @@ data class CategorySection(
         val packageType: PackageType,
     val path: String,
     val initialInclusionPattern: String? = ".",
-    val extraIncludePattern: String? = ""
+    val extraIncludePattern: String? = "",
+    val gameCategoryId: Int
 )

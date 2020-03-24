@@ -10,9 +10,7 @@ import io.ktor.request.receive
 import io.ktor.request.receiveText
 import io.ktor.response.respondText
 import io.ktor.routing.Route
-import kotlinx.serialization.json.Json
 import moe.nikky.curseproxy.util.measureMillisAndReport
-import moe.nikky.curseproxy.util.measureTimeMillis1
 import org.slf4j.Logger
 
 @Location("/graphql")

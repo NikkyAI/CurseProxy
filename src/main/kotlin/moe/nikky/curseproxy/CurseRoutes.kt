@@ -9,7 +9,11 @@ import io.ktor.response.respondText
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.list
 import moe.nikky.curseproxy.curse.CurseClient
+import moe.nikky.curseproxy.model.Addon
+import moe.nikky.curseproxy.model.AddonFile
 
 fun Route.curse() {
 
@@ -17,14 +21,14 @@ fun Route.curse() {
         val id = call.parameters["id"]?.toInt()
             ?: throw NumberFormatException("id")
         CurseClient.getAddon(id)?.let { addon ->
-            call.respond(addon)
+            call.respondText(Json.plain.stringify(Addon.serializer(), addon), ContentType.Application.Json)
         } ?: call.respond(status = HttpStatusCode.NotFound, message = "addon with id $id does not exist")
     }
 
     post("/api/addon") {
         val ids = call.receive<List<Int>>()
         CurseClient.getAddons(ids, true)?.let { addons ->
-            call.respond(addons)
+            call.respondText(Json.plain.stringify(Addon.serializer().list, addons), ContentType.Application.Json)
         } ?: call.respond(status = HttpStatusCode.NotFound, message = "error")
     }
 
@@ -42,7 +46,7 @@ fun Route.curse() {
         val fileID = call.parameters["file"]?.toInt()
             ?: throw NumberFormatException("file")
         CurseClient.getAddonFile(id, fileID)?.let { file ->
-            call.respond(file)
+            call.respondText(Json.plain.stringify(AddonFile.serializer(), file), ContentType.Application.Json)
         } ?: call.respond(status = HttpStatusCode.NotFound, message = "addon file with id $id:$fileID does not exist")
     }
 
@@ -60,7 +64,7 @@ fun Route.curse() {
         val id = call.parameters["id"]?.toInt()
             ?: throw NumberFormatException("id")
         CurseClient.getAddonFiles(id)?.let { files ->
-            call.respond(files)
+            call.respondText(Json.plain.stringify(AddonFile.serializer().list, files), ContentType.Application.Json)
         } ?: call.respond(status = HttpStatusCode.NotFound, message = "addon with id $id does not exist")
     }
 }

@@ -23,5 +23,6 @@ data class AddonFile(
         val packageFingerprint: Long,
         val gameVersion: List<String>,
         val installMetadata: String?,
+        val serverPackFileId: Int?,
         val fileLength: Long
 )

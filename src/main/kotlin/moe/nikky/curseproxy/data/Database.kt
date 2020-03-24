@@ -240,6 +240,7 @@ fun CurseDatabase.store(addonFile: AddonFile): Int {
             packageFingerprint = addonFile.packageFingerprint,
             gameVersion = addonFile.gameVersion,
             installMetadata = addonFile.installMetadata,
+            serverPackFileId = addonFile.serverPackFileId,
             fileLength = addonFile.fileLength
         )
     )
@@ -415,7 +416,8 @@ suspend fun CurseDatabase.toAddons(results: List<SelectAll>, logging: Boolean = 
                     packageType = it.packageType,
                     path = it.path,
                     initialInclusionPattern = it.initialInclusionPattern,
-                    extraIncludePattern = it.extraIncludePattern
+                    extraIncludePattern = it.extraIncludePattern,
+                    gameCategoryId = it.categorySectionGameId
                 )
             }
         }
@@ -516,6 +518,7 @@ suspend fun CurseDatabase.toAddons(results: List<SelectAll>, logging: Boolean = 
             packageFingerprint = it.packageFingerprint,
             gameVersion = it.gameVersion,
             installMetadata = it.installMetadata,
+            serverPackFileId = it.serverPackFileId,
             fileLength = it.fileLength
         )
     }
