@@ -1,5 +1,6 @@
 package moe.nikky.curseproxy.curse
 
+import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.extensions.cUrlString
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.coroutines.awaitObjectResponseResult
@@ -19,7 +20,6 @@ import kotlinx.serialization.list
 import kotlinx.serialization.map
 import kotlinx.serialization.serializer
 import moe.nikky.curseproxy.LOG
-import moe.nikky.curseproxy.curse.auth.curseAuth
 import moe.nikky.curseproxy.model.AddonFile
 import moe.nikky.curseproxy.model.Addon
 import org.koin.standalone.KoinComponent
@@ -35,11 +35,14 @@ object CurseClient : KoinComponent {
     private val json: Json by inject()
     private const val ADDON_API = "https://addons-ecs.forgesvc.net/api/v2"
 
+    private fun Request.pretendToBeTwitchapp() = header("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) twitch-desktop-electron-platform/1.0.0 Chrome/73.0.3683.121 Electron/5.0.12 Safari/537.36 desklight/8.51.0")
+
+
     suspend fun getAddon(projectId: Int, ignoreError: Boolean = false): Addon? {
         val url = "$ADDON_API/addon/$projectId"
         val (request, response, result) = url
             .httpGet()
-            .curseAuth()
+            .pretendToBeTwitchapp()
             .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer()))
         return when (result) {
             is Result.Success -> {
@@ -58,8 +61,8 @@ object CurseClient : KoinComponent {
         val url = "$ADDON_API/addon"
         val (request, response, result) = url
             .httpPost()
+            .pretendToBeTwitchapp()
             .jsonBody(json.stringify(Int.serializer().list, projectIds))
-            .curseAuth()
             .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer().list))
         return when (result) {
             is Result.Success -> {
@@ -81,7 +84,7 @@ object CurseClient : KoinComponent {
         val url = "$ADDON_API/addon/$projectId/description"
         val (request, response, result) = url
             .httpGet()
-            .curseAuth()
+            .pretendToBeTwitchapp()
             .awaitStringResponseResult()
         return when (result) {
             is Result.Success -> {
@@ -98,7 +101,7 @@ object CurseClient : KoinComponent {
         val url = "$ADDON_API/addon/$projectId/file/$fileId"
         val (request, response, result) = url
             .httpGet()
-            .curseAuth()
+            .pretendToBeTwitchapp()
             .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = AddonFile.serializer()))
         return when (result) {
             is Result.Success -> {
@@ -115,7 +118,7 @@ object CurseClient : KoinComponent {
         val url = "$ADDON_API/addon/$projectId/files"
         val (request, response, result) = url
             .httpGet()
-            .curseAuth()
+            .pretendToBeTwitchapp()
             .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = AddonFile.serializer().list))
         return when (result) {
             is Result.Success -> {
@@ -138,8 +141,8 @@ object CurseClient : KoinComponent {
         val url = "$ADDON_API/addon/files"
         val (request, response, result) = url
             .httpPost()
+            .pretendToBeTwitchapp()
             .body(json.stringify(AddonFileKey.serializer().list, keys))
-            .curseAuth()
             .awaitObjectResponseResult(
                 kotlinxDeserializerOf(
                     json = json, loader = (IntSerializer to AddonFile.serializer().list).map
@@ -161,7 +164,7 @@ object CurseClient : KoinComponent {
         val url = "$ADDON_API/addon/$projectId/file/$fileId/changelog"
         val (request, response, result) = url
             .httpGet()
-            .curseAuth()
+            .pretendToBeTwitchapp()
             .awaitStringResponseResult()
         return when (result) {
             is Result.Success -> {
@@ -223,7 +226,7 @@ object CurseClient : KoinComponent {
             }
 //                .also { LOG.debug("parameters: $it") }
             )
-            .curseAuth()
+            .pretendToBeTwitchapp()
             .awaitStringResponseResult()
 //            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer().list))
 
