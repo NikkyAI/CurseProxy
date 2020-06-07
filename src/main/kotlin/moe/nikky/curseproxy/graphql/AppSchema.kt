@@ -56,7 +56,7 @@ class AppSchema(private val database: CurseDatabase) {
             addon.id in list
         }
         addons = addons.filter(category, categoryList) { addon, list ->
-            addon.categories.any { it.name in list }
+            addon.categories.any { it.name in list } || addon.categorySection.name in list
         }
         addons = addons.filter(gameVersion, gameVersionList) { addon, list ->
             addon.latestFiles.any { it.gameVersion.all { it in list } }
