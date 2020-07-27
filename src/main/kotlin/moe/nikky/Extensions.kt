@@ -2,8 +2,8 @@ package moe.nikky
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import moe.nikky.ExtensioHelper.mapper
-import org.koin.standalone.KoinComponent
-import org.koin.standalone.inject
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter

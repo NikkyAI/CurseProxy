@@ -6,9 +6,7 @@ import io.ktor.application.call
 import io.ktor.application.log
 import io.ktor.html.respondHtml
 import io.ktor.http.URLProtocol
-import io.ktor.http.content.default
-import io.ktor.http.content.files
-import io.ktor.http.content.static
+import io.ktor.http.content.*
 import io.ktor.request.header
 import io.ktor.response.respondRedirect
 import io.ktor.routing.get
@@ -33,6 +31,7 @@ import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.curse.Widget
 import moe.nikky.curseproxy.curse.files
 import moe.nikky.curseproxy.curse.latestFile
+import moe.nikky.curseproxy.data.CurseDAO
 import moe.nikky.curseproxy.data.CurseDatabase
 import moe.nikky.curseproxy.exceptions.AddonFileNotFoundException
 import moe.nikky.curseproxy.exceptions.AddonNotFoundException
@@ -45,17 +44,19 @@ import java.io.File
 fun Application.routes() {
 
     routing {
-        val database: CurseDatabase by inject()
+        val curseDAO: CurseDAO by inject()
 //        val appSchema: AppSchema by inject()
-        val appSchema = AppSchema(database)
-        val json: Json by inject()
+        val appSchema = AppSchema(curseDAO)
+//        val json: Json by inject()
         val mapper: ObjectMapper by inject()
-        graphql(log, mapper, appSchema.schema)
+        graphql(mapper, appSchema.schema)
         curse()
 
         static("/") {
             files("static")
-            default("index.html")
+            file("graphiql", "static/graphiql/index.html")
+            file("graphiql.html", "static/graphiql/index.html")
+            default("./index.html")
         }
 
         get("/test/exception") {

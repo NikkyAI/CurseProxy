@@ -3,8 +3,7 @@ package moe.nikky.curseproxy.graphql
 import com.apurebase.kgraphql.KGraphQL
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.CurseClient
-import moe.nikky.curseproxy.data.CurseDatabase
-import moe.nikky.curseproxy.data.filterAddons
+import moe.nikky.curseproxy.data.CurseDAO
 import moe.nikky.curseproxy.model.AddOnModule
 import moe.nikky.curseproxy.model.Addon
 import moe.nikky.curseproxy.model.AddonFile
@@ -19,12 +18,16 @@ import moe.nikky.curseproxy.model.GameVersionLatestFile
 import moe.nikky.curseproxy.model.PackageType
 import moe.nikky.curseproxy.model.ProjectStatus
 import moe.nikky.curseproxy.util.measureMillisAndReport
+import mu.KotlinLogging
 import voodoo.data.curse.ProjectID
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class AppSchema(private val database: CurseDatabase) {
+class AppSchema(private val curseDAO: CurseDAO) {
+    companion object {
+        private val logger = KotlinLogging.logger {}
+    }
 
     inline fun <T: Any, R: Any> List<R>.filter(
         value: T?,
@@ -47,8 +50,8 @@ class AppSchema(private val database: CurseDatabase) {
         slug: String?, slugList: List<String>?,
         section: String?, sectionList: List<String>?,
         status: ProjectStatus?, statusList: List<ProjectStatus>?
-    ) = measureMillisAndReport(LOG, "call db") {
-        var addons = database.filterAddons()
+    ) = measureMillisAndReport( "call db", logger::info) {
+        var addons = curseDAO.getAllAddons()
         addons = addons.filter(gameId, gameIdList) { addon, list ->
             addon.gameId in list
         }

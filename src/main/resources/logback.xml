@@ -1,0 +1,15 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %X{method} %X{path} %logger .\(%file:%line\) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- custom logging levels -->
+    <logger name="moe.nikky" level="TRACE" />
+    <logger name="myapp.package2" level="INFO" />
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

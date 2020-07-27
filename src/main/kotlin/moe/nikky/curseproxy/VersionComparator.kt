@@ -21,7 +21,7 @@ object VersionComparator : Comparator<String> {
             val version2 = part2?.toIntOrNull() ?: return 1
 
             if (version1 != version2) {
-                return Integer.compare(version1, version2)
+                return version1.compareTo(version2)
             }
             i++
         }

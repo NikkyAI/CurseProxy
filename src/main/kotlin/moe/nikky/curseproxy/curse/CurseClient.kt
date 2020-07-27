@@ -14,16 +14,16 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.internal.IntSerializer
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.list
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
-import kotlinx.serialization.map
-import kotlinx.serialization.serializer
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.model.AddonFile
 import moe.nikky.curseproxy.model.Addon
-import org.koin.standalone.KoinComponent
-import org.koin.standalone.inject
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 
 /**
  * Created by nikky on 25/05/18.
@@ -32,7 +32,7 @@ import org.koin.standalone.inject
  */
 
 object CurseClient : KoinComponent {
-    private val json: Json by inject()
+    private val json by inject<Json>()
     private const val ADDON_API = "https://addons-ecs.forgesvc.net/api/v2"
 
     private fun Request.pretendToBeTwitchapp() = header("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) twitch-desktop-electron-platform/1.0.0 Chrome/73.0.3683.121 Electron/5.0.12 Safari/537.36 desklight/8.51.0")
@@ -145,7 +145,7 @@ object CurseClient : KoinComponent {
             .body(json.stringify(AddonFileKey.serializer().list, keys))
             .awaitObjectResponseResult(
                 kotlinxDeserializerOf(
-                    json = json, loader = (IntSerializer to AddonFile.serializer().list).map
+                    json = json, loader = MapSerializer(Int.serializer(), AddonFile.serializer().list)
                 )
             )
 

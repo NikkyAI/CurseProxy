@@ -1,3 +1,4 @@
+import kotlin.collections.List;
 import java.time.LocalDateTime;
 import moe.nikky.curseproxy.model.AddOnFileDependency;
 import moe.nikky.curseproxy.model.AddOnModule;
@@ -6,6 +7,7 @@ import moe.nikky.curseproxy.model.FileType;
 
 CREATE TABLE addonFiles (
     id INTEGER AS Int PRIMARY KEY NOT NULL,
+    displayName TEXT NOT NULL,
     fileName TEXT NOT NULL,
     fileDate TEXT AS LocalDateTime NOT NULL,
     releaseType TEXT AS FileType NOT NULL,

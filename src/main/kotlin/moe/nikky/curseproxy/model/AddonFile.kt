@@ -7,6 +7,7 @@ import java.time.LocalDateTime
 @Serializable
 data class AddonFile(
         val id: Int,
+        val displayName: String,
         val fileName: String,
         @Serializable(with = LocalDateTimeSerializer::class)
         val fileDate: LocalDateTime,

@@ -4,14 +4,8 @@ build/
 out/
 run/
 *.iml
-auth.json
-ids.json
-docs
-wsdl
 \.floo
 init.py
-auth.json
-run/
 
 curse_debug\.json
 

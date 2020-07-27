@@ -6,9 +6,10 @@ import kotlinx.serialization.json.Json
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.model.Addon
-import moe.nikky.curseproxy.util.measureTimeMillis1
-import org.koin.standalone.KoinComponent
-import org.koin.standalone.inject
+import moe.nikky.curseproxy.util.measureTimeMillisInline
+import mu.KotlinLogging
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 import org.slf4j.Logger
 import kotlin.system.measureTimeMillis
 
@@ -18,19 +19,20 @@ import kotlin.system.measureTimeMillis
  * @version 1.0
  */
 open class AddonsImporter() : KoinComponent {
-    private val database by inject<CurseDatabase>()
+    private val curseDAO by inject<CurseDAO>()
 
     val processedIDs = mutableSetOf<Int>()
     val processableIDs = mutableSetOf<Int>()
 
-    suspend fun import(log: Logger) = coroutineScope {
+    suspend fun import() {
+        val logger = KotlinLogging.logger {}
         processedIDs.clear()
         processableIDs.clear()
-        LOG.info("get addons fromCurseAddon search")
-        val (searchResult, duration) = measureTimeMillis1 {
+        logger.info("get addons fromCurseAddon search")
+        val (searchResult, duration) = measureTimeMillisInline {
             CurseClient.getAddonsByCriteria(432, sort = CurseClient.AddonSortMethod.LastUpdated)
         }
-        LOG.info("loaded ${searchResult?.size ?: "null"} addons in $duration ms")
+        logger.info("loaded ${searchResult?.size ?: "null"} addons in $duration ms")
         searchResult?.forEach { addon ->
             //            LOG.info("${addon.name}: ${addon.dateModified}")
             processedIDs += addon.id
@@ -46,7 +48,7 @@ open class AddonsImporter() : KoinComponent {
         val idRange = (0..processedIDs.max()!! + 10000)
 //        val idRange = (0..324142+10000)
         val chunkedRange = idRange.chunked(1000).shuffled()
-        LOG.info("scanning ids ${idRange.start}..${idRange.endInclusive}")
+        logger.info("scanning ids ${idRange.start}..${idRange.endInclusive}")
         val startTime = System.currentTimeMillis()
 
 //        val insertChannel = Channel<Addon>(-1)
@@ -60,7 +62,7 @@ open class AddonsImporter() : KoinComponent {
 
             chunkedRange.forEachIndexed { i, ids ->
                 val timeElapsed = measureTimeMillis {
-                    LOG.info("processing ${ids.first()} .. ${ids.last()}")
+                    logger.info("processing ${ids.first()} .. ${ids.last()}")
                     var success = false
                     while(!success) {
                         val result = CurseClient.getAddons(ids, ignoreErrors = false, fail = false)
@@ -70,23 +72,23 @@ open class AddonsImporter() : KoinComponent {
                         }
                         success = true
 //                        launch(Dispatchers.IO) {
-                        database.transaction {
+                        curseDAO.transaction {
                             result.forEach { addon ->
-                                database.store(addon)
+                                curseDAO.store(addon)
                             }
                         }
 //                        }
-                        LOG.info("added ${result.count()} addons")
+                        logger.info("added ${result.count()} addons")
                     }
                 }
                 val step = i + 1.toDouble()
                 val timeSinceStart = System.currentTimeMillis() - startTime
                 val averageTimeElapsed = timeSinceStart / step
-                LOG.info("current:    ${timeElapsed / 1000.0}s")
-                LOG.info("sinceStart: ${timeSinceStart / 1000.0}s")
-                LOG.info("average:    ${averageTimeElapsed / 1000.0}s")
-                LOG.info("prediction-current: ${timeElapsed * (chunkedRange.count() - step) / 1000.0}s")
-                LOG.info("prediction-average: ${averageTimeElapsed * (chunkedRange.count() - step) / 1000.0}s")
+                logger.info("current:    ${timeElapsed / 1000.0}s")
+                logger.info("sinceStart: ${timeSinceStart / 1000.0}s")
+                logger.info("average:    ${averageTimeElapsed / 1000.0}s")
+                logger.info("prediction-current: ${timeElapsed * (chunkedRange.count() - step) / 1000.0}s")
+                logger.info("prediction-average: ${averageTimeElapsed * (chunkedRange.count() - step) / 1000.0}s")
             }
         }
 
@@ -100,11 +102,11 @@ open class AddonsImporter() : KoinComponent {
 //            }
 //        }
 
-        log.info("import complete")
+        logger.info("import complete")
     }
 
     suspend fun test(log: Logger, json: Json) = coroutineScope {
-        val addons = database.testAddons(5, true)
+        val addons = curseDAO.testAddons(5, true)
         log.info("loaded ${addons.size} addons from db")
         log.info("")
         addons.forEach { addon ->

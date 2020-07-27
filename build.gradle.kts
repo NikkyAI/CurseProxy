@@ -1,11 +1,10 @@
-import com.squareup.sqldelight.gradle.SqlDelightDatabase
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version Kotlin.version
-    id("kotlinx-serialization") version Kotlin.version
-    id("com.github.johnrengelman.shadow") version "4.0.0"
-    id("com.squareup.sqldelight") version SQDelight.version
+    kotlin("jvm")
+    kotlin("plugin.serialization")
+    id("com.github.johnrengelman.shadow")
+    id("com.squareup.sqldelight")
     application
     idea
 }
@@ -15,20 +14,19 @@ version = "0.1-SNAPSHOT"
 
 application {
 //    mainClassName = "io.ktor.server.netty.DevelopmentEngine"
-    mainClassName = "io.ktor.server.netty.DevelopmentEngine"
+    mainClassName = "moe.nikky.curseproxy.MainKt"
+    // seems to not apply to runShadowJar ?
+    applicationDefaultJvmArgs = listOf(
+            "-Dkotlinx.coroutines.debug=on"
+    )
 }
 
 sqldelight {
-    methodMissing("CurseDatabase",
-        arrayOf(
-            closureOf<SqlDelightDatabase> {
-//                className = "CurseDatabase"
-                packageName = "moe.nikky.curseproxy.data"
-                sourceFolders = listOf("sqldelight")
-                schemaOutputDirectory = file("src/main/sqldelight/migrations")
-            }
-        )
-    )
+    database("CurseDatabase"){
+        packageName = "moe.nikky.curseproxy.data"
+        sourceFolders = listOf("sqldelight")
+        schemaOutputDirectory = file("src/main/sqldelight/migrations")
+    }
 }
 
 val databaseSource = project.buildDir.resolve("sqldelight").resolve("CurseDatabase")
@@ -58,64 +56,61 @@ idea {
 //}
 
 repositories {
-    maven(url = "http://dl.bintray.com/kotlin/ktor")
-    maven(url = "https://dl.bintray.com/kotlin/kotlinx")
     mavenCentral()
     jcenter()
-    maven(url = "https://dl.bintray.com/pgutkowski/Maven")
-    maven(url = "https://dl.bintray.com/kotlin/squash")
-//    maven(url = "https://jitpack.io")
+    maven(url = "https://dl.bintray.com/kotlin/kotlinx")
+    maven(url = "http://dl.bintray.com/kotlin/ktor")
 }
 
 dependencies {
-    compile(kotlin("stdlib-jdk8", Kotlin.version))
-    compile(kotlin("reflect", Kotlin.version))
+    implementation(kotlin("stdlib-jdk8", Kotlin.version))
+    implementation(kotlin("reflect", Kotlin.version))
 //    compile(kotlin("runtime", Kotlin.version))
 
-    compile(ktor())
-    compile(ktor("jackson"))
-    compile(ktor("features"))
-    compile(ktor("locations"))
-    compile(ktor("html-builder"))
-    compile(ktor("server-core"))
-    compile(ktor("server-netty"))
-    compile(ktor("server-servlet"))
+    implementation(Ktor.server.netty)
+//    implementation(Ktor.server.servlet)
+    implementation(Ktor.features.jackson)
+    implementation(Ktor.features.htmlBuilder)
+//    implementation("io.ktor:ktor-webjars:_")
 
 //    tomcat("org.apache.tomcat.embed:tomcat-embed-core:${Tomcat.version}",
 //            "org.apache.tomcat.embed:tomcat-embed-jasper:${Tomcat.version}")
 
     // Logging
-    api(group = "ch.qos.logback", name = "logback-classic", version = Logback.version)
+    implementation(group = "io.github.microutils", name = "kotlin-logging", version = "_")
+    implementation(group = "ch.qos.logback", name = "logback-classic", version = "_")
 
     // Networking
-    api(group = "com.github.kittinunf.fuel", name = "fuel", version = Fuel.version)
-    api(group = "com.github.kittinunf.fuel", name = "fuel-coroutines", version = Fuel.version)
-    api(group = "com.github.kittinunf.fuel", name = "fuel-kotlinx-serialization", version = Fuel.version)
+    implementation(group = "com.github.kittinunf.fuel", name = "fuel", version = "_")
+    implementation(group = "com.github.kittinunf.fuel", name = "fuel-coroutines", version = "_")
+    implementation(group = "com.github.kittinunf.fuel", name = "fuel-kotlinx-serialization", version = "_")
 
     // GraphQL
-    api(group = "com.apurebase", name = "kgraphql", version = KGraphQL.version)
+    implementation(group = "com.apurebase", name = "kgraphql", version = "_")
 
     // Dependency Injection
-    api(group = "org.koin", name = "koin-ktor", version = Koin.version)
+    implementation(group = "org.koin", name = "koin-ktor", version = "_")
+    implementation("org.koin:koin-logger-slf4j:_")
 
     // Database
-    api(group = "com.squareup.sqldelight", name = "sqlite-driver", version = SQDelight.version)
-
-    api(group = "org.jetbrains.squash", name = "squash-h2", version = Squash.version)
+    implementation(group = "com.squareup.sqldelight", name = "sqlite-driver", version = "_")
 
     // JSON
-    api(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = Serialization.version)
+    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = Serialization.version)
 
-    api(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.9.5")
-    api(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version = "2.9.5")
+    implementation(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "_")
+    implementation(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version = "_")
 
     // coroutines
-    api(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-debug", version = Coroutine.version)
+    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-debug", version = "_")
 
+    // graphiql
+    // does not help with hosting a static html+js blob
+//    implementation("org.webjars:graphiql:_")
 
     // Testing
-    testCompile(group = "junit", name = "junit", version = "4.12")
-    testCompile(ktor("server-test-host"))
+    testImplementation(group = "junit", name = "junit", version = "_")
+    testImplementation(Ktor.server.testHost)
 }
 
 tasks.withType<KotlinCompile> {

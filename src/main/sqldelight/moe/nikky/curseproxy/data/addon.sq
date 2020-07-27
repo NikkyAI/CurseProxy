@@ -1,3 +1,4 @@
+import kotlin.collections.List;
 import java.time.LocalDateTime;
 import moe.nikky.curseproxy.model.Author;
 import moe.nikky.curseproxy.model.CategorySection;
