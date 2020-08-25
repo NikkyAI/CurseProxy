@@ -1,16 +1,13 @@
 package moe.nikky.curseproxy
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.ktor.application.Application
-import io.ktor.application.call
-import io.ktor.application.log
-import io.ktor.html.respondHtml
-import io.ktor.http.URLProtocol
+import io.ktor.application.*
+import io.ktor.html.*
+import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.request.header
-import io.ktor.response.respondRedirect
-import io.ktor.routing.get
-import io.ktor.routing.routing
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.html.a
 import kotlinx.html.body
@@ -26,13 +23,11 @@ import kotlinx.html.small
 import kotlinx.html.span
 import kotlinx.html.styleLink
 import kotlinx.html.title
-import kotlinx.serialization.json.Json
 import moe.nikky.curseproxy.curse.CurseClient
 import moe.nikky.curseproxy.curse.Widget
 import moe.nikky.curseproxy.curse.files
 import moe.nikky.curseproxy.curse.latestFile
 import moe.nikky.curseproxy.data.CurseDAO
-import moe.nikky.curseproxy.data.CurseDatabase
 import moe.nikky.curseproxy.exceptions.AddonFileNotFoundException
 import moe.nikky.curseproxy.exceptions.AddonNotFoundException
 import moe.nikky.curseproxy.graphql.AppSchema
@@ -52,11 +47,22 @@ fun Application.routes() {
         graphql(mapper, appSchema.schema)
         curse()
 
+        // TODO: figure out this static mess
         static("/") {
+//            staticRootFolder = File("static")
             files("static")
-            file("graphiql", "static/graphiql/index.html")
-            file("graphiql.html", "static/graphiql/index.html")
-            default("./index.html")
+
+            file("graphiql", "static/graphiql.html")
+//            file("graphiql.html", "static/graphiql/index.html")
+            file("playground", "static/playground.html")
+//            file("playground.html", "static/playground/index.html")
+            file("voyager", "static/voyager.html")
+//            file("voyager.html", "static/voyager/index.html")
+            default("index.html")
+        }
+
+        get("/graphiql.html") {
+            call.respondRedirect("/graphiql")
         }
 
         get("/test/exception") {
@@ -65,7 +71,7 @@ fun Application.routes() {
 
         get("/api/widget/{id}") {
             val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+                    ?: throw NumberFormatException("id")
             val versions: MutableList<String> = call.parameters.getAll("version")?.toMutableList() ?: mutableListOf()
 
             call.respondHtml {
@@ -74,15 +80,15 @@ fun Application.routes() {
 
                 if (versions.isEmpty()) {
                     val sorted = files.map { it.gameVersion.sortedWith(VersionComparator.reversed()).first() }
-                        .sortedWith(VersionComparator.reversed())
+                            .sortedWith(VersionComparator.reversed())
                     LOG.info("sorted: $sorted")
                     versions.add(sorted.first())
                 }
 
                 val fileMap = files.groupBy { it.gameVersion.sortedWith(VersionComparator.reversed()).first() }
-                    .mapValues {
-                        it.value.sortedByDescending { it.fileDate }
-                    }.toSortedMap(VersionComparator.reversed())
+                        .mapValues {
+                            it.value.sortedByDescending { it.fileDate }
+                        }.toSortedMap(VersionComparator.reversed())
 
 //        val sorted = files.sortedWith(compareByDescending(VersionComparator) { it.gameVersion.sortedWith(VersionComparator).last() })
                 fileMap.forEach { key, list ->
@@ -152,7 +158,7 @@ fun Application.routes() {
 
         get("/api/url/{id}") {
             val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+                    ?: throw NumberFormatException("id")
             val addon = CurseClient.getAddon(id) ?: throw AddonNotFoundException(id)
             val versions = call.parameters.getAll("version") ?: emptyList()
             val file = addon.latestFile(versions)
@@ -161,16 +167,16 @@ fun Application.routes() {
 
         get("/api/url/{id}/{fileid}") {
             val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+                    ?: throw NumberFormatException("id")
             val fileid = call.parameters["fileid"]?.toInt()
-                ?: throw NumberFormatException("fileid")
+                    ?: throw NumberFormatException("fileid")
             val file = CurseClient.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
             call.respondRedirect(url = file.downloadUrl, permanent = false)
         }
 
         get("/api/img/{id}") {
             val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+                    ?: throw NumberFormatException("id")
             log.info(call.parameters.entries().joinToString())
             val style = call.parameters["style"]
             val colorA = call.parameters["colorA"]
@@ -183,12 +189,12 @@ fun Application.routes() {
             val file = addon.latestFile(versions)
 
             val name = addon.name
-                .replace("-", "--")
-                .replace("_", "__")
+                    .replace("-", "--")
+                    .replace("_", "__")
             val fileName = file.fileName.replace(addon.name, "")
-                .replace(Regex("^[\\s-._]+"), "")
-                .replace("-", "--")
-                .replace("_", "__")
+                    .replace(Regex("^[\\s-._]+"), "")
+                    .replace("-", "--")
+                    .replace("_", "__")
 
             call.respondRedirect(permanent = false) {
                 protocol = URLProtocol.HTTPS
@@ -199,7 +205,7 @@ fun Application.routes() {
 
                 if (logo) {
                     val logoData =
-                        "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
+                            "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
                     parameters["logo"] = logoData
                 }
                 if (link) {
@@ -222,7 +228,7 @@ fun Application.routes() {
 
         get("/api/img/{id}/files") {
             val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+                    ?: throw NumberFormatException("id")
             val style = call.parameters["style"]
             val colorA = call.parameters["colorA"]
             val colorB = call.parameters["colorB"]
@@ -235,8 +241,8 @@ fun Application.routes() {
             val count = files.count()
 
             val name = addon.name
-                .replace("-", "--")
-                .replace("_", "__")
+                    .replace("-", "--")
+                    .replace("_", "__")
             val label = "$count Files"
             call.respondRedirect(permanent = false) {
                 protocol = URLProtocol.HTTPS
@@ -247,7 +253,7 @@ fun Application.routes() {
 
                 if (logo) {
                     val logoData =
-                        "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
+                            "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
                     parameters["logo"] = logoData
                 }
                 if (link) {
@@ -269,10 +275,10 @@ fun Application.routes() {
         }
 
         get("/api/img/{id}/{fileid}") {
-            val id =call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+            val id = call.parameters["id"]?.toInt()
+                    ?: throw NumberFormatException("id")
             val fileid = call.parameters["fileid"]?.toInt()
-                ?: throw NumberFormatException("fileid")
+                    ?: throw NumberFormatException("fileid")
             val style = call.parameters["style"]
             val colorA = call.parameters["colorA"]
             val colorB = call.parameters["colorB"]
@@ -283,12 +289,12 @@ fun Application.routes() {
             val file = CurseClient.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
 
             val name = addon.name
-                .replace("-", "--")
-                .replace("_", "__")
+                    .replace("-", "--")
+                    .replace("_", "__")
             val fileName = file.fileName.replace(addon.name, "")
-                .replace(Regex("^[\\s-._]+"), "")
-                .replace("-", "--")
-                .replace("_", "__")
+                    .replace(Regex("^[\\s-._]+"), "")
+                    .replace("-", "--")
+                    .replace("_", "__")
 
             call.respondRedirect(permanent = false) {
                 protocol = URLProtocol.HTTPS
@@ -299,7 +305,7 @@ fun Application.routes() {
 
                 if (logo) {
                     val logoData =
-                        "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
+                            "data:image/png;base64," + File(Widget::class.java.getResource("/anvil.png").file).encodeBase64()
                     parameters["logo"] = logoData
                 }
                 if (link) {
@@ -323,7 +329,7 @@ fun Application.routes() {
 
         get("/api/demo/{id}") {
             val id = call.parameters["id"]?.toInt()
-                ?: throw NumberFormatException("id")
+                    ?: throw NumberFormatException("id")
             call.respondHtml {
                 body {
                     a(href = "/api/url/$id") {
@@ -344,9 +350,20 @@ fun Application.routes() {
                 body {
                     h1 { +"CurseProxy API" }
                     p {
-                        +"How are you doing?"
+                        +"GraphiQL: "
+                        a(href = "/graphiql", target = "_blank") { +"/graphiql" }
                     }
-                    a(href = "https://github.com/NikkyAI/CurseProxy/blob/master/README.md") { +"get started here" }
+                    p {
+                        +"playground: "
+                        a(href = "/playground", target = "_blank") { +"/playground" }
+                    }
+                    p {
+                        +"voyager: "
+                        a(href = "/voyager", target = "_blank") { +"/voyager" }
+                    }
+                    p {
+                        a(href = "https://github.com/NikkyAI/CurseProxy/blob/master/README.md", target = "_blank") { +"get started here" }
+                    }
                 }
             }
         }
@@ -370,12 +387,12 @@ fun Application.routes() {
                     }
                     h2 { +"call.request.local" }
                     listOf(
-                        "scheme = ${call.request.local.scheme}",
-                        "version = ${call.request.local.version}",
-                        "port = ${call.request.local.port}",
-                        "host = ${call.request.local.host}",
-                        "uri = ${call.request.local.uri}",
-                        "method = ${call.request.local.method}"
+                            "scheme = ${call.request.local.scheme}",
+                            "version = ${call.request.local.version}",
+                            "port = ${call.request.local.port}",
+                            "host = ${call.request.local.host}",
+                            "uri = ${call.request.local.uri}",
+                            "method = ${call.request.local.method}"
                     ).forEach { p { +it } }
 
                     h2 { +"Headers" }
