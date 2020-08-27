@@ -270,8 +270,7 @@ class CurseDAO(
                 AddonModules(
                         fileId = fileId,
                         fingerprint = module.fingerprint,
-                        foldername = module.foldername,
-                        type = module.type.toLong()
+                        foldername = module.foldername
                 )
         )
     }
@@ -502,8 +501,7 @@ class CurseDAO(
                     .executeAsList().groupBy({ it.fileId }) {
                         AddOnModule(
                                 fingerprint = it.fingerprint,
-                                foldername = it.foldername,
-                                type = it.type.toInt()
+                                foldername = it.foldername
                         )
                     }
         }

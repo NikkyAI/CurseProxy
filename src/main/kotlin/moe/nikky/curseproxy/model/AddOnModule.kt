@@ -5,6 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AddOnModule(
         val fingerprint: Long,
-        val foldername: String,
-        val type: Int
+        val foldername: String
 )

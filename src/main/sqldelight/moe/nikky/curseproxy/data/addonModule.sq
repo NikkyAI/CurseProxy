@@ -2,7 +2,6 @@ CREATE TABLE addonModules (
     fileId INTEGER AS Int NOT NULL,
     fingerprint INTEGER NOT NULL,
     foldername TEXT NOT NULL,
-    type INTEGER NOT NULL,
     PRIMARY KEY(fingerprint, foldername),
     CONSTRAINT fk_fileId
       FOREIGN KEY (fileId)
