@@ -1,5 +1,3 @@
-import de.fayard.dependencies.bootstrapRefreshVersionsAndDependencies
-
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -8,27 +6,25 @@ pluginManagement {
         mavenCentral()
     }
 }
-buildscript {
-    repositories {
-        gradlePluginPortal()
-    }
-    dependencies.classpath("de.fayard:dependencies:0.5.8")
-}
 
 plugins {
-    id("com.gradle.enterprise").version("3.1.1")
+    id("com.gradle.enterprise") version "3.6.1"
+    id("de.fayard.refreshVersions") version "0.10.0"
 }
-
-bootstrapRefreshVersionsAndDependencies(
-        listOf(rootDir.resolve("dependencies-rules.txt").readText())
-)
 
 gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
 //        publishAlwaysIf(true)
+        buildScanPublished {
+            file("buildscan.log").appendText("${java.util.Date()} - $buildScanUri\n")
+        }
     }
+}
+
+refreshVersions {
+    extraArtifactVersionKeyRules(file("dependencies-rules.txt"))
 }
 
 rootProject.name = "CurseProxy"

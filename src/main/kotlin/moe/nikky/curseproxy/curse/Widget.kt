@@ -4,13 +4,13 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.html.*
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.VersionComparator
-import moe.nikky.curseproxy.exceptions.AddonNotFoundException
+import moe.nikky.curseproxy.exceptions.MessageException
 import voodoo.data.curse.ProjectID
 
 object Widget {
 
     fun HTML.widget(id: Int, versions: MutableList<String>) {
-        val addon = runBlocking { CurseClient.getAddon(id) } ?: throw AddonNotFoundException(id)
+        val addon = runBlocking { CurseClient.getAddon(id) } ?: throw MessageException.AddonNotFound(id)
         val files = runBlocking { CurseClient.getAddonFiles(id) } ?: emptyList()
 
         if (versions.isEmpty()) {

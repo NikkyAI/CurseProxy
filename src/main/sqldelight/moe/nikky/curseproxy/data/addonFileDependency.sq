@@ -4,7 +4,7 @@ import voodoo.data.curse.ProjectID;
 CREATE TABLE addonFileDependencies (
     _parentId INTEGER AS Int NOT NULL,
     addonId INTEGER AS Int NOT NULL,
-    type TEXT as DependencyType NOT NULL,
+    type TEXT AS DependencyType NOT NULL,
     CONSTRAINT fk_parentId
        FOREIGN KEY (_parentId)
        REFERENCES addons(id)

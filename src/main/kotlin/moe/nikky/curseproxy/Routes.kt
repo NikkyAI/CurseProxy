@@ -1,6 +1,5 @@
 package moe.nikky.curseproxy
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.application.*
 import io.ktor.html.*
 import io.ktor.http.*
@@ -28,23 +27,17 @@ import moe.nikky.curseproxy.curse.Widget
 import moe.nikky.curseproxy.curse.files
 import moe.nikky.curseproxy.curse.latestFile
 import moe.nikky.curseproxy.data.CurseDAO
-import moe.nikky.curseproxy.exceptions.AddonFileNotFoundException
-import moe.nikky.curseproxy.exceptions.AddonNotFoundException
-import moe.nikky.curseproxy.graphql.AppSchema
+import moe.nikky.curseproxy.exceptions.MessageException
 import moe.nikky.encodeBase64
-import org.koin.ktor.ext.inject
 import java.io.File
 
 @Suppress("unused")
 fun Application.routes() {
-
+    install(Routing)
     routing {
-        val curseDAO: CurseDAO by inject()
-//        val appSchema: AppSchema by inject()
-        val appSchema = AppSchema(curseDAO)
-//        val json: Json by inject()
-        val mapper: ObjectMapper by inject()
-        graphql(mapper, appSchema.schema)
+        val curseDAO: CurseDAO by koinCtx.inject()
+
+        graphql()
         curse()
 
         // TODO: figure out this static mess
@@ -66,7 +59,7 @@ fun Application.routes() {
         }
 
         get("/test/exception") {
-            throw AddonFileNotFoundException(1234, 5678)
+            throw MessageException.AddonFileNotFound(1234, 5678)
         }
 
         get("/api/widget/{id}") {
@@ -75,7 +68,7 @@ fun Application.routes() {
             val versions: MutableList<String> = call.parameters.getAll("version")?.toMutableList() ?: mutableListOf()
 
             call.respondHtml {
-                val addon = runBlocking { CurseClient.getAddon(id) } ?: throw AddonNotFoundException(id)
+                val addon = runBlocking { CurseClient.getAddon(id) } ?: throw MessageException.AddonNotFound(id)
                 val files = runBlocking { CurseClient.getAddonFiles(id) } ?: emptyList()
 
                 if (versions.isEmpty()) {
@@ -159,7 +152,7 @@ fun Application.routes() {
         get("/api/url/{id}") {
             val id = call.parameters["id"]?.toInt()
                     ?: throw NumberFormatException("id")
-            val addon = CurseClient.getAddon(id) ?: throw AddonNotFoundException(id)
+            val addon = CurseClient.getAddon(id) ?: throw MessageException.AddonNotFound(id)
             val versions = call.parameters.getAll("version") ?: emptyList()
             val file = addon.latestFile(versions)
             call.respondRedirect(url = file.downloadUrl, permanent = false)
@@ -170,7 +163,7 @@ fun Application.routes() {
                     ?: throw NumberFormatException("id")
             val fileid = call.parameters["fileid"]?.toInt()
                     ?: throw NumberFormatException("fileid")
-            val file = CurseClient.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
+            val file = CurseClient.getAddonFile(id, fileid) ?: throw MessageException.AddonFileNotFound(id, fileid)
             call.respondRedirect(url = file.downloadUrl, permanent = false)
         }
 
@@ -184,7 +177,7 @@ fun Application.routes() {
             val link = call.parameters.contains("link")
             val logo = call.parameters.contains("logo")
 
-            val addon = CurseClient.getAddon(id) ?: throw AddonNotFoundException(id)
+            val addon = CurseClient.getAddon(id) ?: throw MessageException.AddonNotFound(id)
             val versions = call.parameters.getAll("version") ?: emptyList()
             val file = addon.latestFile(versions)
 
@@ -235,7 +228,7 @@ fun Application.routes() {
             val link = call.parameters.contains("link")
             val logo = call.parameters.contains("logo")
 
-            val addon = CurseClient.getAddon(id) ?: throw AddonNotFoundException(id)
+            val addon = CurseClient.getAddon(id) ?: throw MessageException.AddonNotFound(id)
             val versions = call.parameters.getAll("version") ?: emptyList()
             val files = addon.files(versions)
             val count = files.count()
@@ -285,8 +278,8 @@ fun Application.routes() {
             val link = call.parameters.contains("link")
             val logo = call.parameters.contains("logo")
 
-            val addon = CurseClient.getAddon(id) ?: throw AddonNotFoundException(id)
-            val file = CurseClient.getAddonFile(id, fileid) ?: throw AddonFileNotFoundException(id, fileid)
+            val addon = CurseClient.getAddon(id) ?: throw MessageException.AddonNotFound(id)
+            val file = CurseClient.getAddonFile(id, fileid) ?: throw MessageException.AddonFileNotFound(id, fileid)
 
             val name = addon.name
                     .replace("-", "--")

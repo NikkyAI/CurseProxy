@@ -57,21 +57,21 @@ idea {
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven(url = "https://dl.bintray.com/kotlin/kotlinx")
-    maven(url = "http://dl.bintray.com/kotlin/ktor")
+//    jcenter() // TODO: remove once
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8", Kotlin.version))
-    implementation(kotlin("reflect", Kotlin.version))
-//    compile(kotlin("runtime", Kotlin.version))
+    implementation(kotlin("stdlib-jdk8", "_"))
+    implementation(kotlin("reflect", "_"))
 
     implementation(Ktor.server.netty)
-//    implementation(Ktor.server.servlet)
     implementation(Ktor.features.jackson)
     implementation(Ktor.features.htmlBuilder)
+    implementation("io.ktor:ktor-serialization:_")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:_")
+
 //    implementation("io.ktor:ktor-webjars:_")
+//    implementation("org.webjars.npm:graphql-playground:_")
 
 //    tomcat("org.apache.tomcat.embed:tomcat-embed-core:${Tomcat.version}",
 //            "org.apache.tomcat.embed:tomcat-embed-jasper:${Tomcat.version}")
@@ -81,27 +81,32 @@ dependencies {
     implementation(group = "ch.qos.logback", name = "logback-classic", version = "_")
 
     // Networking
-    implementation(group = "com.github.kittinunf.fuel", name = "fuel", version = "_")
-    implementation(group = "com.github.kittinunf.fuel", name = "fuel-coroutines", version = "_")
-    implementation(group = "com.github.kittinunf.fuel", name = "fuel-kotlinx-serialization", version = "_")
+    implementation(Ktor.client.okHttp)
+    implementation(Ktor.client.json)
+    implementation(Ktor.client.serialization)
+    implementation(Ktor.client.logging)
 
     // GraphQL
-    implementation(group = "com.apurebase", name = "kgraphql", version = "_")
+    implementation("com.expediagroup:graphql-kotlin-server:_")
+    implementation("com.graphql-java:graphql-java-extended-scalars:_")
 
     // Dependency Injection
-    implementation(group = "org.koin", name = "koin-ktor", version = "_")
-    implementation("org.koin:koin-logger-slf4j:_")
+    implementation("io.insert-koin:koin-ktor:_")
+    implementation("io.insert-koin:koin-logger-slf4j:_")
 
     // Database
-    implementation(group = "com.squareup.sqldelight", name = "sqlite-driver", version = "_")
+    implementation(group = "com.squareup.sqldelight", name = "sqlite-driver", version = "_") // TODO: remove
+    //TODO: add redis
 
     // JSON
-    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = Serialization.version)
+    implementation(KotlinX.serialization.json)
 
     implementation(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "_")
     implementation(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version = "_")
 
     // coroutines
+    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-jdk8", version = "_")
+    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-slf4j", version = "_")
     implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-debug", version = "_")
 
     // graphiql
@@ -113,15 +118,19 @@ dependencies {
     testImplementation(Ktor.server.testHost)
 }
 
+kotlin {
+    sourceSets.all {
+        languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
+        languageSettings.useExperimentalAnnotation("kotlin.time.ExperimentalTime")
+    }
+}
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        apiVersion = "1.3"
-        languageVersion = "1.3"
-        jvmTarget = "1.8"
+//        apiVersion = "1.5"
+//        languageVersion = "1.5"
+        apiVersion = "1.4"
+        languageVersion = "1.4"
+        jvmTarget = "1.8" // TODO: install newer java and use JAVA 15/16
     }
 }
 
-tasks.withType<Wrapper> {
-    gradleVersion = Gradle.version
-    distributionType = Gradle.distributionType // Wrapper.DistributionType.ALL
-}

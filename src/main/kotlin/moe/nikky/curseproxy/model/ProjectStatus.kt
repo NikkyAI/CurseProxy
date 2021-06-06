@@ -1,11 +1,11 @@
 package moe.nikky.curseproxy.model
 
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.Serializer
-import kotlinx.serialization.internal.IntDescriptor
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 
 enum class ProjectStatus {
     // Token: 0x04000074 RID: 116
@@ -31,14 +31,14 @@ enum class ProjectStatus {
 
     @Serializer(forClass = ProjectStatus::class)
     companion object : KSerializer<ProjectStatus> {
-        override val descriptor: SerialDescriptor = IntDescriptor
+        override val descriptor = PrimitiveSerialDescriptor("ProjectStatus", PrimitiveKind.INT)
 
         override fun deserialize(decoder: Decoder): ProjectStatus {
             return values()[decoder.decodeInt() - 1]
         }
 
-        override fun serialize(encoder: Encoder, obj: ProjectStatus) {
-            encoder.encodeInt(obj.ordinal + 1)
+        override fun serialize(encoder: Encoder, value: ProjectStatus) {
+            encoder.encodeInt(value.ordinal + 1)
         }
     }
 }

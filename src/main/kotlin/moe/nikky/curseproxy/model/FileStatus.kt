@@ -1,13 +1,12 @@
 package moe.nikky.curseproxy.model
 
-import com.fasterxml.jackson.annotation.JsonCreator
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.Serializer
-import kotlinx.serialization.internal.IntDescriptor
-import kotlin.jvm.JvmStatic
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 enum class FileStatus {
     // Token: 0x04000041 RID: 65
@@ -43,14 +42,14 @@ enum class FileStatus {
 
     @Serializer(forClass = FileStatus::class)
     companion object: KSerializer<FileStatus> {
-        override val descriptor: SerialDescriptor = IntDescriptor
+        override val descriptor = PrimitiveSerialDescriptor("FileStatus", PrimitiveKind.INT)
 
         override fun deserialize(decoder: Decoder): FileStatus {
             return values()[decoder.decodeInt()-1]
         }
 
-        override fun serialize(encoder: Encoder, obj: FileStatus) {
-            encoder.encodeInt(obj.ordinal + 1)
+        override fun serialize(encoder: Encoder, value: FileStatus) {
+            encoder.encodeInt(value.ordinal + 1)
         }
     }
 }

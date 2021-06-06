@@ -4,32 +4,39 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.application.*
 import io.ktor.features.*
-import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
+import io.ktor.http.*
+import io.ktor.jackson.*
 import io.ktor.request.*
-import io.ktor.response.respond
-import kotlinx.coroutines.*
-import kotlinx.coroutines.debug.DebugProbes
-import moe.nikky.curseproxy.data.AddonsImporter
+import io.ktor.response.*
+import io.ktor.serialization.*
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import moe.nikky.curseproxy.data.importAddons
 import moe.nikky.curseproxy.di.mainModule
 import moe.nikky.curseproxy.exceptions.*
 import mu.KotlinLogging
+import org.koin.core.context.GlobalContext
 import org.koin.ktor.ext.Koin
 import org.koin.logger.slf4jLogger
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import kotlin.time.ExperimentalTime
-import kotlin.time.days
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
+@Deprecated("use logger per file")
 val LOG: Logger = LoggerFactory.getLogger("curseproxy")
 
-@OptIn(ExperimentalTime::class)
-fun Application.application() {
-//    Koin.logger = PrintLogger()
-//    startKoin(listOf(mainModule))
+private val logger = KotlinLogging.logger{}
 
+val koinCtx by lazy {
+    GlobalContext.get()
+}
+
+fun Application.application() {
     install(DefaultHeaders)
     install(CallLogging) {
         this@install.logger = KotlinLogging.logger {}
@@ -41,18 +48,29 @@ fun Application.application() {
             it.request.path()
         }
     }
-    install(ContentNegotiation) {
-        jackson {
-            registerModule(KotlinModule()) // Enable Kotlin support
-            enable(SerializationFeature.INDENT_OUTPUT)
-//            enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
-        }
-    }
     install(Koin) {
 //        printLogger()
         slf4jLogger()
         modules(mainModule)
     }
+    install(ContentNegotiation) {
+        json(
+            json = koinCtx.get()
+        )
+
+//        jackson {
+//            registerModule(KotlinModule()) // Enable Kotlin support
+//            enable(SerializationFeature.INDENT_OUTPUT)
+////            enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+//        }
+    }
+//    install(ContentNegotiation) {
+//        jackson {
+//            registerModule(KotlinModule()) // Enable Kotlin support
+//            enable(SerializationFeature.INDENT_OUTPUT)
+////            enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+//        }
+//    }
 //    install(Webjars) {
 //        path = "/webjars" //defaults to /webjars
 //    }
@@ -61,7 +79,7 @@ fun Application.application() {
 //    install(HttpsRedirect)
 //    install(HSTS)
     install(CORS) {
-        maxAgeDuration = 1.days
+        maxAgeInSeconds = 12.toDuration(DurationUnit.HOURS).inSeconds.toLong()
         anyHost()
     }
 //    install(Metrics) {
@@ -72,60 +90,47 @@ fun Application.application() {
 //                .build()
 //        reporter.start(10, TimeUnit.SECONDS)
 //    }
+
     install(StatusPages) {
         exception<Throwable> { cause ->
             call.respond(
-                    HttpStatusCode.InternalServerError,
-                    StackTraceMessage(cause)
-            )
-        }
-        exception<AddonNotFoundException> { cause ->
-            call.respond(
-                    HttpStatusCode.NotFound,
-                    cause
-            )
-        }
-        exception<AddonFileNotFoundException> { cause ->
-            call.respond(
-                    HttpStatusCode.NotFound,
-                    cause
-            )
-        }
-        exception<MissingParameterException> { cause ->
-            call.respond(
-                    HttpStatusCode.NotAcceptable,
-                    cause
+                HttpStatusCode.InternalServerError,
+                StackTraceMessage(cause)
+//                mapper.writeValueAsString(StackTraceMessage(cause))
             )
         }
         exception<MessageException> { cause ->
             call.respond(
-                    HttpStatusCode.NotAcceptable,
-                    cause
+                HttpStatusCode.NotAcceptable,
+                cause.error()
+//                mapper.writeValueAsString(cause)
             )
         }
         exception<IllegalArgumentException> { cause ->
             call.respond(
-                    HttpStatusCode.NotAcceptable,
-                    StackTraceMessage(cause)
+                HttpStatusCode.NotAcceptable,
+                StackTraceMessage(cause)
+//                mapper.writeValueAsString(StackTraceMessage(cause))
             )
         }
         exception<NumberFormatException> { cause ->
             call.respond(
-                    HttpStatusCode.NotAcceptable,
-                    StackTraceMessage(cause)
+                HttpStatusCode.NotAcceptable,
+//                cause.error()
+                StackTraceMessage(cause)
+//                mapper.writeValueAsString(StackTraceMessage(cause))
             )
         }
     }
 
+    val importerExecutor = Executors.newScheduledThreadPool(1)
 
-    val importerJob = GlobalScope.launch(Dispatchers.IO + CoroutineName("import")) {
-        val importer = AddonsImporter()
-        while (true) {
-            importer.import()
+    importerExecutor.scheduleWithFixedDelay({
+        runBlocking(Dispatchers.IO + CoroutineName("import")) {
+            importAddons()
             log.info("Addons imported")
-            delay(TimeUnit.HOURS.toMillis(3))
         }
-    }
+    }, 0, 3, TimeUnit.HOURS)
 
     // install routes
     routes()
@@ -134,10 +139,16 @@ fun Application.application() {
         // cannot access logger inside here.. classloader complains
         println("Time to clean up!")
 
-        // cleanup redis connection pool
+        // stop executors
         runBlocking {
             println("waiting for importer job to cancel")
-            importerJob.cancelAndJoin()
+
+            importerExecutor.shutdown()
+            try {
+                importerExecutor.awaitTermination(30, TimeUnit.SECONDS)
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
+            }
         }
 
 

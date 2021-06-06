@@ -1,11 +1,12 @@
 package moe.nikky.curseproxy.model
 
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.Serializer
-import kotlinx.serialization.internal.IntDescriptor
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 enum class FileType {
     Release,
@@ -14,7 +15,7 @@ enum class FileType {
 
     @Serializer(forClass = FileType::class)
     companion object: KSerializer<FileType> {
-        override val descriptor: SerialDescriptor = IntDescriptor
+        override val descriptor = PrimitiveSerialDescriptor("FileType", PrimitiveKind.INT)
 
         override fun deserialize(decoder: Decoder): FileType {
             return values()[decoder.decodeInt()-1]

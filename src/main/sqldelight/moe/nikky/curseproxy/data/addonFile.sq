@@ -21,7 +21,7 @@ CREATE TABLE addonFiles (
     packageFingerprint INTEGER NOT NULL,
     gameVersion TEXT AS List<String> NOT NULL,
     installMetadata TEXT,
-    serverPackFileId INTEGER As Int,
+    serverPackFileId INTEGER AS Int,
     fileLength INTEGER NOT NULL
 );
 

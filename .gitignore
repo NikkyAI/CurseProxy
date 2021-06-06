@@ -4,8 +4,8 @@ build/
 out/
 run/
 *.iml
-\.floo
-init.py
+
+buildscan.log
 
 curse_debug\.json
 

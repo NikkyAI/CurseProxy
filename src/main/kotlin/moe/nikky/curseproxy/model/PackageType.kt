@@ -1,13 +1,11 @@
 package moe.nikky.curseproxy.model
 
-import com.fasterxml.jackson.annotation.JsonCreator
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.Serializer
-import kotlinx.serialization.internal.IntDescriptor
-import kotlin.jvm.JvmStatic
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 
 enum class PackageType {
     FOLDER,
@@ -20,7 +18,7 @@ enum class PackageType {
 
     @Serializer(forClass = PackageType::class)
     companion object: KSerializer<PackageType> {
-        override val descriptor: SerialDescriptor = IntDescriptor
+        override val descriptor = PrimitiveSerialDescriptor("PackageType", PrimitiveKind.INT)
 
         override fun deserialize(decoder: Decoder): PackageType {
             return values()[decoder.decodeInt()-1]

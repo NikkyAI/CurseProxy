@@ -1,17 +1,9 @@
 ch.qos.logback:logback-classic
                ^^^^^^^^^^^^^^^
 
-org.jetbrains.exposed:exposed-*
-              ^^^^^^^
 
-org.flywaydb:flyway-*
-             ^^^^^^^^
-
-org.postgresql:postgresql
-               ^^^^^^^^^^
-
-com.zaxxer:HikariCP
-           ^^^^^^^^
+io.insert-koin:koin-*
+               ^^^^
 
 com.fasterxml.jackson.datatype:jackson-*
                                ^^^^^^^^^

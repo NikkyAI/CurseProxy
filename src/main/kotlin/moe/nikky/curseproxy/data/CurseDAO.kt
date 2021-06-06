@@ -7,6 +7,7 @@ import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.slf4j.MDCContext
 import moe.nikky.curseproxy.LOG
 import moe.nikky.curseproxy.model.AddOnFileDependency
 import moe.nikky.curseproxy.model.AddOnModule
@@ -412,7 +413,7 @@ class CurseDAO(
         val latestFileIds = results.flatMap { it.latestFileIds }
         val categoryIds = results.flatMap { it.categoryIds }
 
-        val categorySectionsDeferred = async(Dispatchers.IO) {
+        val categorySectionsDeferred = async(Dispatchers.IO + MDCContext()) {
             measureMillisAndReport( "map category sections", logger::info) {
                 results.associate {
                     it.categorySectionId to CategorySection(
@@ -430,7 +431,7 @@ class CurseDAO(
         }
 
         val authorIds = results.flatMap { it.authorIds }
-        val groupedAuthorsDeferred = async(Dispatchers.IO) {
+        val groupedAuthorsDeferred = async(Dispatchers.IO + MDCContext()) {
             measureMillisAndReport( "query authors", logger::info) {
                 authorQueries.selectByIds(authorIds).executeAsList()
                         .groupBy({ it.projectId }) {
@@ -453,7 +454,7 @@ class CurseDAO(
 //        LOG.info("groupedAuthors: $groupedAuthors")
 //    }
 
-        val attachmentsDeferred = async(Dispatchers.IO) {
+        val attachmentsDeferred = async(Dispatchers.IO + MDCContext()) {
             val attachments = measureMillisAndReport( "query attachments", logger::info) {
                 attachmentQueries.selectByProjectIds(projectIds)
                         .executeAsList().groupBy({ it.projectId }) {
@@ -478,7 +479,7 @@ class CurseDAO(
             attachments
         }
 
-        val dependenciesDeferred = async(Dispatchers.IO) {
+        val dependenciesDeferred = async(Dispatchers.IO + MDCContext()) {
             measureMillisAndReport( "query dependencies", logger::info) {
                 addonFileDependencyQueries.selectByParentFileIds(latestFileIds)
                         .executeAsList().groupBy({ it._parentId }) {
@@ -490,7 +491,7 @@ class CurseDAO(
             }
         }
 
-        val fileResultsDeferred = async {
+        val fileResultsDeferred = async(MDCContext()) {
             measureMillisAndReport( "query addonFiles", logger::info) {
                 addonFileQueries.selectByIds(latestFileIds).executeAsList()
             }
@@ -530,7 +531,7 @@ class CurseDAO(
             )
         }
 
-        val allCategoriesDeferred = async(Dispatchers.IO) {
+        val allCategoriesDeferred = async(Dispatchers.IO + MDCContext()) {
             measureMillisAndReport( "query categories", logger::info) {
                 categoryQueries.selectByIds(categoryIds)
                         .executeAsList().associate {
@@ -546,7 +547,7 @@ class CurseDAO(
 
         val gameVersionFileIds = results.flatMap { it.gameVersionLatestFileIds }
 
-        val gameVersionLatestFilesDeferred = async(Dispatchers.IO) {
+        val gameVersionLatestFilesDeferred = async(Dispatchers.IO + MDCContext()) {
             measureMillisAndReport( "query gameVersionLatest", logger::info) {
                 gameVersionLatestFileQueries.selectByProjectFileIds(gameVersionFileIds)
                         .executeAsList().groupBy({ it._parentId }) {

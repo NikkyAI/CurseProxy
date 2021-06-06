@@ -1,29 +1,19 @@
 package moe.nikky.curseproxy.curse
 
-import com.github.kittinunf.fuel.core.Request
-import com.github.kittinunf.fuel.core.extensions.cUrlString
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.coroutines.awaitObjectResponseResult
-import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
-import com.github.kittinunf.fuel.httpGet
-import com.github.kittinunf.fuel.httpPost
-import com.github.kittinunf.fuel.serialization.kotlinxDeserializerOf
-import com.github.kittinunf.result.Result
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.utils.io.errors.*
+import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.list
-import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.list
-import moe.nikky.curseproxy.LOG
-import moe.nikky.curseproxy.model.AddonFile
+import moe.nikky.curseproxy.koinCtx
 import moe.nikky.curseproxy.model.Addon
-import org.koin.core.KoinComponent
-import org.koin.core.inject
+import moe.nikky.curseproxy.model.AddonFile
+import mu.KotlinLogging
+import mu.withLoggingContext
+import org.koin.core.context.GlobalContext
 
 /**
  * Created by nikky on 25/05/18.
@@ -31,101 +21,121 @@ import org.koin.core.inject
  * @version 1.0
  */
 
-object CurseClient : KoinComponent {
-    private val json by inject<Json>()
+//TODO: replace fuel with ktor-client-okhhtp
+
+object CurseClient {
+    private val json by koinCtx.inject<Json>()
+    private val client by koinCtx.inject<HttpClient>()
     private const val ADDON_API = "https://addons-ecs.forgesvc.net/api/v2"
 
-    private fun Request.pretendToBeTwitchapp() = header("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) twitch-desktop-electron-platform/1.0.0 Chrome/73.0.3683.121 Electron/5.0.12 Safari/537.36 desklight/8.51.0")
+    private val logger = KotlinLogging.logger { }
+    private const val DEFAULT_RETRIES = 3
 
-
-    suspend fun getAddon(projectId: Int, ignoreError: Boolean = false): Addon? {
+    suspend fun getAddon(
+        projectId: Int,
+        retry_count: Int = DEFAULT_RETRIES,
+    ): Addon? = withLoggingContext(
+        "request" to "addon",
+        "projectId" to projectId.toString()
+    ) {
         val url = "$ADDON_API/addon/$projectId"
-        val (request, response, result) = url
-            .httpGet()
-            .pretendToBeTwitchapp()
-            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer()))
-        return when (result) {
-            is Result.Success -> {
-                result.value
-            }
-            is Result.Failure -> {
-                if (!ignoreError) {
-                    LOG.error("failed $request $response ${result.error}")
-                }
+
+        try {
+            client.get<Addon>(url)
+        } catch (e: Exception) {
+            logger.error(e) { "GET addon $projectId failed with exception" }
+            if (retry_count > 0) {
+                delay(100)
+                getAddon(projectId, retry_count - 1)
+            } else {
                 null
             }
         }
     }
 
-    suspend fun getAddons(projectIds: List<Int>, ignoreErrors: Boolean = false, fail: Boolean = true): List<Addon>? {
+    suspend fun getAddons(
+        projectIds: List<Int>,
+    ): List<Addon>? = withLoggingContext(
+        "request" to "addons",
+        "ids" to projectIds.toString()
+    ) {
         val url = "$ADDON_API/addon"
-        val (request, response, result) = url
-            .httpPost()
-            .pretendToBeTwitchapp()
-            .jsonBody(json.stringify(Int.serializer().list, projectIds))
-            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer().list))
-        return when (result) {
-            is Result.Success -> {
-                result.value
+        try {
+            client.post<List<Addon>>(url) {
+                contentType(ContentType.Application.Json)
+                body = projectIds
             }
-            is Result.Failure -> {
-                if (!ignoreErrors) {
-                    LOG.error("failed $request $response ${result.error}")
-                }
-                if (fail) {
-                    throw result.error
-                }
-                null
-            }
+        } catch (e: IOException) {
+            logger.error(e) { "GET addons projectIds: ${projectIds.size} failed with exception" }
+            null
         }
     }
 
-    suspend fun getAddonDescription(projectId: Int): String? {
+    suspend fun getAddonDescription(
+        projectId: Int,
+        retry_count: Int = DEFAULT_RETRIES,
+    ): String? = withLoggingContext(
+        "request" to "description",
+        "projectId" to projectId.toString()
+    ) {
         val url = "$ADDON_API/addon/$projectId/description"
-        val (request, response, result) = url
-            .httpGet()
-            .pretendToBeTwitchapp()
-            .awaitStringResponseResult()
-        return when (result) {
-            is Result.Success -> {
-                result.value
-            }
-            is Result.Failure -> {
-                LOG.error("failed $request $response ${result.error}")
+
+        try {
+            client.get<String>(url)
+        } catch (e: Exception) {
+            logger.error(e) { "GET description $projectId failed with exception" }
+            if (retry_count > 0) {
+                delay(100)
+                getAddonDescription(projectId, retry_count - 1)
+            } else {
                 null
             }
         }
     }
 
-    suspend fun getAddonFile(projectId: Int, fileId: Int): AddonFile? {
+    suspend fun getAddonFile(
+        projectId: Int,
+        fileId: Int,
+        retry_count: Int = DEFAULT_RETRIES,
+    ): AddonFile? = withLoggingContext(
+        "request" to "file",
+        "projectId" to projectId.toString(),
+        "fileId" to fileId.toString()
+    ) {
         val url = "$ADDON_API/addon/$projectId/file/$fileId"
-        val (request, response, result) = url
-            .httpGet()
-            .pretendToBeTwitchapp()
-            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = AddonFile.serializer()))
-        return when (result) {
-            is Result.Success -> {
-                result.value
-            }
-            is Result.Failure -> {
-                LOG.error("failed $request $response ${result.error}")
+
+        try {
+            client.get<AddonFile>(url)
+        } catch (e: Exception) {
+            logger.error(e) { "GET file $projectId $fileId failed with exception" }
+            if (retry_count > 0) {
+                delay(100)
+                getAddonFile(projectId, fileId, retry_count - 1)
+            } else {
                 null
             }
         }
     }
 
-    suspend fun getAddonFiles(projectId: Int): List<AddonFile>? {
+    suspend fun getAddonFiles(
+        projectId: Int,
+        retry_count: Int = DEFAULT_RETRIES,
+    ): List<AddonFile>? = withLoggingContext(
+        "request" to "files",
+        "projectId" to projectId.toString()
+    ) {
         val url = "$ADDON_API/addon/$projectId/files"
-        val (request, response, result) = url
-            .httpGet()
-            .pretendToBeTwitchapp()
-            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = AddonFile.serializer().list))
-        return when (result) {
-            is Result.Success -> {
-                result.value
-            }
-            is Result.Failure -> {
-                LOG.error("failed $request $response ${result.error}")
+        logger.info { "GET $url" }
+
+        try {
+            client.get<List<AddonFile>>(url)
+        } catch (e: IOException) {
+            if (retry_count > 0) {
+                logger.warn { "GET files $projectId failed with exception: ${e.message}" }
+                delay(100)
+                getAddonFiles(projectId, retry_count - 1)
+            } else {
+                logger.error(e) { "GET files $projectId failed with exception: $url" }
                 null
             }
         }
@@ -134,47 +144,91 @@ object CurseClient : KoinComponent {
     @Serializable
     data class AddonFileKey(
         @SerialName("AddonId") val addonId: Int,
-        @SerialName("FileId") val fileId: Int
-    )
-
-    suspend fun getAddonFiles(keys: List<AddonFileKey>): Map<Int, List<AddonFile>>? {
-        val url = "$ADDON_API/addon/files"
-        val (request, response, result) = url
-            .httpPost()
-            .pretendToBeTwitchapp()
-            .body(json.stringify(AddonFileKey.serializer().list, keys))
-            .awaitObjectResponseResult(
-                kotlinxDeserializerOf(
-                    json = json, loader = MapSerializer(Int.serializer(), AddonFile.serializer().list)
-                )
-            )
-
-        return when (result) {
-            is Result.Success -> {
-                result.value
-            }
-            is Result.Failure -> {
-                LOG.error("failed $request $response ${result.error}")
-                null
-            }
-        }
+        @SerialName("FileId") val fileId: Int,
+    ) {
+        val short: String get() = "$addonId/$fileId"
     }
 
-    suspend fun getAddonChangelog(projectId: Int, fileId: Int): String? {
-        val url = "$ADDON_API/addon/$projectId/file/$fileId/changelog"
-        val (request, response, result) = url
-            .httpGet()
-            .pretendToBeTwitchapp()
-            .awaitStringResponseResult()
-        return when (result) {
-            is Result.Success -> {
-                result.value
+    suspend fun getAddonFiles(
+        keys: List<AddonFileKey>,
+        retry_count: Int = DEFAULT_RETRIES,
+    ): Map<Int, List<AddonFile>>? = withLoggingContext(
+        "request" to "addonFiles",
+        "keys" to keys.joinToString(",", "[", "]") { it.short }
+    ) {
+        val url = "$ADDON_API/addon/files"
+
+        try {
+            client.post<Map<Int, List<AddonFile>>>(url) {
+                contentType(ContentType.Application.Json)
+                body = keys
             }
-            is Result.Failure -> {
-                LOG.error("failed $request $response ${result.error}")
+        } catch (e: Exception) {
+            logger.error(e) { "GET addonFiles keys: ${keys.size} failed with exception" }
+            if (retry_count > 0) {
+                delay(100)
+                getAddonFiles(keys)
+            } else {
                 null
             }
         }
+//        val (request, response, result) = url
+//            .httpPost()
+//            .pretendToBeTwitchapp()
+//            .body(json.stringify(AddonFileKey.serializer().list, keys))
+//            .awaitObjectResponseResult(
+//                kotlinxDeserializerOf(
+//                    json = json, loader = MapSerializer(Int.serializer(), AddonFile.serializer().list)
+//                )
+//            )
+//
+//        return when (result) {
+//            is Result.Success -> {
+//                result.value
+//            }
+//            is Result.Failure -> {
+//                LOG.error("failed $request $response ${result.error}")
+//                null
+//            }
+//        }
+    }
+
+    suspend fun getAddonFileChangelog(
+        projectId: Int,
+        fileId: Int,
+        retry_count: Int = DEFAULT_RETRIES,
+    ): String? = withLoggingContext(
+        "request" to "changelog",
+        "projectId" to projectId.toString(),
+        "fileId" to fileId.toString()
+    ) {
+        val url = "$ADDON_API/addon/$projectId/file/$fileId/changelog"
+
+        client.get<String>(url)
+        try {
+            client.get<String>(url)
+        } catch (e: Exception) {
+            logger.error(e) { "GET changelog $projectId $fileId failed with exception" }
+            if (retry_count > 0) {
+                delay(100)
+                getAddonFileChangelog(projectId, fileId, retry_count - 1)
+            } else {
+                null
+            }
+        }
+//        val (request, response, result) = url
+//            .httpGet()
+//            .pretendToBeTwitchapp()
+//            .awaitStringResponseResult()
+//        return when (result) {
+//            is Result.Success -> {
+//                result.value
+//            }
+//            is Result.Failure -> {
+//                LOG.error("failed $request $response ${result.error}")
+//                null
+//            }
+//        }
     }
 
     enum class AddonSortMethod {
@@ -188,7 +242,7 @@ object CurseClient : KoinComponent {
         GameVersion
     }
 
-    suspend fun getAddonsByCriteria(
+    suspend fun search(
         gameId: Int,
         sectionId: Int? = null,
         categoryIds: List<Int>? = null,
@@ -197,7 +251,8 @@ object CurseClient : KoinComponent {
         gameVersions: List<String>? = null,
         index: Int = 0,
         pageSize: Int = 1000,
-        searchFilter: String? = null
+        searchFilter: String? = null,
+        retry_count: Int = DEFAULT_RETRIES,
     ): List<Addon>? {
         val url = "$ADDON_API/addon/search"
         val parameters = mutableListOf(
@@ -220,30 +275,57 @@ object CurseClient : KoinComponent {
 //            parameters += "sectionId" to sectionId
 //        }
 
-        val (request, response, result) = url
-            .httpGet(parameters = parameters.filter { (_, value) ->
-                value != null
+        return try {
+            client.get<List<Addon>>(url) {
+                parameters.forEach { (k, v) ->
+                    parameter(k, v)
+                }
             }
-//                .also { LOG.debug("parameters: $it") }
-            )
-            .pretendToBeTwitchapp()
-            .awaitStringResponseResult()
-//            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer().list))
-
-        LOG.debug("curl: ${request.cUrlString()}")
-
-        return when (result) {
-            is Result.Success -> {
-                json.parse(Addon.serializer().list, result.value)
-            }
-            is Result.Failure -> {
-                LOG.error("failed $request $response ${result.error}")
+        } catch (e: Exception) {
+            if (retry_count > 0) {
+                logger.warn(e) { "exception during search" }
+                delay(100)
+                search(
+                    gameId = gameId,
+                    sectionId = sectionId,
+                    categoryIds = categoryIds,
+                    sort = sort,
+                    isSortDescending = isSortDescending,
+                    gameVersions = gameVersions,
+                    index = index,
+                    pageSize = pageSize,
+                    searchFilter = searchFilter,
+                    retry_count = retry_count - 1
+                )
+            } else {
+                logger.error(e) { "exception during search" }
                 null
             }
         }
+//        val (request, response, result) = url
+//            .httpGet(parameters = parameters.filter { (_, value) ->
+//                value != null
+//            }
+////                .also { LOG.debug("parameters: $it") }
+//            )
+//            .pretendToBeTwitchapp()
+//            .awaitStringResponseResult()
+////            .awaitObjectResponseResult(kotlinxDeserializerOf(json = json, loader = Addon.serializer().list))
+//
+//        LOG.debug("curl: ${request.cUrlString()}")
+//
+//        return when (result) {
+//            is Result.Success -> {
+//                json.parse(Addon.serializer().list, result.value)
+//            }
+//            is Result.Failure -> {
+//                LOG.error("failed $request $response ${result.error}")
+//                null
+//            }
+//        }
     }
 
-    suspend fun getAllAddonsByCriteria(
+    suspend fun searchAll(
         gameId: Int,
         sectionId: Int? = null,
         categoryIds: List<Int>? = null,
@@ -251,7 +333,7 @@ object CurseClient : KoinComponent {
         isSortDescending: Boolean = true,
         gameVersions: List<String>? = null,
         pageSize: Int = 1000,
-        searchFilter: String? = null
+        searchFilter: String? = null,
     ): List<Addon> {
         require(pageSize <= 1000) { "curse api limits pagesize to 1000" }
 
@@ -260,32 +342,36 @@ object CurseClient : KoinComponent {
         val results: MutableList<Addon> = mutableListOf()
         var done = false
         while (!done) {
-            results += coroutineScope {
-                (0 until n).map {
-                    async {
-                        val page = getAddonsByCriteria(
-                            gameId,
-                            sectionId,
-                            categoryIds,
-                            sort,
-                            isSortDescending,
-                            gameVersions,
-                            index,
-                            pageSize,
-                            searchFilter
-                        )
-                            ?: emptyList()
 
-                        if (page.size < pageSize) {
-                            done = true
-                        }
-                        index += pageSize - 1
-                        page
-                    }
-                }
+//                (0 until n).map {
+            val page = search(
+                gameId,
+                sectionId,
+                categoryIds,
+                sort,
+                isSortDescending,
+                gameVersions,
+                index,
+                pageSize,
+                searchFilter
+            )
 
-            }.awaitAll().flatten()
+            if(page == null) {
+                logger.error { "error on index: $index" }
+                break
+            }
+
+            logger.debug { "index: $index size: ${page.size}" }
+
+            results += page
+            if (page.size < pageSize) {
+                done = true
+                break
+            }
+            index += pageSize / 2
+//                }
         }
+        logger.info { "search results: ${results.size}" }
         return results.toList()
 //        return results.distinctBy { it.id }
     }
