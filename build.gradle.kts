@@ -58,8 +58,6 @@ idea {
 repositories {
     mavenCentral()
     jcenter()
-    maven(url = "https://dl.bintray.com/kotlin/kotlinx")
-    maven(url = "http://dl.bintray.com/kotlin/ktor")
 }
 
 dependencies {
