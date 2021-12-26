@@ -196,7 +196,7 @@ object CurseClient : KoinComponent {
         isSortDescending: Boolean = true,
         gameVersions: List<String>? = null,
         index: Int = 0,
-        pageSize: Int = 1000,
+        pageSize: Int = 50,
         searchFilter: String? = null
     ): List<Addon>? {
         val url = "$ADDON_API/addon/search"
@@ -250,10 +250,10 @@ object CurseClient : KoinComponent {
         sort: AddonSortMethod = AddonSortMethod.Featured,
         isSortDescending: Boolean = true,
         gameVersions: List<String>? = null,
-        pageSize: Int = 1000,
+        pageSize: Int = 50,
         searchFilter: String? = null
     ): List<Addon> {
-        require(pageSize <= 1000) { "curse api limits pagesize to 1000" }
+        require(pageSize <= 50) { "curse api limits pagesize to 50" }
 
         val n = 4
         var index = 0
