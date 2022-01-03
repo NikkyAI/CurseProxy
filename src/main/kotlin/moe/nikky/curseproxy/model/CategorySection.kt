@@ -10,7 +10,7 @@ data class CategorySection(
     val name: String,
     @Serializable(with = PackageType.Companion::class)
         val packageType: PackageType,
-    val path: String,
+    val path: String?,
     val initialInclusionPattern: String? = ".",
     val extraIncludePattern: String? = "",
     val gameCategoryId: Int
