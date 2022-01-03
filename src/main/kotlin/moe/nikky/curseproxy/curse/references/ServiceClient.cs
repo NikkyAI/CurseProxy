@@ -47,7 +47,7 @@ namespace Curse.Radium.Addons.ServiceClient
       GameVersion,
     }
 
-    public ServiceResponse<List<Addon>> GetAddonsByCriteria(int gameId, int sectionId = -1, int categoryId = -1, AddonSortMethod sort = AddonSortMethod.Featured, bool isSortDescending = true, string gameVersion = null, int index = 0, int pageSize = 1000, string searchFilter = null)
+    public ServiceResponse<List<Addon>> GetAddonsByCriteria(int gameId, int sectionId = -1, int categoryId = -1, AddonSortMethod sort = AddonSortMethod.Featured, bool isSortDescending = true, string gameVersion = null, int index = 0, int pageSize = 50, string searchFilter = null)
     {
       return this.Get<List<Addon>>(string.Format("api/addon/search?gameId={0}&sectionId={1}&categoryId={2}&gameVersion={3}&index={4}&pageSize={5}&searchFilter={6}&sort={7}&sortDescending={8}", (object) gameId, (object) sectionId, (object) categoryId, (object) gameVersion, (object) index, (object) pageSize, (object) searchFilter, (object) sort, (object) isSortDescending.ToString().ToLower()));
     }
