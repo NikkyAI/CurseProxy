@@ -288,21 +288,21 @@ class CurseDAO(
         return category.categoryId
     }
 
-    fun store(categorySection: CategorySection): Int {
-//    LOG.info("store $categorySection")
-        categorySectionQueries.replace(
-                CategorySections(
-                        categorySectionId = categorySection.id,
-                        categorySectionGameId = categorySection.gameId,
-                        categorySectionName = categorySection.name,
-                        packageType = categorySection.packageType,
-                        path = categorySection.path,
-                        initialInclusionPattern = categorySection.initialInclusionPattern,
-                        extraIncludePattern = categorySection.extraIncludePattern
-                )
-        )
-        return categorySection.id
-    }
+//    fun store(categorySection: CategorySection): Int {
+////    LOG.info("store $categorySection")
+//        categorySectionQueries.replace(
+//                CategorySections(
+//                        categorySectionId = categorySection.id,
+//                        categorySectionGameId = categorySection.gameId,
+//                        categorySectionName = categorySection.name,
+//                        packageType = categorySection.packageType,
+//                        path = categorySection.path,
+//                        initialInclusionPattern = categorySection.initialInclusionPattern,
+//                        extraIncludePattern = categorySection.extraIncludePattern
+//                )
+//        )
+//        return categorySection.id
+//    }
 
     fun store(gameVersionLatestFile: GameVersionLatestFile, parentId: Int): Int {
 //    LOG.info("store $categorySection")
